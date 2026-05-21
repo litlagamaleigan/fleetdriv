@@ -3004,7 +3004,7 @@ function sendCustomerToSheets(c) {
     Urgangsflokkur_Verdlisti: catsStr,
     Athugasemd: c.note||''
   }]};
-  fetch(SHEETDB_CUSTOMERS_URL, {
+  fetch(SHEETDB_CUSTOMERS_URL + '?sheet=Viðskiptavinir', {
     method: 'POST',
     headers: {'Content-Type':'application/json','Accept':'application/json'},
     body: JSON.stringify(payload)
@@ -3478,7 +3478,7 @@ let openTasks = 3;
 let doneTasks = 1;
 
 const SHEETDB_URL = 'https://sheetdb.io/api/v1/fmrvnup3g6rop';
-const SHEETDB_CUSTOMERS_URL = 'https://sheetdb.io/api/v1/zt6qkzofk2yyh';
+const SHEETDB_CUSTOMERS_URL = 'https://sheetdb.io/api/v1/z6dug37tqd1f9';
 
 const typeMap = {
   ut:   {name:'Afhending gáms',          badgeClass:'b-ut',  numClass:'num-ut',   adminBadge:'ap-ut'},

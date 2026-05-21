@@ -1,9 +1,8 @@
 <!DOCTYPE html>
-<!-- saved from url=(0052)file:///C:/Users/gunna/Downloads/fleetdriv_v2_3.html -->
-<html lang="is"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><style>.pac-container{background-color:#fff;position:absolute!important;z-index:1000;border-radius:2px;border-top:1px solid #d9d9d9;font-family:Arial,sans-serif;-webkit-box-shadow:0 2px 6px rgba(0,0,0,.3);box-shadow:0 2px 6px rgba(0,0,0,.3);-webkit-box-sizing:border-box;box-sizing:border-box;overflow:hidden}.pac-logo:after{content:"";padding:1px 1px 1px 0;height:18px;-webkit-box-sizing:border-box;box-sizing:border-box;text-align:right;display:block;background-image:url(https://maps.gstatic.com/mapfiles/api-3/images/powered-by-google-on-white3.png);background-position:100%;background-repeat:no-repeat;-webkit-background-size:120px 14px;background-size:120px 14px}.hdpi.pac-logo:after{background-image:url(https://maps.gstatic.com/mapfiles/api-3/images/powered-by-google-on-white3_hdpi.png)}.pac-item{cursor:default;padding:0 4px;text-overflow:ellipsis;overflow:hidden;white-space:nowrap;line-height:30px;text-align:left;border-top:1px solid #e6e6e6;font-size:11px;color:#515151}.pac-item:hover{background-color:#fafafa}.pac-item-selected,.pac-item-selected:hover{background-color:#ebf2fe}.pac-matched{font-weight:700}.pac-item-query{font-size:13px;padding-right:3px;color:#000}.pac-icon{width:15px;height:20px;margin-right:7px;margin-top:6px;display:inline-block;vertical-align:top;background-image:url(https://maps.gstatic.com/mapfiles/api-3/images/autocomplete-icons.png);-webkit-background-size:34px 34px;background-size:34px}.hdpi .pac-icon{background-image:url(https://maps.gstatic.com/mapfiles/api-3/images/autocomplete-icons_hdpi.png)}.pac-icon-search{background-position:-1px -1px}.pac-item-selected .pac-icon-search{background-position:-18px -1px}.pac-icon-marker{background-position:-1px -161px}.pac-item-selected .pac-icon-marker{background-position:-18px -161px}.pac-placeholder{color:gray}sentinel{}
-</style>
-
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<html lang="is">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
 <title>FleetDriv · Litla Gámaleigan</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
@@ -504,14 +503,14 @@ body{background:#e8edf3;display:flex;justify-content:center;align-items:flex-sta
     document.dispatchEvent(new Event('firebase-ready'));
   </script>
 
-  <script src="./index_files/js" async="" defer=""></script>
-<script type="text/javascript" charset="UTF-8" src="./index_files/common.js.download"></script><script type="text/javascript" charset="UTF-8" src="./index_files/util.js.download"></script><script type="text/javascript" charset="UTF-8" src="./index_files/log.js.download"></script><script type="text/javascript" charset="UTF-8" src="./index_files/controls.js.download"></script><script type="text/javascript" charset="UTF-8" src="./index_files/places_impl.js.download"></script></head>
+  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBfZAayWevIWuoLrO7-_DNekhuyUp0W_PA&v=weekly&libraries=places&language=is&callback=initGoogleMaps" async defer></script>
+</head>
 <body>
 <div class="toast" id="toast"></div>
 
 <!-- ══════════════════ PHONE ══════════════════ -->
 <div class="phone" id="phone">
-  <div class="status-bar"><span id="clock">00:20</span><button id="phone-lang-btn" onclick="toggleLanguage()" style="background:none;border:none;color:#94a3b8;font-size:10px;font-weight:700;cursor:pointer;padding:0 4px;">🇬🇧 EN</button><span>●●● ▲ 100%</span></div>
+  <div class="status-bar"><span id="clock">09:41</span><button id="phone-lang-btn" onclick="toggleLanguage()" style="background:none;border:none;color:#94a3b8;font-size:10px;font-weight:700;cursor:pointer;padding:0 4px;">🇬🇧 EN</button><span>●●● ▲ 100%</span></div>
 
   <!-- VEHICLE SELECT SCREEN -->
   <div class="screen" id="sc-vehicle-select" style="background:#0a0f1a;display:none;flex-direction:column;align-items:center;justify-content:center;padding:32px 20px;min-height:100%;overflow-y:auto;">
@@ -541,19 +540,19 @@ body{background:#e8edf3;display:flex;justify-content:center;align-items:flex-sta
     <div class="login-bg">
       <div class="brand">
         <div class="logo-wrap">
-          <svg viewBox="0 0 24 24"><path d="M20 8h-3V4H3c-1.1 0-2 .9-2 2v11h2c0 1.66 1.34 3 3 3s3-1.34 3-3h6c0 1.66 1.34 3 3 3s3-1.34 3-3h2v-5l-3-4zM6 18.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm13.5-9l1.96 2.5H17V9.5h2.5zm-1.5 9c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"></path></svg>
+          <svg viewBox="0 0 24 24"><path d="M20 8h-3V4H3c-1.1 0-2 .9-2 2v11h2c0 1.66 1.34 3 3 3s3-1.34 3-3h6c0 1.66 1.34 3 3 3s3-1.34 3-3h2v-5l-3-4zM6 18.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm13.5-9l1.96 2.5H17V9.5h2.5zm-1.5 9c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg>
         </div>
         <h1>FleetDriv</h1>
         <p>Gámakeyrslukerfi · Litla Gámaleigan</p>
       </div>
       <div class="login-form">
         <div class="field-wrap">
-          <svg class="field-icon" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"></path></svg>
-          <input type="text" id="login-user" placeholder="Notandanafn" autocomplete="username">
+          <svg class="field-icon" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+          <input type="text" id="login-user" placeholder="Notandanafn" autocomplete="username"/>
         </div>
         <div class="field-wrap">
-          <svg class="field-icon" viewBox="0 0 24 24"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"></path></svg>
-          <input type="password" id="login-pw" placeholder="Lykilorð" autocomplete="current-password">
+          <svg class="field-icon" viewBox="0 0 24 24"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg>
+          <input type="password" id="login-pw" placeholder="Lykilorð" autocomplete="current-password"/>
         </div>
         <div id="login-error" style="display:none;background:#fef2f2;border:1px solid #fecaca;border-radius:10px;padding:10px 12px;color:#991b1b;font-size:12px;font-weight:600;text-align:center;"></div>
         <button class="btn-login" onclick="doLogin()">Skrá inn →</button>
@@ -577,7 +576,7 @@ body{background:#e8edf3;display:flex;justify-content:center;align-items:flex-sta
         <div class="stat-box"><div class="stat-num" id="pct-count">0%</div><div class="stat-lbl">Framvinda</div></div>
       </div>
       <div class="route-banner">
-        <div class="route-icon-wrap"><svg viewBox="0 0 24 24"><path d="M21 3L3 10.53v.98l6.84 2.65L12.48 21h.98z"></path></svg></div>
+        <div class="route-icon-wrap"><svg viewBox="0 0 24 24"><path d="M21 3L3 10.53v.98l6.84 2.65L12.48 21h.98z"/></svg></div>
         <div class="route-text">
           <div class="rt">Leið dagsins · 4 stopp</div>
           <div class="rs" id="route-sub">Engar beiðnir í dag</div>
@@ -596,20 +595,20 @@ body{background:#e8edf3;display:flex;justify-content:center;align-items:flex-sta
       </div>
     </div>
     <div class="bottom-nav">
-      <button class="nav-item on" id="nav-heim" onclick="navTo(&#39;dash&#39;)">
-        <svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"></path></svg>
+      <button class="nav-item on" id="nav-heim" onclick="navTo('dash')">
+        <svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
         <span>Heim</span>
       </button>
-      <button class="nav-item" id="nav-leid" onclick="navTo(&#39;leid&#39;)">
-        <svg viewBox="0 0 24 24"><path d="M21 3L3 10.53v.98l6.84 2.65L12.48 21h.98z"></path></svg>
+      <button class="nav-item" id="nav-leid" onclick="navTo('leid')">
+        <svg viewBox="0 0 24 24"><path d="M21 3L3 10.53v.98l6.84 2.65L12.48 21h.98z"/></svg>
         <span>Leið</span>
       </button>
-      <button class="nav-item" id="nav-skil" onclick="navTo(&#39;skil&#39;)">
-        <svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"></path></svg>
+      <button class="nav-item" id="nav-skil" onclick="navTo('skil')">
+        <svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/></svg>
         <span>Skilaboð</span>
       </button>
-      <button class="nav-item" id="nav-prof" onclick="navTo(&#39;prof&#39;)">
-        <svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"></path></svg>
+      <button class="nav-item" id="nav-prof" onclick="navTo('prof')">
+        <svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
         <span>Prófíll</span>
       </button>
     </div>
@@ -618,7 +617,7 @@ body{background:#e8edf3;display:flex;justify-content:center;align-items:flex-sta
   <!-- TASK DETAIL -->
   <div class="screen" id="sc-task">
     <div class="det-hdr">
-      <button class="back-btn" onclick="show(&#39;sc-dash&#39;);setActiveNav(&#39;dash&#39;)">←</button>
+      <button class="back-btn" onclick="show('sc-dash');setActiveNav('dash')">←</button>
       <div>
         <div class="det-title" id="t-title">Afhending · Gámur #G-204</div>
         <div class="det-sub" id="t-sub">Skúlagata 32, Reykjavík</div>
@@ -628,15 +627,15 @@ body{background:#e8edf3;display:flex;justify-content:center;align-items:flex-sta
     <div class="det-body">
       <div class="map-block">
         <svg class="map-svg-bg" viewBox="0 0 360 148" xmlns="http://www.w3.org/2000/svg">
-          <rect width="360" height="148" fill="#e8edf5"></rect>
-          <line x1="0" y1="74" x2="360" y2="74" stroke="#cbd5e1" stroke-width="16"></line>
-          <line x1="180" y1="0" x2="180" y2="148" stroke="#cbd5e1" stroke-width="10"></line>
-          <line x1="40" y1="0" x2="40" y2="148" stroke="#dde3ec" stroke-width="6"></line>
-          <line x1="320" y1="0" x2="320" y2="148" stroke="#dde3ec" stroke-width="6"></line>
-          <line x1="0" y1="30" x2="360" y2="30" stroke="#dde3ec" stroke-width="5"></line>
-          <line x1="0" y1="118" x2="360" y2="118" stroke="#dde3ec" stroke-width="5"></line>
-          <circle cx="180" cy="74" r="28" fill="none" stroke="#cbd5e1" stroke-width="2"></circle>
-          <polyline points="60,74 110,40 180,74 250,40 300,74" stroke="#94a3b8" stroke-width="2" fill="none"></polyline>
+          <rect width="360" height="148" fill="#e8edf5"/>
+          <line x1="0" y1="74" x2="360" y2="74" stroke="#cbd5e1" stroke-width="16"/>
+          <line x1="180" y1="0" x2="180" y2="148" stroke="#cbd5e1" stroke-width="10"/>
+          <line x1="40" y1="0" x2="40" y2="148" stroke="#dde3ec" stroke-width="6"/>
+          <line x1="320" y1="0" x2="320" y2="148" stroke="#dde3ec" stroke-width="6"/>
+          <line x1="0" y1="30" x2="360" y2="30" stroke="#dde3ec" stroke-width="5"/>
+          <line x1="0" y1="118" x2="360" y2="118" stroke="#dde3ec" stroke-width="5"/>
+          <circle cx="180" cy="74" r="28" fill="none" stroke="#cbd5e1" stroke-width="2"/>
+          <polyline points="60,74 110,40 180,74 250,40 300,74" stroke="#94a3b8" stroke-width="2" fill="none"/>
         </svg>
         <div class="map-overlay">
           <div class="map-pin"></div>
@@ -649,12 +648,12 @@ body{background:#e8edf3;display:flex;justify-content:center;align-items:flex-sta
         <div class="form-title">Upplýsingar um verkefni</div>
         <div class="form-group">
           <label class="f-label">Gámanúmer <span style="color:#e8620a;">*</span></label>
-          <input class="f-input" type="text" id="d-container" placeholder="t.d. G-204">
+          <input class="f-input" type="text" id="d-container" placeholder="t.d. G-204"/>
         </div>
         <div class="form-row" id="d-kg-row">
           <div>
             <label class="f-label">Þyngd (kg)</label>
-            <input class="f-input" type="number" id="d-kg" placeholder="t.d. 350">
+            <input class="f-input" type="number" id="d-kg" placeholder="t.d. 350"/>
           </div>
           <div id="d-category-group">
             <label class="f-label">Efnisflokkur</label>
@@ -764,21 +763,21 @@ body{background:#e8edf3;display:flex;justify-content:center;align-items:flex-sta
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
               <div>
                 <label class="f-label">Byrjunartími</label>
-                <input class="f-input" type="time" id="d-tima-start" placeholder="HH:MM">
+                <input class="f-input" type="time" id="d-tima-start" placeholder="HH:MM"/>
               </div>
               <div>
                 <label class="f-label">Endatími</label>
-                <input class="f-input" type="time" id="d-tima-hours" placeholder="HH:MM">
+                <input class="f-input" type="time" id="d-tima-hours" placeholder="HH:MM"/>
               </div>
             </div>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
               <div>
                 <label class="f-label">Km staða við byrjun</label>
-                <input class="f-input" type="number" id="d-tima-km-start" placeholder="t.d. 54200">
+                <input class="f-input" type="number" id="d-tima-km-start" placeholder="t.d. 54200"/>
               </div>
               <div>
                 <label class="f-label">Km staða við enda</label>
-                <input class="f-input" type="number" id="d-tima-km-end" placeholder="t.d. 54380">
+                <input class="f-input" type="number" id="d-tima-km-end" placeholder="t.d. 54380"/>
               </div>
             </div>
           </div>
@@ -790,11 +789,11 @@ body{background:#e8edf3;display:flex;justify-content:center;align-items:flex-sta
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
               <div>
                 <label class="f-label" style="color:#854d0e;">Gámur tekinn <span style="color:#e8620a;">*</span></label>
-                <input class="f-input" type="text" id="d-skipt-tekinn" placeholder="Gámanúmer tekinn" style="border-color:#fde68a;">
+                <input class="f-input" type="text" id="d-skipt-tekinn" placeholder="Gámanúmer tekinn" style="border-color:#fde68a;"/>
               </div>
               <div>
                 <label class="f-label" style="color:#854d0e;">Gámur afhentur <span style="color:#e8620a;">*</span></label>
-                <input class="f-input" type="text" id="d-skipt-afhentur" placeholder="Gámanúmer afhentur" style="border-color:#fde68a;">
+                <input class="f-input" type="text" id="d-skipt-afhentur" placeholder="Gámanúmer afhentur" style="border-color:#fde68a;"/>
               </div>
             </div>
           </div>
@@ -802,12 +801,12 @@ body{background:#e8edf3;display:flex;justify-content:center;align-items:flex-sta
         <div class="form-group" id="d-company-group">
           <label class="f-label">Fyrirtæki / viðtakandi</label>
           <div id="d-company-display" style="background:#f1f5f9;border:1px solid #e2e8f0;border-radius:11px;padding:10px 12px;font-size:13px;color:#0f172a;font-weight:600;min-height:40px;">—</div>
-          <input type="hidden" id="d-company" value="">
+          <input type="hidden" id="d-company" value=""/>
         </div>
         <div class="form-title">Skjölun</div>
         <div class="form-group">
           <div class="photo-zone" id="pz" onclick="fakePhoto()">
-            <svg viewBox="0 0 24 24"><path d="M12 15.2c-1.77 0-3.2-1.43-3.2-3.2 0-1.77 1.43-3.2 3.2-3.2 1.77 0 3.2 1.43 3.2 3.2 0 1.77-1.43 3.2-3.2 3.2zM9 2L7.17 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2h-3.17L15 2H9z"></path></svg>
+            <svg viewBox="0 0 24 24"><path d="M12 15.2c-1.77 0-3.2-1.43-3.2-3.2 0-1.77 1.43-3.2 3.2-3.2 1.77 0 3.2 1.43 3.2 3.2 0 1.77-1.43 3.2-3.2 3.2zM9 2L7.17 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2h-3.17L15 2H9z"/></svg>
             <span id="ptxt">Taka mynd</span>
           </div>
         </div>
@@ -818,26 +817,26 @@ body{background:#e8edf3;display:flex;justify-content:center;align-items:flex-sta
       </div>
       <div class="action-wrap">
         <button class="btn-complete" onclick="completeTask()">
-          <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"></path></svg>
+          <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
           <span id="complete-btn-text">Klára beiðni</span>
         </button>
       </div>
     </div>
     <div class="bottom-nav">
-      <button class="nav-item" onclick="show(&#39;sc-dash&#39;);setActiveNav(&#39;dash&#39;)">
-        <svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"></path></svg>
+      <button class="nav-item" onclick="show('sc-dash');setActiveNav('dash')">
+        <svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
         <span>Heim</span>
       </button>
-      <button class="nav-item" onclick="navTo(&#39;leid&#39;)">
-        <svg viewBox="0 0 24 24"><path d="M21 3L3 10.53v.98l6.84 2.65L12.48 21h.98z"></path></svg>
+      <button class="nav-item" onclick="navTo('leid')">
+        <svg viewBox="0 0 24 24"><path d="M21 3L3 10.53v.98l6.84 2.65L12.48 21h.98z"/></svg>
         <span>Leið</span>
       </button>
-      <button class="nav-item" onclick="navTo(&#39;skil&#39;)">
-        <svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"></path></svg>
+      <button class="nav-item" onclick="navTo('skil')">
+        <svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/></svg>
         <span>Skilaboð</span>
       </button>
-      <button class="nav-item" onclick="navTo(&#39;prof&#39;)">
-        <svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"></path></svg>
+      <button class="nav-item" onclick="navTo('prof')">
+        <svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
         <span>Prófíll</span>
       </button>
     </div>
@@ -852,10 +851,10 @@ body{background:#e8edf3;display:flex;justify-content:center;align-items:flex-sta
     <div class="simple-body">
       <div style="text-align:center;padding:32px;color:#64748b;font-size:13px;">Engar beiðnir í dag</div></div>
     <div class="bottom-nav">
-      <button class="nav-item" id="nav-heim-l" onclick="navTo(&#39;dash&#39;)"><svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"></path></svg><span>Heim</span></button>
-      <button class="nav-item on" id="nav-leid-l" onclick="navTo(&#39;leid&#39;)"><svg viewBox="0 0 24 24"><path d="M21 3L3 10.53v.98l6.84 2.65L12.48 21h.98z"></path></svg><span>Leið</span></button>
-      <button class="nav-item" id="nav-skil-l" onclick="navTo(&#39;skil&#39;)"><svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"></path></svg><span>Skilaboð</span></button>
-      <button class="nav-item" id="nav-prof-l" onclick="navTo(&#39;prof&#39;)"><svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"></path></svg><span>Prófíll</span></button>
+      <button class="nav-item" id="nav-heim-l" onclick="navTo('dash')"><svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg><span>Heim</span></button>
+      <button class="nav-item on" id="nav-leid-l" onclick="navTo('leid')"><svg viewBox="0 0 24 24"><path d="M21 3L3 10.53v.98l6.84 2.65L12.48 21h.98z"/></svg><span>Leið</span></button>
+      <button class="nav-item" id="nav-skil-l" onclick="navTo('skil')"><svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/></svg><span>Skilaboð</span></button>
+      <button class="nav-item" id="nav-prof-l" onclick="navTo('prof')"><svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg><span>Prófíll</span></button>
     </div>
   </div>
 
@@ -871,10 +870,10 @@ body{background:#e8edf3;display:flex;justify-content:center;align-items:flex-sta
       </div>
     </div>
     <div class="bottom-nav">
-      <button class="nav-item" onclick="navTo(&#39;dash&#39;)"><svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"></path></svg><span>Heim</span></button>
-      <button class="nav-item" onclick="navTo(&#39;leid&#39;)"><svg viewBox="0 0 24 24"><path d="M21 3L3 10.53v.98l6.84 2.65L12.48 21h.98z"></path></svg><span>Leið</span></button>
-      <button class="nav-item on" onclick="navTo(&#39;skil&#39;)"><svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"></path></svg><span>Skilaboð</span></button>
-      <button class="nav-item" onclick="navTo(&#39;prof&#39;)"><svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"></path></svg><span>Prófíll</span></button>
+      <button class="nav-item" onclick="navTo('dash')"><svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg><span>Heim</span></button>
+      <button class="nav-item" onclick="navTo('leid')"><svg viewBox="0 0 24 24"><path d="M21 3L3 10.53v.98l6.84 2.65L12.48 21h.98z"/></svg><span>Leið</span></button>
+      <button class="nav-item on" onclick="navTo('skil')"><svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/></svg><span>Skilaboð</span></button>
+      <button class="nav-item" onclick="navTo('prof')"><svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg><span>Prófíll</span></button>
     </div>
   </div>
 
@@ -887,13 +886,13 @@ body{background:#e8edf3;display:flex;justify-content:center;align-items:flex-sta
         <div class="profile-name">Jón Sigurðsson</div>
         <div class="profile-sub">Ökumaður · Bifreið #14 · GPS virkt</div>
         <div class="profile-stats">
-          <div class="pstat"><p id="prof-done">1</p><p class="loki-dag">Lokið í dag</p></div>
+          <div class="pstat"><p id="prof-done">1</p><p class='loki-dag'>Lokið í dag</p></div>
           <div class="pstat"><p>847</p><p>Samtals</p></div>
           <div class="pstat"><p>98%</p><p>Nákvæmni</p></div>
         </div>
       </div>
       <div class="info-section">
-        <div class="info-row"><span>Notandanafn</span><span id="prof-username">—</span></div>
+        <div class="info-row"><span>Notandanafn</span><span id='prof-username'>—</span></div>
         <div class="info-row"><span>Símanúmer</span><span>+354 555 1234</span></div>
         <div class="info-row"><span>Ökuréttindi</span><span>Flokkur C+E</span></div>
         <div class="info-row"><span>Vakt í dag</span><span>07:30 – 16:00</span></div>
@@ -902,17 +901,17 @@ body{background:#e8edf3;display:flex;justify-content:center;align-items:flex-sta
       <button class="logout-btn" onclick="doLogout()">Skrá út</button>
     </div>
     <div class="bottom-nav">
-      <button class="nav-item" onclick="navTo(&#39;dash&#39;)"><svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"></path></svg><span>Heim</span></button>
-      <button class="nav-item" onclick="navTo(&#39;leid&#39;)"><svg viewBox="0 0 24 24"><path d="M21 3L3 10.53v.98l6.84 2.65L12.48 21h.98z"></path></svg><span>Leið</span></button>
-      <button class="nav-item" onclick="navTo(&#39;skil&#39;)"><svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"></path></svg><span>Skilaboð</span></button>
-      <button class="nav-item on" onclick="navTo(&#39;prof&#39;)"><svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"></path></svg><span>Prófíll</span></button>
+      <button class="nav-item" onclick="navTo('dash')"><svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg><span>Heim</span></button>
+      <button class="nav-item" onclick="navTo('leid')"><svg viewBox="0 0 24 24"><path d="M21 3L3 10.53v.98l6.84 2.65L12.48 21h.98z"/></svg><span>Leið</span></button>
+      <button class="nav-item" onclick="navTo('skil')"><svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/></svg><span>Skilaboð</span></button>
+      <button class="nav-item on" onclick="navTo('prof')"><svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg><span>Prófíll</span></button>
     </div>
   </div>
 
   <!-- SUCCESS OVERLAY -->
   <div class="success-overlay" id="suc">
     <div class="success-ring">
-      <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"></path></svg>
+      <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
     </div>
     <h2>Beiðni kláruð!</h2>
     <p id="suc-sub">Skúlagata 32 · skráð 10:45</p>
@@ -944,14 +943,14 @@ body{background:#e8edf3;display:flex;justify-content:center;align-items:flex-sta
   </div>
   <div class="admin-body">
     <div class="admin-tabs">
-      <button class="admin-tab active" onclick="adminTab(&#39;new&#39;,this)">+ Ný beiðni</button>
-      <button class="admin-tab" onclick="adminTab(&#39;tasks&#39;,this)">Opin</button>
-      <button class="admin-tab" onclick="adminTab(&#39;done&#39;,this)">Lokið</button>
-      <button class="admin-tab" onclick="adminTab(&#39;drivers&#39;,this)">Ökumenn</button>
-      <button class="admin-tab" onclick="adminTab(&#39;customers&#39;,this)">Viðskiptavinir</button>
-      <button class="admin-tab" onclick="adminTab(&#39;custoverview&#39;,this)">Yfirlit</button>
-      <button class="admin-tab" onclick="adminTab(&#39;users&#39;,this)">Notendur</button>
-      <button class="admin-tab" onclick="adminTab(&#39;settings&#39;,this)">Stillingar</button>
+      <button class="admin-tab active" onclick="adminTab('new',this)">+ Ný beiðni</button>
+      <button class="admin-tab" onclick="adminTab('tasks',this)">Opin</button>
+      <button class="admin-tab" onclick="adminTab('done',this)">Lokið</button>
+      <button class="admin-tab" onclick="adminTab('drivers',this)">Ökumenn</button>
+      <button class="admin-tab" onclick="adminTab('customers',this)">Viðskiptavinir</button>
+      <button class="admin-tab" onclick="adminTab('custoverview',this)">Yfirlit</button>
+      <button class="admin-tab" onclick="adminTab('users',this)">Notendur</button>
+      <button class="admin-tab" onclick="adminTab('settings',this)">Stillingar</button>
     </div>
 
     <!-- NEW TASK -->
@@ -978,7 +977,7 @@ body{background:#e8edf3;display:flex;justify-content:center;align-items:flex-sta
             <label class="af-label">Stærð gáms</label>
             <div class="af-wr">
               <select class="af-select" id="a-size">
-                <option>8 m³</option><option>10 m³</option><option>12 m³</option><option>14 m³</option><option>16 m³</option><option>18 m³</option><option selected="">20 m³</option><option>22 m³</option><option>24 m³</option><option>26 m³</option><option>28 m³</option><option>30 m³</option><option>32 m³</option><option>34 m³</option><option>36 m³</option><option>38 m³</option>
+                <option>8 m³</option><option>10 m³</option><option>12 m³</option><option>14 m³</option><option>16 m³</option><option>18 m³</option><option selected>20 m³</option><option>22 m³</option><option>24 m³</option><option>26 m³</option><option>28 m³</option><option>30 m³</option><option>32 m³</option><option>34 m³</option><option>36 m³</option><option>38 m³</option>
               </select>
             </div>
           </div>
@@ -986,7 +985,7 @@ body{background:#e8edf3;display:flex;justify-content:center;align-items:flex-sta
         <div class="af-full">
           <label class="af-label">📍 Heimilisfang (Maps tengt)</label>
           <div class="addr-wrap">
-            <input class="af-input pac-target-input" id="a-addr" type="text" placeholder="Skúlagata 32, 101 Reykjavík" autocomplete="off" onfocus="document.getElementById(&#39;phone&#39;).style.overflow=&#39;visible&#39;" onblur="setTimeout(function(){document.getElementById(&#39;phone&#39;).style.overflow=&#39;hidden&#39;},300)">
+            <input class="af-input" id="a-addr" type="text" placeholder="Skúlagata 32, 101 Reykjavík" autocomplete="off" onfocus="document.getElementById('phone').style.overflow='visible'" onblur="setTimeout(function(){document.getElementById('phone').style.overflow='hidden'},300)"/>
             <div class="ac-dropdown" id="ac-dropdown"></div>
           </div>
           <div style="margin-top:5px;display:flex;align-items:center;gap:6px;">
@@ -997,18 +996,19 @@ body{background:#e8edf3;display:flex;justify-content:center;align-items:flex-sta
         <div class="af-full" style="margin-bottom:12px;">
           <label class="af-label">Fyrirtæki / viðtakandi</label>
           <div class="addr-wrap" id="company-wrap">
-            <input class="af-input" id="a-company" type="text" placeholder="Leita eða velja viðskiptavin..." autocomplete="off" oninput="filterCompanyDD(this.value)" onfocus="openCompanyDD()" onkeydown="companyKeydown(event)" style="cursor:pointer;">
+            <input class="af-input" id="a-company" type="text" placeholder="Leita eða velja viðskiptavin..." autocomplete="off"
+              oninput="filterCompanyDD(this.value)" onfocus="openCompanyDD()" onkeydown="companyKeydown(event)" style="cursor:pointer;"/>
             <div id="company-dd" style="display:none;position:absolute;top:calc(100% + 4px);left:0;right:0;background:#fff;border:1px solid #e2e8f0;border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,0.10);z-index:990;overflow:hidden;max-height:220px;overflow-y:auto;"></div>
           </div>
         </div>
         <div class="af-row">
           <div>
             <label class="af-label">Dagsetning</label>
-            <input class="af-input" type="date" id="a-date" style="cursor:pointer;">
+            <input class="af-input" type="date" id="a-date" style="cursor:pointer;"/>
           </div>
           <div>
             <label class="af-label">Tímasetning</label>
-            <input type="hidden" id="a-time" value="08:00">
+            <input type="hidden" id="a-time" value="08:00"/>
             <div class="tp-wrap">
               <button type="button" class="tp-trigger" id="tp-btn" onclick="toggleTimePicker()">
                 <span id="tp-display">08:00</span>
@@ -1035,10 +1035,11 @@ body{background:#e8edf3;display:flex;justify-content:center;align-items:flex-sta
           <div>
             <label class="af-label">Ökumaður</label>
             <div class="af-wr">
-              <select class="af-select" id="a-driver"><option value="GU">Gunnar</option><option value="EO">Einar Örn</option><option value="BH">Borghildur</option></select>
+              <select class="af-select" id="a-driver">
+              </select>
             </div>
           </div>
-          <div id="a-category-wrap" style="display: none;">
+          <div id="a-category-wrap">
             <label class="af-label">Efnisflokkur</label>
             <div class="af-wr">
               <select class="af-select" id="a-category">
@@ -1107,7 +1108,7 @@ body{background:#e8edf3;display:flex;justify-content:center;align-items:flex-sta
             </div>
           </div>
         </div>
-        <div class="af-row" id="a-disposal-row" style="display: none;">
+        <div class="af-row" id="a-disposal-row">
           <div>
             <label class="af-label">Losunarstaður</label>
             <div class="af-wr">
@@ -1124,27 +1125,27 @@ body{background:#e8edf3;display:flex;justify-content:center;align-items:flex-sta
         <div class="af-row" id="a-skipt-row" style="display:none;">
           <div>
             <label class="af-label">Gámur tekinn 🔄</label>
-            <input class="af-input" id="a-skipt-tekinn" type="text" placeholder="Gámanúmer sem tekinn er">
+            <input class="af-input" id="a-skipt-tekinn" type="text" placeholder="Gámanúmer sem tekinn er"/>
           </div>
           <div>
             <label class="af-label">Gámur afhentur 🔄</label>
-            <input class="af-input" id="a-skipt-afhentur" type="text" placeholder="Gámanúmer sem afhentur er">
+            <input class="af-input" id="a-skipt-afhentur" type="text" placeholder="Gámanúmer sem afhentur er"/>
           </div>
         </div>
         <div class="af-full" id="a-container-row">
           <label class="af-label">Gámanúmer</label>
-          <input class="af-input" id="a-container-num" type="text" placeholder="t.d. G-204">
+          <input class="af-input" id="a-container-num" type="text" placeholder="t.d. G-204"/>
         </div>
         <div class="af-full" id="a-phone-row">
           <label class="af-label">Sími tengiliðs</label>
-          <input class="af-input" id="a-contact-phone" type="tel" placeholder="555-1234">
+          <input class="af-input" id="a-contact-phone" type="tel" placeholder="555-1234"/>
         </div>
         <div class="af-full">
           <label class="af-label">Athugasemd til ökumanns</label>
           <textarea class="af-ta" id="a-note" rows="2" placeholder="Sérstæðar leiðbeiningar..."></textarea>
         </div>
         <button class="btn-create" onclick="createTask()">
-          <svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"></path></svg>
+          <svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
           Senda beiðni á ökumann
         </button>
         <div id="create-status" style="margin-top:10px;display:none;border-radius:10px;padding:10px;font-size:12px;font-weight:600;text-align:center;"></div>
@@ -1191,31 +1192,31 @@ body{background:#e8edf3;display:flex;justify-content:center;align-items:flex-sta
         <div class="af-row">
           <div>
             <label class="af-label">Nafn / Fyrirtæki <span style="color:#e8620a">*</span></label>
-            <input class="af-input" id="c-name" type="text" placeholder="t.d. Ísfélag hf.">
+            <input class="af-input" id="c-name" type="text" placeholder="t.d. Ísfélag hf."/>
           </div>
           <div>
             <label class="af-label">Kennitala <span style="color:#e8620a">*</span></label>
-            <input class="af-input" id="c-kt" type="text" placeholder="000000-0000">
+            <input class="af-input" id="c-kt" type="text" placeholder="000000-0000"/>
           </div>
         </div>
         <div class="af-row">
           <div>
             <label class="af-label">Netfang tengiliðs <span style="color:#e8620a">*</span></label>
-            <input class="af-input" id="c-email" type="email" placeholder="jon@fyrirtaeki.is">
+            <input class="af-input" id="c-email" type="email" placeholder="jon@fyrirtaeki.is"/>
           </div>
           <div>
             <label class="af-label">Símanúmer tengiliðs <span style="color:#e8620a">*</span></label>
-            <input class="af-input" id="c-phone" type="tel" placeholder="555-1234">
+            <input class="af-input" id="c-phone" type="tel" placeholder="555-1234"/>
           </div>
         </div>
 
         <!-- Type toggle -->
         <label class="af-label" style="margin-bottom:8px;">Tegund viðskiptavinar</label>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;">
-          <button class="cust-type-btn active" id="cbtn-sub" onclick="setCustType(&#39;sub&#39;)">
+          <button class="cust-type-btn active" id="cbtn-sub" onclick="setCustType('sub')">
             <i class="ti ti-calendar-repeat" aria-hidden="true"></i>Gámur í áskrift
           </button>
-          <button class="cust-type-btn" id="cbtn-nosub" onclick="setCustType(&#39;nosub&#39;)">
+          <button class="cust-type-btn" id="cbtn-nosub" onclick="setCustType('nosub')">
             <i class="ti ti-truck-delivery" aria-hidden="true"></i>Gámur án áskriftar
           </button>
         </div>
@@ -1225,36 +1226,36 @@ body{background:#e8edf3;display:flex;justify-content:center;align-items:flex-sta
           <div class="af-row">
             <div>
               <label class="af-label">Verknúmer</label>
-              <input class="af-input" id="c-sub-verk" type="text" placeholder="t.d. VK-2026-001">
+              <input class="af-input" id="c-sub-verk" type="text" placeholder="t.d. VK-2026-001"/>
             </div>
             <div>
               <label class="af-label">Mánaðargjald (kr)</label>
-              <input class="af-input" id="c-sub-monthly" type="number" placeholder="0">
+              <input class="af-input" id="c-sub-monthly" type="number" placeholder="0"/>
             </div>
           </div>
           <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:8px;">
             <div>
               <label class="af-label">Losunargjald (kr)</label>
-              <input class="af-input" id="c-sub-disposal" type="number" placeholder="0">
+              <input class="af-input" id="c-sub-disposal" type="number" placeholder="0"/>
             </div>
             <div>
               <label class="af-label">Færslugjald innan svæðis (kr)</label>
-              <input class="af-input" id="c-sub-farin" type="number" placeholder="0">
+              <input class="af-input" id="c-sub-farin" type="number" placeholder="0"/>
             </div>
             <div>
               <label class="af-label">Færslugjald utan svæðis (kr)</label>
-              <input class="af-input" id="c-sub-farut" type="number" placeholder="0">
+              <input class="af-input" id="c-sub-farut" type="number" placeholder="0"/>
             </div>
           </div>
           <label class="af-label" style="margin-bottom:8px;">Verðlisti eftir úrgangsflokki</label>
           <div class="cust-price-table" id="sub-cat-rows"></div>
           <div class="cust-add-row-form" id="sub-cat-form">
-            <input type="text" id="sub-cat-name" placeholder="Nafn flokks..." class="af-input" style="flex:1;">
-            <input type="number" id="sub-cat-price" placeholder="Verð" class="af-input" style="width:100px;">
-            <button class="btn-save" onclick="confirmCat(&#39;sub&#39;)">Vista</button>
-            <button class="btn-cancel" onclick="cancelCat(&#39;sub&#39;)">×</button>
+            <input type="text" id="sub-cat-name" placeholder="Nafn flokks..." class="af-input" style="flex:1;"/>
+            <input type="number" id="sub-cat-price" placeholder="Verð" class="af-input" style="width:100px;"/>
+            <button class="btn-save" onclick="confirmCat('sub')">Vista</button>
+            <button class="btn-cancel" onclick="cancelCat('sub')">×</button>
           </div>
-          <button class="btn-add-cat" onclick="addCat(&#39;sub&#39;)">+ Bæta við úrgangsflokk</button>
+          <button class="btn-add-cat" onclick="addCat('sub')">+ Bæta við úrgangsflokk</button>
         </div>
 
         <!-- ÁN ÁSKRIFTAR fields -->
@@ -1262,40 +1263,40 @@ body{background:#e8edf3;display:flex;justify-content:center;align-items:flex-sta
           <div class="af-row">
             <div>
               <label class="af-label">Verknúmer</label>
-              <input class="af-input" id="c-nosub-verk" type="text" placeholder="t.d. VK-2026-001">
+              <input class="af-input" id="c-nosub-verk" type="text" placeholder="t.d. VK-2026-001"/>
             </div>
             <div>
               <label class="af-label">Losunargjald (kr)</label>
-              <input class="af-input" id="c-nosub-disposal" type="number" placeholder="0">
+              <input class="af-input" id="c-nosub-disposal" type="number" placeholder="0"/>
             </div>
           </div>
           <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;margin-bottom:8px;">
             <div>
               <label class="af-label">Dagsleiga (kr/dag)</label>
-              <input class="af-input" id="c-nosub-daily" type="number" placeholder="0">
+              <input class="af-input" id="c-nosub-daily" type="number" placeholder="0"/>
             </div>
             <div>
               <label class="af-label">Komugjald (kr)</label>
-              <input class="af-input" id="c-nosub-visit" type="number" placeholder="0">
+              <input class="af-input" id="c-nosub-visit" type="number" placeholder="0"/>
             </div>
             <div>
               <label class="af-label">Færslugjald innan svæðis (kr)</label>
-              <input class="af-input" id="c-nosub-farin" type="number" placeholder="0">
+              <input class="af-input" id="c-nosub-farin" type="number" placeholder="0"/>
             </div>
             <div>
               <label class="af-label">Færslugjald utan svæðis (kr)</label>
-              <input class="af-input" id="c-nosub-farut" type="number" placeholder="0">
+              <input class="af-input" id="c-nosub-farut" type="number" placeholder="0"/>
             </div>
           </div>
           <label class="af-label" style="margin-bottom:8px;">Verðlisti eftir úrgangsflokki</label>
           <div class="cust-price-table" id="nosub-cat-rows"></div>
           <div class="cust-add-row-form" id="nosub-cat-form">
-            <input type="text" id="nosub-cat-name" placeholder="Nafn flokks..." class="af-input" style="flex:1;">
-            <input type="number" id="nosub-cat-price" placeholder="Verð" class="af-input" style="width:100px;">
-            <button class="btn-save" onclick="confirmCat(&#39;nosub&#39;)">Vista</button>
-            <button class="btn-cancel" onclick="cancelCat(&#39;nosub&#39;)">×</button>
+            <input type="text" id="nosub-cat-name" placeholder="Nafn flokks..." class="af-input" style="flex:1;"/>
+            <input type="number" id="nosub-cat-price" placeholder="Verð" class="af-input" style="width:100px;"/>
+            <button class="btn-save" onclick="confirmCat('nosub')">Vista</button>
+            <button class="btn-cancel" onclick="cancelCat('nosub')">×</button>
           </div>
-          <button class="btn-add-cat" onclick="addCat(&#39;nosub&#39;)">+ Bæta við úrgangsflokk</button>
+          <button class="btn-add-cat" onclick="addCat('nosub')">+ Bæta við úrgangsflokk</button>
         </div>
 
         <!-- Gámalistinn -->
@@ -1317,7 +1318,7 @@ body{background:#e8edf3;display:flex;justify-content:center;align-items:flex-sta
         </div>
 
         <button class="btn-create" onclick="saveCustomer()">
-          <svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"></path></svg>
+          <svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
           Vista viðskiptavin
         </button>
         <div id="cust-status" style="display:none;margin-top:10px;border-radius:10px;padding:10px 14px;font-size:13px;font-weight:600;"></div>
@@ -1342,10 +1343,10 @@ body{background:#e8edf3;display:flex;justify-content:center;align-items:flex-sta
       </div>
 
       <!-- Search -->
-      <input class="cov-search" type="text" placeholder="🔍 Leita að viðskiptavin..." oninput="filterCovCards(this.value)">
+      <input class="cov-search" type="text" placeholder="🔍 Leita að viðskiptavin..." oninput="filterCovCards(this.value)"/>
 
       <!-- Cards -->
-      <div id="cov-cards"><div class="cov-empty">Enginn viðskiptavinur skráður.<br>Farðu í <b>Viðskiptavinir</b> flipann til að skrá.</div></div>
+      <div id="cov-cards"></div>
     </div>
 
     <!-- USERS -->
@@ -1355,18 +1356,18 @@ body{background:#e8edf3;display:flex;justify-content:center;align-items:flex-sta
         <div class="af-row">
           <div>
             <label class="af-label">Fullt nafn</label>
-            <input class="af-input" id="u-name" type="text" placeholder="t.d. Anna Björnsdóttir">
+            <input class="af-input" id="u-name" type="text" placeholder="t.d. Anna Björnsdóttir"/>
           </div>
           <div>
             <label class="af-label">Notandanafn</label>
-            <input class="af-input" id="u-username" type="text" placeholder="t.d. annab">
+            <input class="af-input" id="u-username" type="text" placeholder="t.d. annab"/>
           </div>
         </div>
         <div class="af-row">
           <div>
             <label class="af-label">Lykilorð</label>
             <div style="position:relative;">
-              <input class="af-input" id="u-password" type="password" placeholder="Velja lykilorð" style="padding-right:44px;">
+              <input class="af-input" id="u-password" type="password" placeholder="Velja lykilorð" style="padding-right:44px;"/>
               <button type="button" onclick="togglePwVis()" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:14px;" id="pw-eye">👁</button>
             </div>
           </div>
@@ -1383,7 +1384,7 @@ body{background:#e8edf3;display:flex;justify-content:center;align-items:flex-sta
         <div class="af-row">
           <div>
             <label class="af-label">Bifreið nr.</label>
-            <input class="af-input" id="u-vehicle" type="text" placeholder="t.d. #14">
+            <input class="af-input" id="u-vehicle" type="text" placeholder="t.d. #14"/>
           </div>
           <div>
             <label class="af-label">Litur (avatar)</label>
@@ -1400,7 +1401,7 @@ body{background:#e8edf3;display:flex;justify-content:center;align-items:flex-sta
           </div>
         </div>
         <button class="btn-create" onclick="createUser()">
-          <svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"></path></svg>
+          <svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
           Búa til aðgang
         </button>
         <div id="user-create-status" style="display:none;margin-top:10px;border-radius:10px;padding:12px 14px;font-size:13px;font-weight:600;"></div>
@@ -1408,7 +1409,7 @@ body{background:#e8edf3;display:flex;justify-content:center;align-items:flex-sta
 
       <div class="form-card" style="margin-top:0;">
         <h3>🔑 Notendur í kerfinu</h3>
-        <div id="users-list"><div class="user-row"><div class="user-av-sm" style="background:#14b8a6">GU</div><div class="user-info"><div class="u-name">Gunnar </div><div class="u-meta"><span class="user-creds">gunnar</span> &nbsp;·&nbsp; <span class="user-role-pill role-driver">Ökumaður</span></div></div><button class="user-del" onclick="deleteUser(&#39;GU&#39;)">✕ Eyða</button></div><div class="user-row"><div class="user-av-sm" style="background:#e8620a">EO</div><div class="user-info"><div class="u-name">Einar Örn </div><div class="u-meta"><span class="user-creds">einarorn</span> &nbsp;·&nbsp; <span class="user-role-pill role-driver">Ökumaður</span></div></div><button class="user-del" onclick="deleteUser(&#39;EO&#39;)">✕ Eyða</button></div><div class="user-row"><div class="user-av-sm" style="background:#8b5cf6">BH</div><div class="user-info"><div class="u-name">Borghildur </div><div class="u-meta"><span class="user-creds">borgahildur</span> &nbsp;·&nbsp; <span class="user-role-pill role-driver">Ökumaður</span></div></div><button class="user-del" onclick="deleteUser(&#39;BH&#39;)">✕ Eyða</button></div><div class="user-row"><div class="user-av-sm" style="background:#3b82f6">A</div><div class="user-info"><div class="u-name">Stjórnandi </div><div class="u-meta"><span class="user-creds">admin</span> &nbsp;·&nbsp; <span class="user-role-pill role-admin">Stjórnandi</span></div></div></div></div>
+        <div id="users-list"></div>
       </div>
     </div>
 
@@ -1422,19 +1423,19 @@ body{background:#e8edf3;display:flex;justify-content:center;align-items:flex-sta
           <div class="af-row">
             <div>
               <label class="af-label">Heiti ökutækis</label>
-              <input class="af-input" id="v-name" placeholder="t.d. Stór gámabíll">
+              <input class="af-input" id="v-name" placeholder="t.d. Stór gámabíll"/>
             </div>
             <div>
               <label class="af-label">Númer ökutækis</label>
-              <input class="af-input" id="v-num" placeholder="t.d. 14" style="width:80px;">
+              <input class="af-input" id="v-num" placeholder="t.d. 14" style="width:80px;"/>
             </div>
           </div>
           <div class="af-full" style="margin-top:8px;">
             <label class="af-label">Bílnúmer (skráningarnúmer)</label>
-            <input class="af-input" id="v-plate" placeholder="t.d. AB-123">
+            <input class="af-input" id="v-plate" placeholder="t.d. AB-123"/>
           </div>
           <button class="btn-create" onclick="saveVehicle()" style="margin-top:10px;padding:10px 18px;font-size:13px;">+ Vista ökutæki</button>
-          <input type="hidden" id="v-edit-id">
+          <input type="hidden" id="v-edit-id"/>
         </div>
       </div>
 
@@ -1443,7 +1444,7 @@ body{background:#e8edf3;display:flex;justify-content:center;align-items:flex-sta
         <div id="sheets-conn-status"></div>
         <div class="af-full">
           <label class="af-label">SheetDB API URL</label>
-          <input class="af-input" id="settings-sheets-url" value="https://sheetdb.io/api/v1/fmrvnup3g6rop" style="font-size:11px;color:#16a34a;background:#f0fdf4;border-color:#bbf7d0;" readonly="">
+          <input class="af-input" id="settings-sheets-url" value="https://sheetdb.io/api/v1/fmrvnup3g6rop" style="font-size:11px;color:#16a34a;background:#f0fdf4;border-color:#bbf7d0;" readonly/>
           <p style="color:#16a34a;font-size:11px;margin-top:6px;">✓ SheetDB tenging stillt og virk</p>
         </div>
         <div style="display:flex;gap:8px;">
@@ -4846,6 +4847,5 @@ function showToast(msg){
     <span class="flag" id="lang-flag">🇬🇧</span>
     <span id="lang-label">EN</span>
   </button>
-
-
-<div class="pac-container pac-logo" style="display: none;"></div></body></html>
+</body>
+</html>

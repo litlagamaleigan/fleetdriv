@@ -2988,7 +2988,7 @@ function sendCustomerToSheets(c) {
   var isSub = c.type === 'sub';
   var catsStr = (c.cats||[]).map(function(cat){ return cat.name + ': ' + cat.price + ' kr'; }).join(' | ');
   var payload = { data: [{
-    Dagsetning: new Date().toLocaleDateString('is-IS'),
+    Dagsetning: (function(){ var d=new Date(); return d.getDate()+'/'+(d.getMonth()+1)+'/'+d.getFullYear(); })(),
     Tegund: isSub ? 'Gámur í áskrift' : 'Gámur án áskriftar',
     Nafn: c.name,
     Kennitala: c.kt,

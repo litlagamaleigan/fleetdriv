@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- saved from url=(0052)file:///C:/Users/gunna/Downloads/fleetdriv_v2_2.html -->
+<!-- saved from url=(0052)file:///C:/Users/gunna/Downloads/fleetdriv_v2_3.html -->
 <html lang="is"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><style>.pac-container{background-color:#fff;position:absolute!important;z-index:1000;border-radius:2px;border-top:1px solid #d9d9d9;font-family:Arial,sans-serif;-webkit-box-shadow:0 2px 6px rgba(0,0,0,.3);box-shadow:0 2px 6px rgba(0,0,0,.3);-webkit-box-sizing:border-box;box-sizing:border-box;overflow:hidden}.pac-logo:after{content:"";padding:1px 1px 1px 0;height:18px;-webkit-box-sizing:border-box;box-sizing:border-box;text-align:right;display:block;background-image:url(https://maps.gstatic.com/mapfiles/api-3/images/powered-by-google-on-white3.png);background-position:100%;background-repeat:no-repeat;-webkit-background-size:120px 14px;background-size:120px 14px}.hdpi.pac-logo:after{background-image:url(https://maps.gstatic.com/mapfiles/api-3/images/powered-by-google-on-white3_hdpi.png)}.pac-item{cursor:default;padding:0 4px;text-overflow:ellipsis;overflow:hidden;white-space:nowrap;line-height:30px;text-align:left;border-top:1px solid #e6e6e6;font-size:11px;color:#515151}.pac-item:hover{background-color:#fafafa}.pac-item-selected,.pac-item-selected:hover{background-color:#ebf2fe}.pac-matched{font-weight:700}.pac-item-query{font-size:13px;padding-right:3px;color:#000}.pac-icon{width:15px;height:20px;margin-right:7px;margin-top:6px;display:inline-block;vertical-align:top;background-image:url(https://maps.gstatic.com/mapfiles/api-3/images/autocomplete-icons.png);-webkit-background-size:34px 34px;background-size:34px}.hdpi .pac-icon{background-image:url(https://maps.gstatic.com/mapfiles/api-3/images/autocomplete-icons_hdpi.png)}.pac-icon-search{background-position:-1px -1px}.pac-item-selected .pac-icon-search{background-position:-18px -1px}.pac-icon-marker{background-position:-1px -161px}.pac-item-selected .pac-icon-marker{background-position:-18px -161px}.pac-placeholder{color:gray}sentinel{}
 </style>
 
@@ -504,14 +504,14 @@ body{background:#e8edf3;display:flex;justify-content:center;align-items:flex-sta
     document.dispatchEvent(new Event('firebase-ready'));
   </script>
 
-  <script src="./index.html_files/js" async="" defer=""></script>
-<script type="text/javascript" charset="UTF-8" src="./index.html_files/common.js.download"></script><script type="text/javascript" charset="UTF-8" src="./index.html_files/util.js.download"></script><script type="text/javascript" charset="UTF-8" src="./index.html_files/controls.js.download"></script><script type="text/javascript" charset="UTF-8" src="./index.html_files/places_impl.js.download"></script></head>
+  <script src="./index_files/js" async="" defer=""></script>
+<script type="text/javascript" charset="UTF-8" src="./index_files/common.js.download"></script><script type="text/javascript" charset="UTF-8" src="./index_files/util.js.download"></script><script type="text/javascript" charset="UTF-8" src="./index_files/log.js.download"></script><script type="text/javascript" charset="UTF-8" src="./index_files/controls.js.download"></script><script type="text/javascript" charset="UTF-8" src="./index_files/places_impl.js.download"></script></head>
 <body>
 <div class="toast" id="toast"></div>
 
 <!-- ══════════════════ PHONE ══════════════════ -->
 <div class="phone" id="phone">
-  <div class="status-bar"><span id="clock">00:37</span><button id="phone-lang-btn" onclick="toggleLanguage()" style="background:none;border:none;color:#94a3b8;font-size:10px;font-weight:700;cursor:pointer;padding:0 4px;">🇬🇧 EN</button><span>●●● ▲ 100%</span></div>
+  <div class="status-bar"><span id="clock">00:20</span><button id="phone-lang-btn" onclick="toggleLanguage()" style="background:none;border:none;color:#94a3b8;font-size:10px;font-weight:700;cursor:pointer;padding:0 4px;">🇬🇧 EN</button><span>●●● ▲ 100%</span></div>
 
   <!-- VEHICLE SELECT SCREEN -->
   <div class="screen" id="sc-vehicle-select" style="background:#0a0f1a;display:none;flex-direction:column;align-items:center;justify-content:center;padding:32px 20px;min-height:100%;overflow-y:auto;">
@@ -3746,7 +3746,7 @@ function completeTask(){
     category: category,
     disposal: disposal,
     note: note,
-    date: aDate,
+    date: (curTask&&curTask.date)||new Date().toISOString().split('T')[0],
     photoTaken: photoTaken,
     timeStr: timeStr,
     date: new Date().toLocaleDateString('is-IS'),
@@ -4070,6 +4070,17 @@ function toggleOpenEdit(btn){
 function saveEdit(btn){
   btn.closest('.edit-form').classList.remove('open');
   showToast('✓ Breytingar vistaðar!');
+}
+
+
+function buildEditFormFields(data) {
+  if (data.type === 'tima') {
+    return '<label>Byrjunartími</label><input type="time" data-done="timaStart" value="' + (data.timaStart&&data.timaStart!=='—'?data.timaStart:'') + '"/>'
+      + '<label>Endatími</label><input type="time" data-done="timaEnd" value="' + (data.timaEnd&&data.timaEnd!=='—'?data.timaEnd:'') + '"/>'
+      + '<label>Km staða við byrjun</label><input type="number" data-done="timaKmStart" value="' + (data.timaKmStart&&data.timaKmStart!=='—'?data.timaKmStart:'') + '"/>'
+      + '<label>Km staða við enda</label><input type="number" data-done="timaKmEnd" value="' + (data.timaKmEnd&&data.timaKmEnd!=='—'?data.timaKmEnd:'') + '"/>';
+  }
+  return '<label>Þyngd (kg)</label><input type="number" data-done="kg" value="' + (data.kg&&data.kg!=='—'?data.kg:'') + '"/>';
 }
 
 function saveDoneEdit(btn){

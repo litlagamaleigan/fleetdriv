@@ -1080,6 +1080,7 @@ body{background:#e8edf3;display:flex;justify-content:center;align-items:flex-sta
         <button class="admin-tab" onclick="adminTab('map',this)" id="map-tab-btn">🗺 Kort</button>
     </div>
 
+  <div class="admin-sections">
     <!-- NEW TASK -->
     <div class="admin-section active" id="asec-new">
       <div class="form-card">
@@ -2809,6 +2810,32 @@ function isDesktop() {
 
 function initDesktopMode() {
   if (!isDesktop()) return;
+
+  // Hide phone wrapper completely
+  var phone = document.getElementById('phone');
+  if (phone) phone.style.display = 'none';
+
+  // Show admin panel fullscreen
+  var adminPanel = document.getElementById('admin-panel');
+  if (adminPanel) {
+    adminPanel.style.display = 'block';
+    adminPanel.style.width = '100%';
+    adminPanel.style.maxWidth = '100%';
+    adminPanel.style.borderRadius = '0';
+    adminPanel.style.minHeight = '100vh';
+    adminPanel.style.position = 'fixed';
+    adminPanel.style.top = '0';
+    adminPanel.style.left = '0';
+    adminPanel.style.right = '0';
+    adminPanel.style.bottom = '0';
+    adminPanel.style.overflowY = 'auto';
+    adminPanel.style.boxShadow = 'none';
+  }
+
+  // Hide mobile tabs, show desktop sidebar and content
+  var tabs = document.querySelector('.admin-tabs');
+  if (tabs) tabs.style.display = 'none';
+
   var sidebar = document.getElementById('desktop-sidebar');
   var dcontent = document.getElementById('desktop-content');
   var stats = document.getElementById('dsk-stats');
@@ -2816,7 +2843,7 @@ function initDesktopMode() {
   if (dcontent) dcontent.style.display = 'block';
   if (stats) stats.style.display = 'grid';
 
-  // Move admin sections into desktop content
+  // Move admin sections into desktop content area
   var adminSections = document.querySelector('.admin-sections');
   if (adminSections && dcontent) {
     dcontent.appendChild(adminSections);
@@ -2824,6 +2851,10 @@ function initDesktopMode() {
 
   updateDesktopStats();
   updateDesktopDriverList();
+
+  // Default to tasks tab
+  var tasksBtn = document.querySelector('.dsk-nav[onclick*="tasks"]');
+  if (tasksBtn) adminTab('tasks', tasksBtn);
 }
 
 function updateDesktopStats() {
@@ -2868,13 +2899,14 @@ function updateDesktopDriverList() {
 var _origAdminTab = adminTab;
 function adminTab(tab, el) {
   _origAdminTab(tab, el);
+  if (!isDesktop()) return;
+
   // Update desktop sidebar active state
   document.querySelectorAll('.dsk-nav').forEach(function(btn) {
     btn.style.background = 'none';
     btn.style.color = '#475569';
     btn.style.fontWeight = 'normal';
   });
-  // Find matching desktop nav
   var match = Array.from(document.querySelectorAll('.dsk-nav')).find(function(btn) {
     return btn.getAttribute('onclick') && btn.getAttribute('onclick').includes("'" + tab + "'");
   });
@@ -2883,6 +2915,18 @@ function adminTab(tab, el) {
     match.style.color = tab === 'new' ? '#fff' : '#0f172a';
     match.style.fontWeight = '600';
   }
+
+  // Move active section into desktop content
+  var dcontent = document.getElementById('desktop-content');
+  if (dcontent) {
+    var activeSection = document.getElementById('asec-' + tab);
+    if (activeSection && !dcontent.contains(activeSection)) {
+      dcontent.appendChild(activeSection);
+    }
+    // Scroll to top
+    dcontent.scrollTop = 0;
+  }
+
   setTimeout(updateDesktopStats, 300);
 }
 
@@ -3977,6 +4021,13 @@ function doLogout(){
   sessionStorage.removeItem('fd_session');
   stopDriverGPS();
   if(window._currentUser && window._currentUser.role !== 'admin') punchOut(window._currentUser);
+  // Restore phone on desktop
+  if (isDesktop()) {
+    var phone = document.getElementById('phone');
+    if (phone) { phone.style.display = 'block'; }
+    var adminPanel = document.getElementById('admin-panel');
+    if (adminPanel) adminPanel.style.display = 'none';
+  }
   if(fbUnsubscribeTasks){fbUnsubscribeTasks();fbUnsubscribeTasks=null;}
   if(fbUnsubscribeDriverTasks){fbUnsubscribeDriverTasks();fbUnsubscribeDriverTasks=null;}
   document.getElementById('admin-panel').style.display='none';

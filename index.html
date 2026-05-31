@@ -4993,6 +4993,7 @@ function filterCompanyDD(q) {
     var el = dd.querySelector('[data-idx="' + i + '"]');
     if (el) el.onmousedown = function() { pickCompanyObj(c); };
   });
+}
 
 function pickCompanyObj(c) {
   if (c.banned) {

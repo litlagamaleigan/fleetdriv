@@ -463,83 +463,6 @@ body{background:#e8edf3;display:flex;justify-content:center;align-items:flex-sta
 .lang-btn{position:fixed;bottom:24px;right:24px;z-index:9999;background:#0f172a;border:none;border-radius:20px;padding:8px 16px;color:#fff;font-size:13px;font-weight:700;cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,0.4);display:flex;align-items:center;gap:7px;transition:all 0.2s;}
 .lang-btn:hover{background:#334155;transform:scale(1.05);}
 .lang-btn .flag{font-size:16px;}
-/* Desktop Admin Layout */
-@media (min-width: 900px) {
-  body { background: #f1f5f9; }
-  #admin-panel {
-    width: 100% !important;
-    max-width: 100% !important;
-    border-radius: 0 !important;
-    min-height: 100vh;
-    display: grid !important;
-    grid-template-rows: 56px 1fr;
-    grid-template-columns: 1fr;
-  }
-  .admin-hdr {
-    background: #0f172a !important;
-    padding: 0 28px !important;
-    border-radius: 0 !important;
-    height: 56px;
-    display: flex;
-    align-items: center;
-  }
-  .admin-hdr-left .aname { color: #f8fafc !important; font-size: 15px !important; }
-  .admin-hdr-left .arole { color: #475569 !important; font-size: 12px !important; }
-  .admin-hdr-left .avatar { background: #3b82f6; }
-  .desktop-layout {
-    display: grid !important;
-    grid-template-columns: 220px 1fr;
-    min-height: calc(100vh - 56px);
-    overflow: hidden;
-  }
-  .admin-tabs {
-    display: none !important;
-  }
-  .desktop-sidebar {
-    display: flex !important;
-    flex-direction: column;
-    background: #fff;
-    border-right: 1px solid #e2e8f0;
-    padding: 16px;
-    overflow-y: auto;
-    gap: 3px;
-  }
-  .desktop-content {
-    display: block !important;
-    padding: 24px;
-    overflow-y: auto;
-    background: #f1f5f9;
-  }
-  .admin-section.active {
-    background: #fff;
-    border-radius: 12px;
-    border: 1px solid #e2e8f0;
-    padding: 20px;
-  }
-  .desktop-stats {
-    display: grid !important;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 12px;
-    margin-bottom: 20px;
-  }
-  .desktop-stat-card {
-    background: #fff;
-    border-radius: 12px;
-    padding: 16px;
-    border: 1px solid #e2e8f0;
-  }
-  .tasks-list .atask {
-    border-radius: 10px;
-    margin-bottom: 8px;
-  }
-}
-@media (max-width: 899px) {
-  .desktop-layout { display: block !important; }
-  .desktop-sidebar { display: none !important; }
-  .desktop-content { display: block !important; padding: 0; }
-  .desktop-stats { display: none !important; }
-}
-
 /* Google Places Autocomplete */
 .pac-container {
   z-index: 99999 !important;
@@ -1007,7 +930,7 @@ body{background:#e8edf3;display:flex;justify-content:center;align-items:flex-sta
 </div>
 
 <!-- ══════════════════ ADMIN PANEL ══════════════════ -->
-<div class="admin-panel" id="admin-panel">
+<div class="admin-panel" id="admin-panel" style="display:none;">
   <div class="admin-hdr">
     <div class="admin-hdr-left">
       <div class="admin-av">A</div>
@@ -1019,56 +942,7 @@ body{background:#e8edf3;display:flex;justify-content:center;align-items:flex-sta
     <div class="admin-badge"><span>● Stjórnandi</span></div>
   </div>
   <div class="admin-body">
-    <div class="desktop-layout">
-    <!-- Desktop Sidebar -->
-    <div class="desktop-sidebar" id="desktop-sidebar" style="display:none;">
-      <div style="font-size:10px;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px;padding:4px;font-weight:600;margin-bottom:4px;">Aðgerðir</div>
-      <button onclick="adminTab('new',this)" class="dsk-nav active" style="display:flex;align-items:center;justify-content:space-between;padding:9px 12px;border-radius:8px;font-size:13px;border:none;background:#e8620a;color:#fff;font-weight:600;cursor:pointer;width:100%;text-align:left;margin-bottom:2px;">
-        <span>+ Ný beiðni</span>
-      </button>
-      <button onclick="adminTab('tasks',this)" class="dsk-nav" style="display:flex;align-items:center;justify-content:space-between;padding:9px 12px;border-radius:8px;font-size:13px;border:none;background:none;color:#475569;cursor:pointer;width:100%;text-align:left;margin-bottom:2px;">
-        <span>📋 Opin beiðnir</span>
-        <span id="dsk-open-badge" style="background:#fee2e2;color:#dc2626;border-radius:12px;padding:1px 7px;font-size:10px;font-weight:700;display:none;">0</span>
-      </button>
-      <button onclick="adminTab('done',this)" class="dsk-nav" style="display:flex;align-items:center;justify-content:space-between;padding:9px 12px;border-radius:8px;font-size:13px;border:none;background:none;color:#475569;cursor:pointer;width:100%;text-align:left;margin-bottom:2px;">📦 Lokið</button>
-      <button onclick="adminTab('drivers',this)" class="dsk-nav" style="padding:9px 12px;border-radius:8px;font-size:13px;border:none;background:none;color:#475569;cursor:pointer;width:100%;text-align:left;margin-bottom:2px;">🚛 Ökumenn</button>
-      <button onclick="adminTab('map',this)" class="dsk-nav" style="padding:9px 12px;border-radius:8px;font-size:13px;border:none;background:none;color:#475569;cursor:pointer;width:100%;text-align:left;margin-bottom:2px;">🗺 Kort</button>
-      <div style="height:1px;background:#e2e8f0;margin:8px 0;"></div>
-      <div style="font-size:10px;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px;padding:4px;font-weight:600;margin-bottom:4px;">Annað</div>
-      <button onclick="adminTab('customers',this)" class="dsk-nav" style="padding:9px 12px;border-radius:8px;font-size:13px;border:none;background:none;color:#475569;cursor:pointer;width:100%;text-align:left;margin-bottom:2px;">👥 Viðskiptavinir</button>
-      <button onclick="adminTab('custoverview',this)" class="dsk-nav" style="padding:9px 12px;border-radius:8px;font-size:13px;border:none;background:none;color:#475569;cursor:pointer;width:100%;text-align:left;margin-bottom:2px;">📊 Yfirlit</button>
-      <button onclick="adminTab('users',this)" class="dsk-nav" style="padding:9px 12px;border-radius:8px;font-size:13px;border:none;background:none;color:#475569;cursor:pointer;width:100%;text-align:left;margin-bottom:2px;">👤 Notendur</button>
-      <button onclick="adminTab('settings',this)" class="dsk-nav" style="padding:9px 12px;border-radius:8px;font-size:13px;border:none;background:none;color:#475569;cursor:pointer;width:100%;text-align:left;margin-bottom:2px;">⚙ Stillingar</button>
-      <div style="height:1px;background:#e2e8f0;margin:8px 0;"></div>
-      <div style="font-size:10px;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px;padding:4px;font-weight:600;margin-bottom:4px;">Ökumenn á vakt</div>
-      <div id="dsk-driver-list" style="display:flex;flex-direction:column;gap:6px;"></div>
-    </div>
-    <!-- Desktop Content -->
-    <div class="desktop-content" id="desktop-content" style="display:none;">
-      <!-- Stats -->
-      <div class="desktop-stats" id="dsk-stats" style="display:none;">
-        <div class="desktop-stat-card">
-          <div style="font-size:11px;color:#94a3b8;margin-bottom:6px;">Opin beiðnir</div>
-          <div id="dsk-stat-open" style="font-size:26px;font-weight:700;color:#dc2626;">0</div>
-        </div>
-        <div class="desktop-stat-card">
-          <div style="font-size:11px;color:#94a3b8;margin-bottom:6px;">Lokið í dag</div>
-          <div id="dsk-stat-done" style="font-size:26px;font-weight:700;color:#16a34a;">0</div>
-        </div>
-        <div class="desktop-stat-card">
-          <div style="font-size:11px;color:#94a3b8;margin-bottom:6px;">Ökumenn á vakt</div>
-          <div id="dsk-stat-drivers" style="font-size:26px;font-weight:700;color:#e8620a;">0</div>
-        </div>
-        <div class="desktop-stat-card">
-          <div style="font-size:11px;color:#94a3b8;margin-bottom:6px;">Viðskiptavinir</div>
-          <div id="dsk-stat-customers" style="font-size:26px;font-weight:700;">0</div>
-        </div>
-      </div>
-      <!-- Sections moved here by JS -->
-    </div>
-  </div>
-
-  <div class="admin-tabs">
+    <div class="admin-content"><div class="admin-tabs">
       <button class="admin-tab active" onclick="adminTab('new',this)">+ Ný beiðni</button>
       <button class="admin-tab" onclick="adminTab('tasks',this)">Opin</button>
       <button class="admin-tab" onclick="adminTab('done',this)">Lokið</button>
@@ -1080,7 +954,58 @@ body{background:#e8edf3;display:flex;justify-content:center;align-items:flex-sta
         <button class="admin-tab" onclick="adminTab('map',this)" id="map-tab-btn">🗺 Kort</button>
     </div>
 
-  <div class="admin-sections">
+  <!-- Desktop body: sidebar + content -->
+  <div id="dsk-body" style="display:none;flex:1;overflow:hidden;grid-template-columns:220px 1fr;">
+    <!-- Sidebar -->
+    <div style="background:#fff;border-right:1px solid #e2e8f0;padding:16px;overflow-y:auto;display:flex;flex-direction:column;gap:3px;">
+      <div style="font-size:10px;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px;padding:4px;font-weight:600;margin-bottom:4px;">Aðgerðir</div>
+      <button onclick="adminTab('new',this)" class="dsk-nav" style="display:flex;align-items:center;justify-content:space-between;padding:9px 12px;border-radius:8px;font-size:13px;border:none;background:#e8620a;color:#fff;font-weight:600;cursor:pointer;width:100%;text-align:left;">
+        <span>+ Ný beiðni</span>
+      </button>
+      <button onclick="adminTab('tasks',this)" class="dsk-nav" style="display:flex;align-items:center;justify-content:space-between;padding:9px 12px;border-radius:8px;font-size:13px;border:none;background:none;color:#475569;cursor:pointer;width:100%;text-align:left;">
+        <span>📋 Opin beiðnir</span>
+        <span id="dsk-badge" style="background:#fee2e2;color:#dc2626;border-radius:12px;padding:1px 7px;font-size:10px;font-weight:700;display:none;">0</span>
+      </button>
+      <button onclick="adminTab('done',this)" class="dsk-nav" style="padding:9px 12px;border-radius:8px;font-size:13px;border:none;background:none;color:#475569;cursor:pointer;width:100%;text-align:left;">📦 Lokið</button>
+      <button onclick="adminTab('drivers',this)" class="dsk-nav" style="padding:9px 12px;border-radius:8px;font-size:13px;border:none;background:none;color:#475569;cursor:pointer;width:100%;text-align:left;">🚛 Ökumenn</button>
+      <button onclick="adminTab('map',this)" class="dsk-nav" style="padding:9px 12px;border-radius:8px;font-size:13px;border:none;background:none;color:#475569;cursor:pointer;width:100%;text-align:left;">🗺 Kort</button>
+      <div style="height:1px;background:#e2e8f0;margin:8px 0;"></div>
+      <div style="font-size:10px;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px;padding:4px;font-weight:600;margin-bottom:4px;">Annað</div>
+      <button onclick="adminTab('customers',this)" class="dsk-nav" style="padding:9px 12px;border-radius:8px;font-size:13px;border:none;background:none;color:#475569;cursor:pointer;width:100%;text-align:left;">👥 Viðskiptavinir</button>
+      <button onclick="adminTab('custoverview',this)" class="dsk-nav" style="padding:9px 12px;border-radius:8px;font-size:13px;border:none;background:none;color:#475569;cursor:pointer;width:100%;text-align:left;">📊 Yfirlit</button>
+      <button onclick="adminTab('users',this)" class="dsk-nav" style="padding:9px 12px;border-radius:8px;font-size:13px;border:none;background:none;color:#475569;cursor:pointer;width:100%;text-align:left;">👤 Notendur</button>
+      <button onclick="adminTab('settings',this)" class="dsk-nav" style="padding:9px 12px;border-radius:8px;font-size:13px;border:none;background:none;color:#475569;cursor:pointer;width:100%;text-align:left;">⚙ Stillingar</button>
+      <div style="height:1px;background:#e2e8f0;margin:8px 0;"></div>
+      <div style="font-size:10px;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px;padding:4px;font-weight:600;margin-bottom:4px;">Ökumenn á vakt</div>
+      <div id="dsk-drivers" style="display:flex;flex-direction:column;gap:6px;"></div>
+    </div>
+    <!-- Main content -->
+    <div id="dsk-main" style="overflow-y:auto;padding:24px;background:#f1f5f9;display:flex;flex-direction:column;gap:16px;">
+      <!-- Stats -->
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;">
+        <div style="background:#fff;border-radius:12px;padding:16px;border:1px solid #e2e8f0;">
+          <div style="font-size:11px;color:#94a3b8;margin-bottom:6px;">Opin beiðnir</div>
+          <div id="dsk-stat-open" style="font-size:26px;font-weight:700;color:#dc2626;">0</div>
+        </div>
+        <div style="background:#fff;border-radius:12px;padding:16px;border:1px solid #e2e8f0;">
+          <div style="font-size:11px;color:#94a3b8;margin-bottom:6px;">Lokið í dag</div>
+          <div id="dsk-stat-done" style="font-size:26px;font-weight:700;color:#16a34a;">0</div>
+        </div>
+        <div style="background:#fff;border-radius:12px;padding:16px;border:1px solid #e2e8f0;">
+          <div style="font-size:11px;color:#94a3b8;margin-bottom:6px;">Ökumenn á vakt</div>
+          <div id="dsk-stat-drivers" style="font-size:26px;font-weight:700;color:#e8620a;">0</div>
+        </div>
+        <div style="background:#fff;border-radius:12px;padding:16px;border:1px solid #e2e8f0;">
+          <div style="font-size:11px;color:#94a3b8;margin-bottom:6px;">Viðskiptavinir</div>
+          <div id="dsk-stat-custs" style="font-size:26px;font-weight:700;">0</div>
+        </div>
+      </div>
+      <!-- Active section goes here -->
+      <div id="dsk-section" style="background:#fff;border-radius:12px;border:1px solid #e2e8f0;padding:24px;min-height:300px;"></div>
+    </div>
+  </div>
+  <!-- Mobile sections (hidden on desktop) -->
+  <div id="dsk-mobile" class="admin-sections-wrap"><div class="admin-sections">
     <!-- NEW TASK -->
     <div class="admin-section active" id="asec-new">
       <div class="form-card">
@@ -1788,6 +1713,7 @@ function tryAutoLogin() {
       document.getElementById('sc-login').classList.remove('active');
       document.getElementById('phone').style.display = 'none';
       document.getElementById('admin-panel').style.display = 'block';
+      initDesktopAdminMode();
       sessionStorage.setItem('fd_session', JSON.stringify({username: user.username, password: user.password}));
       loadSavedUrl();
       renderUsersList();
@@ -2657,6 +2583,109 @@ function confirmReassign(btn) {
 }
 
 
+
+// ── Desktop Admin Mode ──
+function initDesktopAdminMode() {
+  if (window.innerWidth < 900) return;
+  document.body.classList.add('admin-mode');
+}
+
+function exitDesktopAdminMode() {
+  document.body.classList.remove('admin-mode');
+}
+
+
+// ── Desktop Admin Mode ──
+function isDesktop() { return window.innerWidth >= 900; }
+
+function initDesktopAdminMode() {
+  if (!isDesktop()) return;
+  document.body.classList.add('admin-mode');
+  updateDskStats();
+  updateDskDrivers();
+  // Default: show tasks
+  dskShowSection('tasks');
+  // Update sidebar active
+  dskSetActive('tasks');
+}
+
+function exitDesktopAdminMode() {
+  document.body.classList.remove('admin-mode');
+}
+
+function dskShowSection(tab) {
+  var target = document.getElementById('asec-' + tab);
+  var container = document.getElementById('dsk-section');
+  if (!target || !container) return;
+  container.innerHTML = '';
+  // Move section into desktop container
+  container.appendChild(target);
+  target.style.display = 'block';
+  target.classList.add('active');
+  updateDskStats();
+}
+
+function dskSetActive(tab) {
+  document.querySelectorAll('.dsk-nav').forEach(function(btn) {
+    btn.style.background = 'none';
+    btn.style.color = '#475569';
+    btn.style.fontWeight = 'normal';
+  });
+  var match = Array.from(document.querySelectorAll('.dsk-nav')).find(function(b) {
+    return b.getAttribute('onclick') && b.getAttribute('onclick').includes("'" + tab + "'");
+  });
+  if (match) {
+    match.style.background = tab === 'new' ? '#e8620a' : '#f1f5f9';
+    match.style.color = tab === 'new' ? '#fff' : '#0f172a';
+    match.style.fontWeight = '600';
+  }
+}
+
+function updateDskStats() {
+  var openEl = document.getElementById('dsk-stat-open');
+  var doneEl = document.getElementById('dsk-stat-done');
+  var drvEl = document.getElementById('dsk-stat-drivers');
+  var custEl = document.getElementById('dsk-stat-custs');
+  var openList = document.getElementById('admin-task-list');
+  var doneList = document.getElementById('admin-done-list');
+  if (openEl && openList) {
+    var n = openList.querySelectorAll('.atask').length;
+    openEl.textContent = n;
+    var badge = document.getElementById('dsk-badge');
+    if (badge) { badge.textContent = n; badge.style.display = n > 0 ? 'inline-block' : 'none'; }
+  }
+  if (doneEl && doneList) doneEl.textContent = doneList.querySelectorAll('.atask').length;
+  if (drvEl) drvEl.textContent = window._onlineDrivers ? Object.keys(window._onlineDrivers).length : 0;
+  if (custEl) custEl.textContent = typeof CUSTOMERS !== 'undefined' ? CUSTOMERS.length : 0;
+}
+
+function updateDskDrivers() {
+  var list = document.getElementById('dsk-drivers');
+  if (!list) return;
+  list.innerHTML = '';
+  DEFAULT_USERS.filter(function(u){ return u.role==='driver'; }).forEach(function(u) {
+    var online = window._onlineDrivers && window._onlineDrivers[u.username];
+    var row = document.createElement('div');
+    row.style.cssText = 'display:flex;align-items:center;gap:8px;padding:5px 4px;';
+    row.innerHTML = '<div style="width:8px;height:8px;border-radius:50%;background:'+(online?'#16a34a':'#94a3b8')+';flex-shrink:0;"></div>'
+      + '<div style="width:26px;height:26px;border-radius:50%;background:'+u.color+';display:flex;align-items:center;justify-content:center;color:#fff;font-size:9px;font-weight:700;">'+u.initials+'</div>'
+      + '<span style="font-size:12px;color:'+(online?'#334155':'#94a3b8')+';">'+u.name+'</span>';
+    list.appendChild(row);
+  });
+}
+
+// Override adminTab on desktop
+var _origAdminTab = adminTab;
+function adminTab(tab, el) {
+  _origAdminTab(tab, el);
+  if (!isDesktop() || !document.body.classList.contains('admin-mode')) return;
+  dskShowSection(tab);
+  dskSetActive(tab);
+  if (tab==='drivers') { setTimeout(updateDskDrivers, 200); }
+  if (tab==='map') { setTimeout(function(){ initAdminMap(); if(adminMap) loadAdminMap(); }, 300); }
+  setTimeout(updateDskStats, 300);
+}
+
 // ── Admin GPS Map ──
 var adminMap = null;
 var adminMapMarkers = {};
@@ -2802,133 +2831,6 @@ function clearTodayRoutes() {
   });
 }
 
-
-// ── Desktop Mode ──
-function isDesktop() {
-  return window.innerWidth >= 900;
-}
-
-function initDesktopMode() {
-  if (!isDesktop()) return;
-
-  // Hide phone wrapper completely
-  var phone = document.getElementById('phone');
-  if (phone) phone.style.display = 'none';
-
-  // Show admin panel fullscreen
-  var adminPanel = document.getElementById('admin-panel');
-  if (adminPanel) {
-    adminPanel.style.display = 'block';
-    adminPanel.style.width = '100%';
-    adminPanel.style.maxWidth = '100%';
-    adminPanel.style.borderRadius = '0';
-    adminPanel.style.minHeight = '100vh';
-    adminPanel.style.position = 'fixed';
-    adminPanel.style.top = '0';
-    adminPanel.style.left = '0';
-    adminPanel.style.right = '0';
-    adminPanel.style.bottom = '0';
-    adminPanel.style.overflowY = 'auto';
-    adminPanel.style.boxShadow = 'none';
-  }
-
-  // Hide mobile tabs, show desktop sidebar and content
-  var tabs = document.querySelector('.admin-tabs');
-  if (tabs) tabs.style.display = 'none';
-
-  var sidebar = document.getElementById('desktop-sidebar');
-  var dcontent = document.getElementById('desktop-content');
-  var stats = document.getElementById('dsk-stats');
-  if (sidebar) sidebar.style.display = 'flex';
-  if (dcontent) dcontent.style.display = 'block';
-  if (stats) stats.style.display = 'grid';
-
-  // Move admin sections into desktop content area
-  var adminSections = document.querySelector('.admin-sections');
-  if (adminSections && dcontent) {
-    dcontent.appendChild(adminSections);
-  }
-
-  updateDesktopStats();
-  updateDesktopDriverList();
-
-  // Default to tasks tab
-  var tasksBtn = document.querySelector('.dsk-nav[onclick*="tasks"]');
-  if (tasksBtn) adminTab('tasks', tasksBtn);
-}
-
-function updateDesktopStats() {
-  var openList = document.getElementById('admin-task-list');
-  var doneList = document.getElementById('admin-done-list');
-  var openCount = openList ? openList.querySelectorAll('.atask').length : 0;
-  var doneCount = doneList ? doneList.querySelectorAll('.atask').length : 0;
-  var onlineDrivers = window._onlineDrivers ? Object.keys(window._onlineDrivers).length : 0;
-  var customers = typeof CUSTOMERS !== 'undefined' ? CUSTOMERS.length : 0;
-
-  var el;
-  el = document.getElementById('dsk-stat-open'); if(el) el.textContent = openCount;
-  el = document.getElementById('dsk-stat-done'); if(el) el.textContent = doneCount;
-  el = document.getElementById('dsk-stat-drivers'); if(el) el.textContent = onlineDrivers;
-  el = document.getElementById('dsk-stat-customers'); if(el) el.textContent = customers;
-
-  // Update open badge
-  var badge = document.getElementById('dsk-open-badge');
-  if (badge) {
-    badge.textContent = openCount;
-    badge.style.display = openCount > 0 ? 'inline-block' : 'none';
-  }
-}
-
-function updateDesktopDriverList() {
-  var list = document.getElementById('dsk-driver-list');
-  if (!list) return;
-  var drivers = DEFAULT_USERS.filter(function(u){ return u.role==='driver'; });
-  list.innerHTML = '';
-  drivers.forEach(function(u) {
-    var online = window._onlineDrivers && window._onlineDrivers[u.username];
-    var row = document.createElement('div');
-    row.style.cssText = 'display:flex;align-items:center;gap:8px;padding:5px 4px;';
-    row.innerHTML = '<div style="width:8px;height:8px;border-radius:50%;background:'+(online?'#16a34a':'#94a3b8')+';flex-shrink:0;"></div>'
-      + '<div style="width:26px;height:26px;border-radius:50%;background:'+u.color+';display:flex;align-items:center;justify-content:center;color:#fff;font-size:9px;font-weight:700;">' + u.initials + '</div>'
-      + '<span style="font-size:12px;color:'+(online?'#334155':'#94a3b8')+';">'+u.name+'</span>';
-    list.appendChild(row);
-  });
-}
-
-// Override adminTab for desktop sidebar highlighting
-var _origAdminTab = adminTab;
-function adminTab(tab, el) {
-  _origAdminTab(tab, el);
-  if (!isDesktop()) return;
-
-  // Update desktop sidebar active state
-  document.querySelectorAll('.dsk-nav').forEach(function(btn) {
-    btn.style.background = 'none';
-    btn.style.color = '#475569';
-    btn.style.fontWeight = 'normal';
-  });
-  var match = Array.from(document.querySelectorAll('.dsk-nav')).find(function(btn) {
-    return btn.getAttribute('onclick') && btn.getAttribute('onclick').includes("'" + tab + "'");
-  });
-  if (match) {
-    match.style.background = tab === 'new' ? '#e8620a' : '#f1f5f9';
-    match.style.color = tab === 'new' ? '#fff' : '#0f172a';
-    match.style.fontWeight = '600';
-  }
-
-  // Move active section into desktop content
-  var dcontent = document.getElementById('desktop-content');
-  if (dcontent) {
-    var activeSection = document.getElementById('asec-' + tab);
-    if (activeSection && !dcontent.contains(activeSection)) {
-      dcontent.appendChild(activeSection);
-    }
-    // Scroll to top
-    dcontent.scrollTop = 0;
-  }
-
-  setTimeout(updateDesktopStats, 300);
-}
 
 // ── Payday Import ──
 var PAYDAY_CUSTOMERS = [{"id": "C4411210910", "name": "AE Málun ehf.", "kt": "4411210910", "email": "", "phone": "", "address": "Fannafold 16, 112 Reykjavík", "note": "", "type": "nosub", "containers": [], "cats": [], "initials": "AM", "color": "#e8620a"}, {"id": "C4303221410", "name": "Almannadalur 7, húsfélag", "kt": "4303221410", "email": "", "phone": "", "address": "Almannadal 7, 161 Reykjavík", "note": "", "type": "nosub", "containers": [], "cats": [], "initials": "A7", "color": "#3b82f6"}, {"id": "C4810071780", "name": "Al-verk ehf.", "kt": "4810071780", "email": "", "phone": "", "address": "Bæjarflöt 9, 112 Reykjavík", "note": "", "type": "nosub", "containers": [], "cats": [], "initials": "AE", "color": "#8b5cf6"}, {"id": "C1604735849", "name": "Andrés Nielsen", "kt": "1604735849", "email": "", "phone": "", "address": "Goðheimum 7, 104 Reykjavík", "note": "", "type": "nosub", "containers": [], "cats": [], "initials": "AN", "color": "#22c55e"}, {"id": "C1002872189", "name": "Andri Freyr Halldórsson", "kt": "1002872189", "email": "7626162", "phone": "", "address": "Vesturtúni 10, 225 Garðabær", "note": "", "type": "nosub", "containers": [], "cats": [], "initials": "AF", "color": "#f59e0b"}, {"id": "C6511211320", "name": "Arkibygg ehf.", "kt": "6511211320", "email": "8227868", "phone": "", "address": "Tjarnargötu 10, 101 Reykjavík", "note": "", "type": "nosub", "containers": [], "cats": [], "initials": "AE", "color": "#ec4899"}, {"id": "C0207872529", "name": "Arnar Már Hafsteinsson", "kt": "0207872529", "email": "", "phone": "", "address": "Jakaseli 22, 109 Reykjavík", "note": "", "type": "nosub", "containers": [], "cats": [], "initials": "AM", "color": "#14b8a6"}, {"id": "C4706100930", "name": "Arnarholt fasteignir ehf.", "kt": "4706100930", "email": "", "phone": "", "address": "Bíldshöfða 16, 110 Reykjavík", "note": "", "type": "nosub", "containers": [], "cats": [], "initials": "AF", "color": "#64748b"}, {"id": "C5903033640", "name": "Arró ehf", "kt": "5903033640", "email": "", "phone": "", "address": "Desjakór 4, 203 Kópavogi", "note": "", "type": "nosub", "containers": [], "cats": [], "initials": "AE", "color": "#ef4444"}, {"id": "C0301825379", "name": "Atli Kristinsson", "kt": "0301825379", "email": "", "phone": "", "address": "Ásvallagötu 67, 101 Reykjavík", "note": "", "type": "nosub", "containers": [], "cats": [], "initials": "AK", "color": "#06b6d4"}, {"id": "C6209220990", "name": "AV Verktakar ehf.", "kt": "6209220990", "email": "", "phone": "", "address": "Fagradal 1, 190 Vogum", "note": "", "type": "nosub", "containers": [], "cats": [], "initials": "AV", "color": "#e8620a"}, {"id": "C4203100640", "name": "Aval ehf.", "kt": "4203100640", "email": "", "phone": "", "address": "Brúarfljóti 5A, 270 Mosfellsbæ", "note": "", "type": "nosub", "containers": [], "cats": [], "initials": "AE", "color": "#3b82f6"}, {"id": "C1007902119", "name": "Ágúst Þrastarson", "kt": "1007902119", "email": "", "phone": "", "address": "Brekkugötu 27, 210 Garðabær", "note": "", "type": "nosub", "containers": [], "cats": [], "initials": "ÁÞ", "color": "#8b5cf6"}, {"id": "C4210081240", "name": "Álfaskeið 78-80,húsfélag", "kt": "4210081240", "email": "", "phone": "", "address": "Pósthólf 8940, 128 Reykjavík", "note": "", "type": "nosub", "containers": [], "cats": [], "initials": "Á7", "color": "#22c55e"}, {"id": "C2110784649", "name": "Árni Þór Birgisson", "kt": "2110784649", "email": "", "phone": "", "address": "Starhólma 14, 200 Kópavogur", "note": "", "type": "nosub", "containers": [], "cats": [], "initials": "ÁÞ", "color": "#f59e0b"}, {"id": "C6204241450", "name": "B24 ehf.", "kt": "6204241450", "email": "", "phone": "", "address": "Helluhrauni 4, 220 Hafnarfirði", "note": "", "type": "nosub", "containers": [], "cats": [], "initials": "BE", "color": "#ec4899"}, {"id": "C1607892719", "name": "Bergþóra Kristín Ingvarsdóttir", "kt": "1607892719", "email": "", "phone": "", "address": "Kólguvaði 1, 110 Reykjavík", "note": "", "type": "nosub", "containers": [], "cats": [], "initials": "BK", "color": "#14b8a6"}, {"id": "C1908612529", "name": "Björgvin Ásgeirsson", "kt": "1908612529", "email": "", "phone": "", "address": "Hlíðartungu, 816 Ölfusi", "note": "", "type": "nosub", "containers": [], "cats": [], "initials": "BÁ", "color": "#64748b"}, {"id": "C6811220360", "name": "Bláhæð ehf.", "kt": "6811220360", "email": "", "phone": "", "address": "Norðurvör 14, 240 Grindavík", "note": "", "type": "nosub", "containers": [], "cats": [], "initials": "BE", "color": "#ef4444"}, {"id": "C2406823389", "name": "Brian Alan Harris", "kt": "2406823389", "email": "", "phone": "", "address": "Herjólfsgötu 14, 220 Hafnarfjörður", "note": "", "type": "nosub", "containers": [], "cats": [], "initials": "BA", "color": "#06b6d4"}, {"id": "C6102071380", "name": "Byggingastjórinn ehf.", "kt": "6102071380", "email": "", "phone": "", "address": "Grensásvegi 50, 108 Reykjavík", "note": "", "type": "nosub", "containers": [], "cats": [], "initials": "BE", "color": "#e8620a"}, {"id": "C4611122340", "name": "Casa Dísa ehf.", "kt": "4611122340", "email": "", "phone": "", "address": "Langholtsvegi 92, 104 Reykjavík", "note": "", "type": "nosub", "containers": [], "cats": [], "initials": "CD", "color": "#3b82f6"}, {"id": "C1705873409", "name": "Daniel Michael Gilbert", "kt": "1705873409", "email": "", "phone": "", "address": "Úthlíð 8, 221 Hafnarfjörður", "note": "", "type": "nosub", "containers": [], "cats": [], "initials": "DM", "color": "#8b5cf6"}, {"id": "C5505250110", "name": "Demantsbor ehf.", "kt": "5505250110", "email": "", "phone": "", "address": "Hofakri 7, 210 Garðabæ", "note": "", "type": "nosub", "containers": [], "cats": [], "initials": "DE", "color": "#22c55e"}, {"id": "C6901071040", "name": "E. Sigurðsson ehf.", "kt": "6901071040", "email": "", "phone": "", "address": "Askalind 3, 201 Kópavogi", "note": "", "type": "nosub", "containers": [], "cats": [], "initials": "ES", "color": "#f59e0b"}, {"id": "C4812992929", "name": "E.J. vélar ehf", "kt": "4812992929", "email": "", "phone": "", "address": "Borgarholtsbraut 11, 200 Kópavogi", "note": "", "type": "nosub", "containers": [], "cats": [], "initials": "EV", "color": "#ec4899"}, {"id": "C6008200950", "name": "Eddufell 2-6, fasteignafélag ehf.", "kt": "6008200950", "email": "", "phone": "", "address": "Fornubúðum 12, 220 Hafnarfirði", "note": "", "type": "nosub", "containers": [], "cats": [], "initials": "E2", "color": "#14b8a6"}, {"id": "C5502110760", "name": "EJH ehf.", "kt": "5502110760", "email": "", "phone": "", "address": "Hnoðravöllum 5, 221 Hafnarfirði", "note": "", "type": "nosub", "containers": [], "cats": [], "initials": "EE", "color": "#64748b"}, {"id": "C5212161150", "name": "EKO EIGNIR ehf.", "kt": "5212161150", "email": "", "phone": "", "address": "Akraseli 20, 109 Reykjavík", "note": "", "type": "nosub", "containers": [], "cats": [], "initials": "EE", "color": "#ef4444"}, {"id": "C6907160620", "name": "Esjuverk ehf.", "kt": "6907160620", "email": "", "phone": "", "address": "Höfðabakka 9b, 110 Reykjavík", "note": "", "type": "nosub", "containers": [], "cats": [], "initials": "EE", "color": "#06b6d4"}, {"id": "C7006150570", "name": "FellaKaffi ehf.", "kt": "7006150570", "email": "", "phone": "", "address": "Drafnarfelli 16-18, 111 Reykjavík", "note": "", "type": "nosub", "containers": [], "cats": [], "initials": "FE", "color": "#e8620a"}, {"id": "C5001002220", "name": "Flotgólf ehf.", "kt": "5001002220", "email": "5556888", "phone": "", "address": "Álfhellu 5, 221 Hafnarfirði", "note": "", "type": "nosub", "containers": [], "cats": [], "initials": "FE", "color": "#3b82f6"}, {"id": "C6002012390", "name": "Forlagið ehf.", "kt": "6002012390", "email": "", "phone": "", "address": "Bræðraborgarstíg 7, 101 Reykjavík", "note": "", "type": "nosub", "containers": [], "cats": [], "initials": "FE", "color": "#8b5cf6"}, {"id": "C6911161150", "name": "Framkvæmdafélagið Arnarhvoll ehf.", "kt": "6911161150", "email": "7792922", "phone": "", "address": "Höfðabakka 3, 110 Reykjavík", "note": "", "type": "nosub", "containers": [], "cats": [], "initials": "FA", "color": "#22c55e"}, {"id": "C2303946609", "name": "Fraser James Grout Tinney", "kt": "2303946609", "email": "", "phone": "", "address": "Keilufelli 8, 111 Reykjavík", "note": "", "type": "nosub", "containers": [], "cats": [], "initials": "FJ", "color": "#f59e0b"}, {"id": "C6212811009", "name": "Fura ehf.", "kt": "6212811009", "email": "", "phone": "", "address": "Hringhellu 3, 221 Hafnarfirði", "note": "", "type": "nosub", "containers": [], "cats": [], "initials": "FE", "color": "#ec4899"}, {"id": "C5401693229", "name": "Fylkir ehf.", "kt": "5401693229", "email": "", "phone": "", "address": "Bíldshöfða 16, 110 Reykjavík", "note": "", "type": "nosub", "containers": [], "cats": [], "initials": "FE", "color": "#14b8a6"}, {"id": "C4602241520", "name": "Förgun ehf.", "kt": "4602241520", "email": "", "phone": "", "address": "Köldukinn 6, 220 Hafnarfirði", "note": "", "type": "nosub", "containers": [], "cats": [], "initials": "FE", "color": "#64748b"}, {"id": "C6604061900", "name": "Garðherinn ehf.", "kt": "6604061900", "email": "6117117", "phone": "", "address": "Austurbergi 34, 111 Reykjavík", "note": "", "type": "nosub", "containers": [], "cats": [], "initials": "GE", "color": "#ef4444"}, {"id": "C5603210580", "name": "Gilbert & Backman ehf.", "kt": "5603210580", "email": "", "phone": "", "address": "Stekkjarbergi 10, 221 Hafnarfirði", "note": "", "type": "nosub", "containers": [], "cats": [], "initials": "G&", "color": "#06b6d4"}, {"id": "C4101680229", "name": "Góa-Linda sælgætisgerð ehf.", "kt": "4101680229", "email": "", "phone": "", "address": "Pósthólf 120, 222 Hafnarfirði", "note": "", "type": "nosub", "containers": [], "cats": [], "initials": "GS", "color": "#e8620a"}, {"id": "C5102201960", "name": "Grásteinsmýri ehf.", "kt": "5102201960", "email": "", "phone": "", "address": "Friggjarbrunni 23, 113 Reykjavík", "note": "", "type": "nosub", "containers": [], "cats": [], "initials": "GE", "color": "#3b82f6"}, {"id": "C3112832279", "name": "Gréta Jakobsdóttir", "kt": "3112832279", "email": "", "phone": "", "address": "Langholtsvegi 116, 104 Reykjavík", "note": "", "type": "nosub", "containers": [], "cats": [], "initials": "GJ", "color": "#8b5cf6"}, {"id": "C1706872139", "name": "Grímur Zimsen", "kt": "1706872139", "email": "8487513", "phone": "", "address": "Víðigrund 47, 200 Kópavogur", "note": "", "type": "nosub", "containers": [], "cats": [], "initials": "GZ", "color": "#22c55e"}, {"id": "C4209212090", "name": "Gröfuvinna ehf.", "kt": "4209212090", "email": "8571330", "phone": "", "address": "Suðurlandsbraut 30, 108 Reykjavík", "note": "", "type": "nosub", "containers": [], "cats": [], "initials": "GE", "color": "#f59e0b"}, {"id": "C4701201420", "name": "Gröfuþjónusta Stjána ehf.", "kt": "4701201420", "email": "", "phone": "", "address": "Hvaleyrarbraut 41, 220 Hafnarfirði", "note": "", "type": "nosub", "containers": [], "cats": [], "initials": "GS", "color": "#ec4899"}, {"id": "C5709071310", "name": "GSE ehf.", "kt": "5709071310", "email": "", "phone": "", "address": "Skagabraut 44a, 251 Garður", "note": "", "type": "nosub", "containers": [], "cats": [], "initials": "GE", "color": "#14b8a6"}, {"id": "C2511873719", "name": "Guðmundur Þórir Ellertsson", "kt": "2511873719", "email": "8498491", "phone": "", "address": "Krosseyrarvegi 6, 220 Hafnarfjörður", "note": "", "type": "nosub", "containers": [], "cats": [], "initials": "GÞ", "color": "#64748b"}, {"id": "C1906753949", "name": "Gunnar Freyr Steinsson", "kt": "1906753949", "email": "696-1270", "phone": "", "address": "Álfaskeiði 44, 220 Hafnarfirði", "note": "", "type": "nosub", "containers": [], "cats": [], "initials": "GF", "color": "#ef4444"}, {"id": "C1303923509", "name": "Gunnar Örn Arnarson", "kt": "1303923509", "email": "", "phone": "", "address": "Óðinsvöllum 13, 230 Reykjanesbær", "note": "", "type": "nosub", "containers": [], "cats": [], "initials": "GÖ", "color": "#06b6d4"}, {"id": "C5502170310", "name": "Hasar ehf.", "kt": "5502170310", "email": "", "phone": "", "address": "Ármúla 36, 108 Reykjavík", "note": "", "type": "nosub", "containers": [], "cats": [], "initials": "HE", "color": "#e8620a"}, {"id": "C5602221140", "name": "Hassan Dekk ehf.", "kt": "5602221140", "email": "", "phone": "", "address": "Rauðhellu 9, 220 Hafnarfirði", "note": "", "type": "nosub", "containers": [], "cats": [], "initials": "HD", "color": "#3b82f6"}, {"id": "C6508871589", "name": "Háeyri ehf.", "kt": "6508871589", "email": "", "phone": "", "address": "Vörðubraut 2, 250 Suðurnesjabæ", "note": "", "type": "nosub", "containers": [], "cats": [], "initials": "HE", "color": "#8b5cf6"}, {"id": "C5101170690", "name": "Heimaleiga ehf.", "kt": "5101170690", "email": "", "phone": "", "address": "Grensásvegi 14, 108 Reykjavík", "note": "", "type": "nosub", "containers": [], "cats": [], "initials": "HE", "color": "#22c55e"}, {"id": "C5611201450", "name": "Heimsalir ehf.", "kt": "5611201450", "email": "", "phone": "", "address": "Lundi 7, 200 Kópavogi", "note": "", "type": "nosub", "containers": [], "cats": [], "initials": "HE", "color": "#f59e0b"}, {"id": "C4502071600", "name": "Heit gólf ehf.", "kt": "4502071600", "email": "", "phone": "", "address": "Kópavogsbraut 88, 200 Kópavogi", "note": "", "type": "nosub", "containers": [], "cats": [], "initials": "HG", "color": "#ec4899"}, {"id": "C2611744489", "name": "Helgi Benediktsson", "kt": "2611744489", "email": "", "phone": "", "address": "Skjólbraut 14, 200 Kópavogur", "note": "", "type": "nosub", "containers": [], "cats": [], "initials": "HB", "color": "#14b8a6"}, {"id": "C5103242180", "name": "Hellugarðar verktakar ehf.", "kt": "5103242180", "email": "", "phone": "", "address": "Suðurhólum 22, 111 Reykjavík", "note": "", "type": "nosub", "containers": [], "cats": [], "initials": "HV", "color": "#64748b"}, {"id": "C6703850359", "name": "Hraunbær 102a,húsfélag", "kt": "6703850359", "email": "", "phone": "", "address": "Pósthólf 8940, 128 Reykjavík", "note": "", "type": "nosub", "containers": [], "cats": [], "initials": "H1", "color": "#ef4444"}, {"id": "C6909090810", "name": "Hreinir Garðar ehf.", "kt": "6909090810", "email": "", "phone": "", "address": "Víkurhvarf 4, 203 Kópavogi", "note": "", "type": "nosub", "containers": [], "cats": [], "initials": "HG", "color": "#06b6d4"}, {"id": "C4901952039", "name": "Hringrás ehf.", "kt": "4901952039", "email": "", "phone": "", "address": "Klettagörðum 9, 104 Reykjavík", "note": "", "type": "nosub", "containers": [], "cats": [], "initials": "HE", "color": "#e8620a"}, {"id": "C4904191280", "name": "HRT þjónusta ehf.", "kt": "4904191280", "email": "", "phone": "", "address": "Stórhöfða 37, 110 Reykjavík", "note": "", "type": "nosub", "containers": [], "cats": [], "initials": "HÞ", "color": "#3b82f6"}, {"id": "C5509170330", "name": "Húsameistari ehf.", "kt": "5509170330", "email": "6161987", "phone": "", "address": "Rauðalæk 22, 105 Reykjavík", "note": "", "type": "nosub", "containers": [], "cats": [], "initials": "HE", "color": "#8b5cf6"}, {"id": "C6410953039", "name": "Húsráð ehf.", "kt": "6410953039", "email": "", "phone": "", "address": "Brekkuhúsum 1, 112 Reykjavík", "note": "", "type": "nosub", "containers": [], "cats": [], "initials": "HE", "color": "#22c55e"}, {"id": "C7006201580", "name": "Hve Lausnir ehf.", "kt": "7006201580", "email": "", "phone": "", "address": "Freyjubrunni 25-27, 113 Reykjavík", "note": "", "type": "nosub", "containers": [], "cats": [], "initials": "HL", "color": "#f59e0b"}, {"id": "C4303200170", "name": "HViðarsson ehf.", "kt": "4303200170", "email": "", "phone": "", "address": "Hellisbraut 20, 360 Hellissandi", "note": "", "type": "nosub", "containers": [], "cats": [], "initials": "HE", "color": "#ec4899"}, {"id": "C4802210950", "name": "Höfðakór ehf.", "kt": "4802210950", "email": "", "phone": "", "address": "Tónahvarfi 6P, 203 Kópavogi", "note": "", "type": "nosub", "containers": [], "cats": [], "initials": "HE", "color": "#14b8a6"}, {"id": "C0109912189", "name": "Hörður Ingi Gunnarsson", "kt": "0109912189", "email": "", "phone": "", "address": "Holtagerði 68, 200 Kópavogur", "note": "", "type": "nosub", "containers": [], "cats": [], "initials": "HI", "color": "#64748b"}, {"id": "C6709172070", "name": "Iceland tire ehf.", "kt": "6709172070", "email": "", "phone": "", "address": "Rauðhellu 4, 221 Hafnarfirði", "note": "", "type": "nosub", "containers": [], "cats": [], "initials": "IT", "color": "#ef4444"}, {"id": "C0505754039", "name": "Ingvar Baldursson", "kt": "0505754039", "email": "", "phone": "", "address": "Öldugötu 35, 220 Hafnarfjörður", "note": "", "type": "nosub", "containers": [], "cats": [], "initials": "IB", "color": "#06b6d4"}, {"id": "C4509170950", "name": "Ísbor ehf.", "kt": "4509170950", "email": "", "phone": "", "address": "Faxatúni 21, 210 Garðabæ", "note": "", "type": "nosub", "containers": [], "cats": [], "initials": "ÍE", "color": "#e8620a"}, {"id": "C5710852329", "name": "Íslandshús ehf.", "kt": "5710852329", "email": "", "phone": "", "address": "Fitjaási 24, 260 Reykjanesbæ", "note": "", "type": "nosub", "containers": [], "cats": [], "initials": "ÍE", "color": "#3b82f6"}, {"id": "C5210922549", "name": "Ísold ehf.", "kt": "5210922549", "email": "", "phone": "", "address": "Selhellu 3, 221 Hafnarfirði", "note": "", "type": "nosub", "containers": [], "cats": [], "initials": "ÍE", "color": "#8b5cf6"}, {"id": "C6504161390", "name": "JBÓ Pípulagnir ehf.", "kt": "6504161390", "email": "", "phone": "", "address": "Bolafæti 9, 260 Reykjanesbæ", "note": "", "type": "nosub", "containers": [], "cats": [], "initials": "JP", "color": "#22c55e"}, {"id": "C5605170680", "name": "Johnny Pípari ehf.", "kt": "5605170680", "email": "8962874", "phone": "", "address": "Mávanesi 13, 210 Garðabæ", "note": "", "type": "nosub", "containers": [], "cats": [], "initials": "JP", "color": "#f59e0b"}, {"id": "C1905543849", "name": "Jón Guðmundsson", "kt": "1905543849", "email": "", "phone": "", "address": "Hamrahlíð 27, 105 Reykjavík", "note": "", "type": "nosub", "containers": [], "cats": [], "initials": "JG", "color": "#ec4899"}, {"id": "C0610693569", "name": "Jón Ingi Jónsson", "kt": "0610693569", "email": "", "phone": "", "address": "Hlégerði 10, 200 Kópavogur", "note": "", "type": "nosub", "containers": [], "cats": [], "initials": "JI", "color": "#14b8a6"}, {"id": "C1401734529", "name": "Jónas Þór Jónasson", "kt": "1401734529", "email": "", "phone": "", "address": "Drápuhlíð 23, 105 Reykjavík", "note": "", "type": "nosub", "containers": [], "cats": [], "initials": "JÞ", "color": "#64748b"}, {"id": "C5312780469", "name": "Kalka sorpeyðingarstöð sf.", "kt": "5312780469", "email": "8439213", "phone": "", "address": "Berghólabraut 7, 230 Reykjanesbæ", "note": "", "type": "nosub", "containers": [], "cats": [], "initials": "KS", "color": "#ef4444"}, {"id": "C5410222010", "name": "Kaupmark ehf.", "kt": "5410222010", "email": "", "phone": "", "address": "Efstaleiti 10, 103 Reykjavík", "note": "", "type": "nosub", "containers": [], "cats": [], "initials": "KE", "color": "#06b6d4"}, {"id": "C5001013180", "name": "Kári Arnórsson ehf", "kt": "5001013180", "email": "", "phone": "", "address": "Lyngrima 20, 112 Reykjavík", "note": "", "type": "nosub", "containers": [], "cats": [], "initials": "KA", "color": "#e8620a"}, {"id": "C4507241140", "name": "Keilir Pro ehf.", "kt": "4507241140", "email": "", "phone": "", "address": "Esjubraut 49, 300 Akranesi", "note": "", "type": "nosub", "containers": [], "cats": [], "initials": "KP", "color": "#3b82f6"}, {"id": "C2203743439", "name": "Klara Lind Jónsdóttir", "kt": "2203743439", "email": "7744555", "phone": "", "address": "Drápuhlíð 23, 105 Reykjavík", "note": "", "type": "nosub", "containers": [], "cats": [], "initials": "KL", "color": "#8b5cf6"}, {"id": "C6606061650", "name": "Kubbur ehf.", "kt": "6606061650", "email": "", "phone": "", "address": "Ártungu 8, 400 Ísafirði", "note": "", "type": "nosub", "containers": [], "cats": [], "initials": "KE", "color": "#22c55e"}, {"id": "C4402250710", "name": "Landris Byggingar ehf.", "kt": "4402250710", "email": "", "phone": "", "address": "Kinnargötu 26, 210 Garðabæ", "note": "", "type": "nosub", "containers": [], "cats": [], "initials": "LB", "color": "#f59e0b"}, {"id": "C6508090920", "name": "Langeldur ehf.", "kt": "6508090920", "email": "", "phone": "", "address": "Reykjabyggð 53, 270 Mosfellsbæ", "note": "", "type": "nosub", "containers": [], "cats": [], "initials": "LE", "color": "#ec4899"}, {"id": "C4902932059", "name": "Linde Gas ehf.", "kt": "4902932059", "email": "", "phone": "", "address": "Búðahellu 8, 221 Hafnarfirði", "note": "", "type": "nosub", "containers": [], "cats": [], "initials": "LG", "color": "#14b8a6"}, {"id": "C0111952109", "name": "Lísa Margrét Sigurðardóttir", "kt": "0111952109", "email": "", "phone": "", "address": "Iðufelli 2, 111 Reykjavík", "note": "", "type": "nosub", "containers": [], "cats": [], "initials": "LM", "color": "#64748b"}, {"id": "C5406220190", "name": "Lóðarvinna ehf.", "kt": "5406220190", "email": "", "phone": "", "address": "Bjarkarholti 29, 270 Mosfellsbæ", "note": "", "type": "nosub", "containers": [], "cats": [], "initials": "LE", "color": "#ef4444"}, {"id": "C5505140950", "name": "Lumo Casa ehf.", "kt": "5505140950", "email": "8243890", "phone": "", "address": "Heiðargerði 28, 108 Reykjavík", "note": "", "type": "nosub", "containers": [], "cats": [], "initials": "LC", "color": "#06b6d4"}, {"id": "C6901212200", "name": "Lykill fjármögnun", "kt": "6901212200", "email": "", "phone": "", "address": "Katrínartúni 2, 105 Reykjavík", "note": "", "type": "nosub", "containers": [], "cats": [], "initials": "LF", "color": "#e8620a"}, {"id": "C6011252180", "name": "M & P ehf.", "kt": "6011252180", "email": "", "phone": "", "address": "Helluhrauni 4, 220 Hafnarfirði", "note": "", "type": "nosub", "containers": [], "cats": [], "initials": "M&", "color": "#3b82f6"}, {"id": "C4803220530", "name": "Mars Media ehf.", "kt": "4803220530", "email": "", "phone": "", "address": "Blikaási 4, 221 Hafnarfirði", "note": "", "type": "nosub", "containers": [], "cats": [], "initials": "MM", "color": "#8b5cf6"}, {"id": "C4703973149", "name": "Meindýraeyðir Íslands ehf.", "kt": "4703973149", "email": "", "phone": "", "address": "Heiðargerði 21, 190 Vogum", "note": "", "type": "nosub", "containers": [], "cats": [], "initials": "MÍ", "color": "#22c55e"}, {"id": "C5801025650", "name": "Mostak ehf.", "kt": "5801025650", "email": "", "phone": "", "address": "Stórateigi 34, 270 Mosfellsbæ", "note": "", "type": "nosub", "containers": [], "cats": [], "initials": "ME", "color": "#f59e0b"}, {"id": "C5008211750", "name": "Mount Everest ehf.", "kt": "5008211750", "email": "", "phone": "", "address": "Kirkjuteigi 29, 105 Reykjavík", "note": "", "type": "nosub", "containers": [], "cats": [], "initials": "ME", "color": "#ec4899"}, {"id": "C6405221510", "name": "N1 Verktakinn ehf.", "kt": "6405221510", "email": "", "phone": "", "address": "Ósbraut 5, 250 Suðurnesjabæ", "note": "", "type": "nosub", "containers": [], "cats": [], "initials": "NV", "color": "#14b8a6"}, {"id": "C5309932489", "name": "Noel & Partnere ehf.", "kt": "5309932489", "email": "", "phone": "", "address": "Drápuhlíð 23, 105 Reykjavík", "note": "", "type": "nosub", "containers": [], "cats": [], "initials": "N&", "color": "#64748b"}, {"id": "C5905200470", "name": "OB Vélar ehf.", "kt": "5905200470", "email": "", "phone": "", "address": "Ljósalandi 20, 108 Reykjavík", "note": "", "type": "nosub", "containers": [], "cats": [], "initials": "OV", "color": "#ef4444"}, {"id": "C6408050720", "name": "Orka ehf.", "kt": "6408050720", "email": "", "phone": "", "address": "Stórhöfða 37, 110 Reykjavík", "note": "", "type": "nosub", "containers": [], "cats": [], "initials": "OE", "color": "#06b6d4"}, {"id": "C1906765529", "name": "Ómar Örn Magnússon", "kt": "1906765529", "email": "omar@2076.is", "phone": "6909220", "address": "", "note": "", "type": "nosub", "containers": [], "cats": [], "initials": "ÓÖ", "color": "#e8620a"}, {"id": "C5302170940", "name": "ÓR smíði ehf.", "kt": "5302170940", "email": "", "phone": "", "address": "Glitvöllum 50, 221 Hafnarfirði", "note": "", "type": "nosub", "containers": [], "cats": [], "initials": "ÓS", "color": "#3b82f6"}, {"id": "C6704110440", "name": "PE pípulagnir ehf.", "kt": "6704110440", "email": "", "phone": "", "address": "Marargrund 14, 210 Garðabæ", "note": "", "type": "nosub", "containers": [], "cats": [], "initials": "PP", "color": "#8b5cf6"}, {"id": "C4606012580", "name": "PK Verk ehf.", "kt": "4606012580", "email": "", "phone": "", "address": "Drangahrauni 7, 220 Hafnarfirði", "note": "", "type": "nosub", "containers": [], "cats": [], "initials": "PV", "color": "#22c55e"}, {"id": "C4412241330", "name": "Reising Byggingarfélag ehf.", "kt": "4412241330", "email": "7832701", "phone": "", "address": "Kinnargötu 26, 210 Garðabæ", "note": "", "type": "nosub", "containers": [], "cats": [], "initials": "RB", "color": "#f59e0b"}, {"id": "C6501100560", "name": "RENY ehf.", "kt": "6501100560", "email": "8542805", "phone": "", "address": "Akurhvarfi 10, 203 Kópavogi", "note": "", "type": "nosub", "containers": [], "cats": [], "initials": "RE", "color": "#ec4899"}, {"id": "C6411050660", "name": "Rétting og nýsmíði ehf.", "kt": "6411050660", "email": "", "phone": "", "address": "Akurhvarfi 10, 203 Kópavogi", "note": "", "type": "nosub", "containers": [], "cats": [], "initials": "RO", "color": "#14b8a6"}, {"id": "C0810622509", "name": "Ríkharður Kristinsson", "kt": "0810622509", "email": "", "phone": "", "address": "Viðarási 28, 110 Reykjavík", "note": "", "type": "nosub", "containers": [], "cats": [], "initials": "RK", "color": "#64748b"}, {"id": "C5306972079", "name": "Ríkislögreglustjóri", "kt": "5306972079", "email": "", "phone": "", "address": "Skúlagötu 21, 101 Reykjavík", "note": "", "type": "nosub", "containers": [], "cats": [], "initials": "R", "color": "#ef4444"}, {"id": "C6303220300", "name": "Sérsteypan ehf.", "kt": "6303220300", "email": "", "phone": "", "address": "Suðurlandsbraut 30, 108 Reykjavík", "note": "", "type": "nosub", "containers": [], "cats": [], "initials": "SE", "color": "#06b6d4"}, {"id": "C5904220960", "name": "SH 25 ehf.", "kt": "5904220960", "email": "", "phone": "", "address": "Eyjahrauni 5, 815 Þorlákshöfn", "note": "", "type": "nosub", "containers": [], "cats": [], "initials": "S2", "color": "#e8620a"}, {"id": "C2608923129", "name": "Sigurður Ingiberg Ólafsson", "kt": "2608923129", "email": "8937227", "phone": "", "address": "Stuðlaskarði 5, 221 Hafnarfjörður", "note": "", "type": "nosub", "containers": [], "cats": [], "initials": "SI", "color": "#3b82f6"}, {"id": "C4909221480", "name": "Sigursmíði ehf.", "kt": "4909221480", "email": "", "phone": "", "address": "Ljósuvík 34, 112 Reykjavík", "note": "", "type": "nosub", "containers": [], "cats": [], "initials": "SE", "color": "#8b5cf6"}, {"id": "C1109713469", "name": "Skúli Geir Jensson", "kt": "1109713469", "email": "", "phone": "", "address": "Ránargötu 30A, 101 Reykjavík", "note": "", "type": "nosub", "containers": [], "cats": [], "initials": "SG", "color": "#22c55e"}, {"id": "C6005210470", "name": "Sláttuverk ehf.", "kt": "6005210470", "email": "", "phone": "", "address": "Kálfhólum 3, 800 Selfossi", "note": "", "type": "nosub", "containers": [], "cats": [], "initials": "SE", "color": "#f59e0b"}, {"id": "C5801210980", "name": "Smalahestar ehf.", "kt": "5801210980", "email": "", "phone": "", "address": "Brekku, 806 Selfossi", "note": "", "type": "nosub", "containers": [], "cats": [], "initials": "SE", "color": "#ec4899"}, {"id": "C6002692599", "name": "Smáragarður ehf.", "kt": "6002692599", "email": "", "phone": "", "address": "Skemmuvegi 2a, 200 Kópavogi", "note": "", "type": "nosub", "containers": [], "cats": [], "initials": "SE", "color": "#14b8a6"}, {"id": "C5202200380", "name": "Smeyginn ehf.", "kt": "5202200380", "email": "", "phone": "", "address": "Þrastarhöfða 2, 270 Mosfellsbæ", "note": "", "type": "nosub", "containers": [], "cats": [], "initials": "SE", "color": "#64748b"}, {"id": "C6202243910", "name": "Smíðageirinn ehf.", "kt": "6202243910", "email": "", "phone": "", "address": "Álfhólsvegi 137, 200 Kópavogi", "note": "", "type": "nosub", "containers": [], "cats": [], "initials": "SE", "color": "#ef4444"}, {"id": "C5105881189", "name": "SORPA bs.", "kt": "5105881189", "email": "", "phone": "", "address": "Köllunarklettsvegi 1, 104 Reykjavík", "note": "", "type": "nosub", "containers": [], "cats": [], "initials": "SB", "color": "#06b6d4"}, {"id": "C5310230480", "name": "Sportsól ehf.", "kt": "5310230480", "email": "", "phone": "", "address": "Galtalind 17, 201 Kópavogi", "note": "", "type": "nosub", "containers": [], "cats": [], "initials": "SE", "color": "#e8620a"}, {"id": "C5406220940", "name": "STV Verktakar ehf.", "kt": "5406220940", "email": "", "phone": "", "address": "Skógarási 8, 221 Hafnarfirði", "note": "", "type": "nosub", "containers": [], "cats": [], "initials": "SV", "color": "#3b82f6"}, {"id": "C0305622679", "name": "Sverrir Hjörleifsson", "kt": "0305622679", "email": "8989075", "phone": "", "address": "Glitvangi 23, 220 Hafnarfjörður", "note": "", "type": "nosub", "containers": [], "cats": [], "initials": "SH", "color": "#8b5cf6"}, {"id": "C4102830349", "name": "Terra umhverfisþjónusta hf.", "kt": "4102830349", "email": "", "phone": "", "address": "Berghellu 1, 221 Hafnarfirði", "note": "", "type": "nosub", "containers": [], "cats": [], "initials": "TU", "color": "#22c55e"}, {"id": "C2112853469", "name": "Thomas Hannay Matthews", "kt": "2112853469", "email": "", "phone": "", "address": "Lindargötu 20, 101 Reykjavík", "note": "", "type": "nosub", "containers": [], "cats": [], "initials": "TH", "color": "#f59e0b"}, {"id": "C4801071600", "name": "Thor Shipping ehf.", "kt": "4801071600", "email": "", "phone": "", "address": "Selhellu 11, 221 Hafnarfirði", "note": "", "type": "nosub", "containers": [], "cats": [], "initials": "TS", "color": "#ec4899"}, {"id": "C6911993559", "name": "Tómas & Dúna ehf", "kt": "6911993559", "email": "", "phone": "", "address": "Bergholti 2, 270 Mosfellsbæ", "note": "", "type": "nosub", "containers": [], "cats": [], "initials": "T&", "color": "#14b8a6"}, {"id": "C3105943349", "name": "Tómas Aron Tómasson", "kt": "3105943349", "email": "6636821", "phone": "", "address": "Vallarbraut 5, 170 Seltjarnarnes", "note": "", "type": "nosub", "containers": [], "cats": [], "initials": "TA", "color": "#64748b"}, {"id": "C6105962239", "name": "Traustafl ehf.", "kt": "6105962239", "email": "", "phone": "", "address": "Jöklafold 22, 112 Reykjavík", "note": "", "type": "nosub", "containers": [], "cats": [], "initials": "TE", "color": "#ef4444"}, {"id": "C6503992859", "name": "Tæki.is ehf.", "kt": "6503992859", "email": "", "phone": "", "address": "Norðurhellu 5, 221 Hafnarfirði", "note": "", "type": "nosub", "containers": [], "cats": [], "initials": "TE", "color": "#06b6d4"}, {"id": "C5612161690", "name": "Uxahryggur ehf.", "kt": "5612161690", "email": "", "phone": "", "address": "Krókahrauni 12, 220 Hafnarfirði", "note": "", "type": "nosub", "containers": [], "cats": [], "initials": "UE", "color": "#e8620a"}, {"id": "C6307201840", "name": "V3 ehf.", "kt": "6307201840", "email": "", "phone": "", "address": "Skipalóni 23, 220 Hafnarfirði", "note": "", "type": "nosub", "containers": [], "cats": [], "initials": "VE", "color": "#3b82f6"}, {"id": "C6107152650", "name": "Vaki byggingafélag ehf.", "kt": "6107152650", "email": "", "phone": "", "address": "Hofteigi 23, 105 Reykjavík", "note": "", "type": "nosub", "containers": [], "cats": [], "initials": "VB", "color": "#8b5cf6"}, {"id": "C0912725049", "name": "Valdimar Nielsen", "kt": "0912725049", "email": "7712345", "phone": "", "address": "Skriðustekk 5, 109 Reykjavík", "note": "", "type": "nosub", "containers": [], "cats": [], "initials": "VN", "color": "#22c55e"}, {"id": "C6202720199", "name": "Valfell ehf", "kt": "6202720199", "email": "", "phone": "", "address": "Deildarási 7, 110 Reykjavík", "note": "", "type": "nosub", "containers": [], "cats": [], "initials": "VE", "color": "#f59e0b"}, {"id": "C5808002030", "name": "Vatnsborun ehf", "kt": "5808002030", "email": "", "phone": "", "address": "Holtagerði 74, 200 Kópavogi", "note": "", "type": "nosub", "containers": [], "cats": [], "initials": "VE", "color": "#ec4899"}, {"id": "C7110232400", "name": "Verk og viðhald ehf.", "kt": "7110232400", "email": "", "phone": "", "address": "Þverbrekku 6, 200 Kópavogi", "note": "", "type": "nosub", "containers": [], "cats": [], "initials": "VO", "color": "#14b8a6"}, {"id": "C6501223050", "name": "Verkgarðar ehf.", "kt": "6501223050", "email": "", "phone": "", "address": "Sundagörðum 8, 104 Reykjavík", "note": "", "type": "nosub", "containers": [], "cats": [], "initials": "VE", "color": "#64748b"}, {"id": "C6704002630", "name": "Vélafl ehf.", "kt": "6704002630", "email": "", "phone": "", "address": "Rauðhellu 11, 221 Hafnarfirði", "note": "", "type": "nosub", "containers": [], "cats": [], "initials": "VE", "color": "#ef4444"}, {"id": "C4406973569", "name": "Vinnuvélar og Ásafl ehf.", "kt": "4406973569", "email": "", "phone": "", "address": "Völuteigi 4, 270 Mosfellsbæ", "note": "", "type": "nosub", "containers": [], "cats": [], "initials": "VO", "color": "#06b6d4"}, {"id": "C4912091270", "name": "VR-5 ehf.", "kt": "4912091270", "email": "", "phone": "", "address": "Álhellu 8, 221 Hafnarfirði", "note": "", "type": "nosub", "containers": [], "cats": [], "initials": "VE", "color": "#e8620a"}, {"id": "C5709101910", "name": "Þakmálun ehf.", "kt": "5709101910", "email": "", "phone": "", "address": "Lækjasmára 15, 201 Kópavogi", "note": "", "type": "nosub", "containers": [], "cats": [], "initials": "ÞE", "color": "#3b82f6"}, {"id": "C2110775309", "name": "Ægir Sævarsson", "kt": "2110775309", "email": "", "phone": "", "address": "Auðkúlu, 851 Hellu", "note": "", "type": "nosub", "containers": [], "cats": [], "initials": "ÆS", "color": "#8b5cf6"}, {"id": "C6301201010", "name": "Öxar byggingafélag ehf.", "kt": "6301201010", "email": "", "phone": "", "address": "Auðbrekku 9, 200 Kópavogi", "note": "", "type": "nosub", "containers": [], "cats": [], "initials": "ÖB", "color": "#22c55e"}];
@@ -3967,6 +3869,7 @@ function doLogin(){
     document.getElementById('sc-login').classList.remove('active');
     document.getElementById('phone').style.display='none';
     document.getElementById('admin-panel').style.display='block';
+    initDesktopAdminMode();
     // Remember session through refresh
     sessionStorage.setItem('fd_session', JSON.stringify({username: user.username, password: user.password}));
     loadSavedUrl();
@@ -4021,13 +3924,7 @@ function doLogout(){
   sessionStorage.removeItem('fd_session');
   stopDriverGPS();
   if(window._currentUser && window._currentUser.role !== 'admin') punchOut(window._currentUser);
-  // Restore phone on desktop
-  if (isDesktop()) {
-    var phone = document.getElementById('phone');
-    if (phone) { phone.style.display = 'block'; }
-    var adminPanel = document.getElementById('admin-panel');
-    if (adminPanel) adminPanel.style.display = 'none';
-  }
+
   if(fbUnsubscribeTasks){fbUnsubscribeTasks();fbUnsubscribeTasks=null;}
   if(fbUnsubscribeDriverTasks){fbUnsubscribeDriverTasks();fbUnsubscribeDriverTasks=null;}
   document.getElementById('admin-panel').style.display='none';

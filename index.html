@@ -1540,6 +1540,13 @@ body{background:#e8edf3;display:flex;justify-content:center;align-items:flex-sta
           <div class="sheets-col-item">📷 Myndir teknar</div>
         </div>
       </div>
+      <div class="settings-block" style="border:2px solid #fecaca;background:#fff5f5;">
+        <h4 style="color:#dc2626;">🔄 Núllstilla prófunargögn</h4>
+        <p style="font-size:12px;color:#64748b;margin-bottom:12px;line-height:1.6;">Þetta hreinsar <b>allar beiðnir</b> (opnar og kláraðar), <b>innstimplanir og útstimplanir</b> ökumanna og <b>GPS leiðir</b> — en <b>viðheldur</b> öllum viðskiptavinum, verðlista, kennitölum og ökutækjum.</p>
+        <div id="reset-status" style="display:none;margin-bottom:10px;padding:10px 14px;border-radius:10px;font-size:13px;font-weight:600;"></div>
+        <button onclick="confirmReset()" style="width:100%;padding:12px;background:#dc2626;border:none;border-radius:10px;color:#fff;font-size:13px;font-weight:700;cursor:pointer;">🗑 Hreinsa prófunargögn</button>
+      </div>
+
       <div class="settings-block">
         <h4>ℹ Um kerfið</h4>
         <p style="font-size:12px;color:#64748b;line-height:1.6;">FleetDriv v2 · Litla Gámaleigan · Gámakeyrslukerfi. Öll gögn fara sjálfkrafa í Google Sheets í gegnum SheetDB þegar ökumaður klárar beiðni.</p>
@@ -4712,7 +4719,95 @@ function loadSavedUrl(){
 }
 
 
-// ── Time Picker ──
+// ── Reset Test Data ──
+function confirmReset() {
+  var ok = confirm(
+    'Þetta mun eyða:\n\n' +
+    '• Allar opnar og kláraðar beiðnir\n' +
+    '• Innstimplanir og útstimplanir ökumanna\n' +
+    '• GPS leiðir\n' +
+    '• Gámaskráningar á viðskiptavinum\n\n' +
+    'Viðskiptavinir, verðlistar og ökutæki haldast.\n\n' +
+    'Ertu viss?'
+  );
+  if (!ok) return;
+  resetAppData();
+}
+
+function resetAppData() {
+  var statusEl = document.getElementById('reset-status');
+  function setStatus(msg, ok) {
+    if (!statusEl) return;
+    statusEl.style.display = 'block';
+    statusEl.style.background = ok ? '#f0fdf4' : '#fef2f2';
+    statusEl.style.color = ok ? '#166534' : '#991b1b';
+    statusEl.style.border = '1px solid ' + (ok ? '#bbf7d0' : '#fecaca');
+    statusEl.textContent = msg;
+  }
+  setStatus('⏳ Hreinsun hafin...', true);
+
+  // 1. Clear localStorage tasks
+  try { localStorage.removeItem('fd_tasks'); } catch(e) {}
+
+  // 2. Reset containers on all customers (keep all other fields)
+  try {
+    var custs = getCustomers();
+    custs = custs.map(function(c) {
+      return Object.assign({}, c, { containers: [] });
+    });
+    saveCustomers(custs);
+  } catch(e) {}
+
+  // 3. Clear DOM task lists
+  var openList = document.getElementById('admin-task-list');
+  var doneList = document.getElementById('admin-done-list');
+  if (openList) openList.innerHTML = '';
+  if (doneList) doneList.innerHTML = '';
+
+  // 4. Clear timelog DOM
+  var timelogEl = document.getElementById('timelog-list');
+  if (timelogEl) timelogEl.innerHTML = '<p style="color:#94a3b8;font-size:13px;text-align:center;padding:20px;">Engar skráningar.</p>';
+
+  // 5. Delete Firebase collections
+  onFirebaseReady(function() {
+    var fb = window._fb;
+    var deleted = 0;
+    var total = 0;
+    var done = 0;
+
+    function deleteCollection(name, cb) {
+      fb.getDocs(fb.collection(fb.db, name)).then(function(snap) {
+        if (snap.empty) { cb(); return; }
+        var dels = [];
+        snap.forEach(function(doc) {
+          dels.push(fb.deleteDoc(fb.doc(fb.db, name, doc.id)));
+          total++;
+        });
+        Promise.all(dels).then(function() { deleted += dels.length; cb(); })
+          .catch(function(e) { console.warn('Villa við að eyða ' + name + ':', e); cb(); });
+      }).catch(function() { cb(); });
+    }
+
+    var collections = ['tasks', 'timelog', 'routes', 'drivers'];
+    var idx = 0;
+    function next() {
+      if (idx >= collections.length) {
+        // Refresh UI
+        renderCustOverview();
+        renderCustomerList();
+        renderDriverCards();
+        updateDskStats && updateDskStats();
+        setStatus('✓ Hreinsun lokið! ' + deleted + ' færslur eyddar úr Firebase. Appið er tilbúið til alvöru notkunar.', true);
+        return;
+      }
+      setStatus('⏳ Hreinsa ' + collections[idx] + '...', true);
+      deleteCollection(collections[idx++], next);
+    }
+    next();
+  });
+}
+
+
 let tpHour = 8;
 let tpMin = 0;
 

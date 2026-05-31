@@ -2417,40 +2417,70 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // ── Punch In / Out ──
 function punchIn(user, vehicle) {
-  onFirebaseReady(function() {
-    var fb = window._fb;
-    var now = new Date();
-    fb.addDoc(fb.collection(fb.db, 'timelog'), {
-      username: user.username,
-      name: user.name,
-      initials: user.initials,
-      color: user.color,
-      vehicle: vehicle ? ('#' + vehicle.num + ' · ' + vehicle.name) : '—',
-      vehicleNum: vehicle ? vehicle.num : '—',
-      action: 'in',
-      timestamp: fb.serverTimestamp(),
-      timeStr: now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0'),
-      dateStr: now.toLocaleDateString('is-IS'),
+  var now = new Date();
+  var timeStr = now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
+  var dateStr = now.toLocaleDateString('is-IS');
+  function saveLog(lat, lng) {
+    onFirebaseReady(function() {
+      var fb = window._fb;
+      var doc = {
+        username: user.username,
+        name: user.name,
+        initials: user.initials,
+        color: user.color,
+        vehicle: vehicle ? ('#' + vehicle.num + ' · ' + vehicle.name) : '—',
+        vehicleNum: vehicle ? vehicle.num : '—',
+        action: 'in',
+        timestamp: fb.serverTimestamp(),
+        timeStr: timeStr,
+        dateStr: dateStr,
+      };
+      if (lat !== null) { doc.lat = lat; doc.lng = lng; }
+      fb.addDoc(fb.collection(fb.db, 'timelog'), doc);
     });
-  });
+  }
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(
+      function(pos) { saveLog(pos.coords.latitude, pos.coords.longitude); },
+      function()    { saveLog(null, null); },
+      { enableHighAccuracy: true, timeout: 8000 }
+    );
+  } else {
+    saveLog(null, null);
+  }
 }
 
 function punchOut(user) {
-  onFirebaseReady(function() {
-    var fb = window._fb;
-    var now = new Date();
-    fb.addDoc(fb.collection(fb.db, 'timelog'), {
-      username: user.username,
-      name: user.name,
-      initials: user.initials,
-      color: user.color,
-      vehicle: '—',
-      action: 'out',
-      timestamp: fb.serverTimestamp(),
-      timeStr: now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0'),
-      dateStr: now.toLocaleDateString('is-IS'),
+  var now = new Date();
+  var timeStr = now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
+  var dateStr = now.toLocaleDateString('is-IS');
+  function saveLog(lat, lng) {
+    onFirebaseReady(function() {
+      var fb = window._fb;
+      var doc = {
+        username: user.username,
+        name: user.name,
+        initials: user.initials,
+        color: user.color,
+        vehicle: '—',
+        action: 'out',
+        timestamp: fb.serverTimestamp(),
+        timeStr: timeStr,
+        dateStr: dateStr,
+      };
+      if (lat !== null) { doc.lat = lat; doc.lng = lng; }
+      fb.addDoc(fb.collection(fb.db, 'timelog'), doc);
     });
-  });
+  }
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(
+      function(pos) { saveLog(pos.coords.latitude, pos.coords.longitude); },
+      function()    { saveLog(null, null); },
+      { enableHighAccuracy: true, timeout: 8000 }
+    );
+  } else {
+    saveLog(null, null);
+  }
 }
 
 function loadTimelog() {
@@ -2490,16 +2520,26 @@ function renderTimelog(logs) {
   logs.forEach(function(log) {
     var isIn = log.action === 'in';
     var color = isIn ? '#16a34a' : '#dc2626';
+    var bgColor = isIn ? '#f0fdf4' : '#fef2f2';
+    var borderColor = isIn ? '#bbf7d0' : '#fecaca';
     var icon = isIn ? '🟢' : '🔴';
     var label = isIn ? (currentLang==='en'?'Clock in':'Innstimplun') : (currentLang==='en'?'Clock out':'Útstimplun');
-    html += '<div style="display:flex;align-items:center;gap:12px;padding:10px 14px;background:#fff;border:1px solid #e2e8f0;border-radius:10px;margin-bottom:6px;">'
-      + '<div style="background:' + (log.color||'#64748b') + ';border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:700;flex-shrink:0;">' + (log.initials||'?') + '</div>'
+    var hasGps = log.lat && log.lng;
+    var mapsUrl = hasGps ? ('https://www.google.com/maps?q=' + log.lat + ',' + log.lng) : null;
+    var latRound = hasGps ? log.lat.toFixed(5) : null;
+    var lngRound = hasGps ? log.lng.toFixed(5) : null;
+    var gpsHtml = hasGps
+      ? '<a href="' + mapsUrl + '" target="_blank" style="display:inline-flex;align-items:center;gap:4px;background:#dbeafe;border:1px solid #bfdbfe;border-radius:7px;padding:2px 8px;color:#1d4ed8;font-size:10px;font-weight:700;text-decoration:none;margin-top:4px;">📍 ' + latRound + ', ' + lngRound + ' · Opna í Maps</a>'
+      : '<span style="font-size:10px;color:#94a3b8;">📍 GPS ekki tiltækt</span>';
+    html += '<div style="display:flex;align-items:flex-start;gap:12px;padding:10px 14px;background:' + bgColor + ';border:1px solid ' + borderColor + ';border-radius:10px;margin-bottom:6px;">'
+      + '<div style="background:' + (log.color||'#64748b') + ';border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:700;flex-shrink:0;margin-top:2px;">' + (log.initials||'?') + '</div>'
       + '<div style="flex:1;">'
       +   '<div style="font-size:13px;font-weight:700;color:#0f172a;">' + (log.name||'—') + ' <span style="color:' + color + ';font-size:11px;">' + icon + ' ' + label + '</span></div>'
       +   '<div style="font-size:11px;color:#64748b;margin-top:2px;">'
       +     (isIn && log.vehicle && log.vehicle!=='—' ? '🚛 ' + log.vehicle + ' · ' : '')
       +     (log.dateStr||'') + ' · ' + (log.timeStr||'')
       +   '</div>'
+      +   '<div style="margin-top:4px;">' + gpsHtml + '</div>'
       + '</div>'
       + '</div>';
   });
@@ -2977,12 +3017,31 @@ function buildCovBody(c, allTasks, isSub) {
   }
 
   var note = c.note ? '<div style="font-size:11px;color:#64748b;padding:8px 10px;background:#f8fafc;border-radius:8px;margin-bottom:10px;">💬 ' + c.note + '</div>' : '';
+
+  // Containers
+  var containersHtml = '';
+  if (c.containers && c.containers.length) {
+    containersHtml = '<div class="cov-section-lbl">Gámar skráðir á viðskiptavin (' + c.containers.length + ')</div>'
+      + '<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;">'
+      + c.containers.map(function(cont) {
+          return '<div style="display:flex;align-items:center;gap:6px;background:#fff7ed;border:1px solid #fed7aa;border-radius:8px;padding:5px 10px;">'
+            + '<span style="font-size:13px;">📦</span>'
+            + '<div><div style="font-size:12px;font-weight:700;color:#9a3412;">' + cont.num + '</div>'
+            + (cont.since ? '<div style="font-size:10px;color:#94a3b8;">Frá ' + cont.since + '</div>' : '')
+            + '</div></div>';
+        }).join('')
+      + '</div>';
+  } else {
+    containersHtml = '<div class="cov-section-lbl">Gámar skráðir á viðskiptavin</div>'
+      + '<div style="font-size:12px;color:#94a3b8;margin-bottom:12px;">Enginn gámur skráður</div>';
+  }
+
   var actions = '<div class="cov-actions">'
     + '<button class="cov-btn-edit" onclick="openCustomerPanel(&apos;' + c.id + '&apos;)">👤 Opna prófíl</button>'
     + '<button class="cov-btn-new" data-cname="' + c.name.replace(/"/g,"&quot;") + '" onclick="prefillNewTaskBtn(this)">+ Ný beiðni</button>'
     + '</div>';
 
-  return priceGrid + catsHtml + note + tasksHtml + actions;
+  return priceGrid + catsHtml + containersHtml + note + tasksHtml + actions;
 }
 
 function toggleCovCard(id) {
@@ -3022,11 +3081,11 @@ function prefillNewTask(companyName) {
 
 function getAllAdminTasks() {
   var tasks = [];
-  // Collect from admin open task list
+  var seenRefs = {};
+  // Collect from admin open task list (DOM)
   document.querySelectorAll('#admin-task-list .atask').forEach(function(el) {
     var nameEl = el.querySelector('.atask-name');
     var addrEl = el.querySelector('[data-field="addr"]');
-    var companyEl = el.querySelector('.atask-tag:not(.blue):not(.green)');
     tasks.push({
       name: nameEl ? nameEl.textContent : '',
       time: addrEl ? addrEl.textContent : '',
@@ -3034,9 +3093,12 @@ function getAllAdminTasks() {
       done: false
     });
   });
-  // Collect from admin done list
+  // Collect from admin done list (DOM) - now has dataset.company set
   document.querySelectorAll('#admin-done-list .atask').forEach(function(el) {
     var nameEl = el.querySelector('.atask-name');
+    var refEl = el.querySelector('[style*="10px"][style*="94a3b8"]');
+    var ref = refEl ? refEl.textContent.trim() : '';
+    if (ref) seenRefs[ref] = true;
     tasks.push({
       name: nameEl ? nameEl.textContent : '',
       timeStr: '',
@@ -3044,6 +3106,19 @@ function getAllAdminTasks() {
       done: true
     });
   });
+  // Also read from localStorage to catch tasks from previous sessions
+  try {
+    getStoredTasks().forEach(function(t) {
+      if (t.ref && seenRefs[t.ref]) return; // skip if already in DOM
+      if (!t.company || t.company === '—') return;
+      tasks.push({
+        name: t.title || '',
+        timeStr: t.timeStr || '',
+        company: t.company,
+        done: true
+      });
+    });
+  } catch(e) {}
   return tasks;
 }
 
@@ -3543,6 +3618,7 @@ function fbAddToDoneList(data) {
   var div = document.createElement('div');
   div.className = 'atask completed';
   div.setAttribute('data-fbid', data.fbId);
+  div.dataset.company = (data.company && data.company !== '—') ? data.company : '';
   div.innerHTML = '<div class="atask-top">'
     + '<div><div class="atask-name">' + (data.title||'Beiðni') + '</div>'
     + '<div class="atask-addr">' + (data.address||'—') + (data.date?' · 📅 '+data.date:'') + ' · Lokið ' + (data.timeStr||'') + '</div></div>'
@@ -4213,6 +4289,7 @@ function addToAdminDone(task,data){
   const tm=typeMap[type]||typeMap.ut;
   const div=document.createElement('div');
   div.className='atask completed';
+  div.dataset.company = (data.company && data.company !== '—') ? data.company : ((task && task.company) ? task.company : '');
   div.innerHTML=`
     <div class="atask-top">
       <div><div class="atask-name">${task?task.title:'Verkefni'}</div><div class="atask-addr">${task?task.sub:'—'} · Lokið ${data.timeStr}</div></div>

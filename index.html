@@ -1588,6 +1588,22 @@ function openCustomerPanel(custId) {
 
   var body = '';
 
+  // Ban status banner
+  if (c.banned) {
+    body += '<div style="background:#fef2f2;border:1px solid #fecaca;border-radius:12px;padding:12px 14px;margin-bottom:12px;display:flex;align-items:center;gap:10px;">'
+      + '<span style="font-size:20px;">🚫</span>'
+      + '<div style="flex:1;">'
+      +   '<div style="font-size:13px;font-weight:700;color:#dc2626;">Viðskiptavinur er í banni</div>'
+      +   (c.banReason ? '<div style="font-size:11px;color:#64748b;margin-top:2px;">Ástæða: ' + c.banReason + '</div>' : '')
+      + '</div>'
+      + '<button onclick="toggleCustomerBan(\'' + c.id + '\');closeCustomerPanel();" style="background:#dc2626;border:none;border-radius:8px;padding:6px 12px;color:#fff;font-size:12px;font-weight:700;cursor:pointer;flex-shrink:0;">✓ Afnáma bann</button>'
+      + '</div>';
+  } else {
+    body += '<div style="text-align:right;margin-bottom:8px;">'
+      + '<button onclick="toggleCustomerBan(\'' + c.id + '\');closeCustomerPanel();" style="background:#f1f5f9;border:1px solid #e2e8f0;border-radius:8px;padding:5px 12px;font-size:11px;font-weight:600;color:#64748b;cursor:pointer;">🚫 Setja í bann</button>'
+      + '</div>';
+  }
+
   // Stats
   body += '<div class="cpanel-section">';
   body += '<div class="cpanel-stats-row">'
@@ -2901,7 +2917,7 @@ function getStoredTasks() {
 function storeTask(task) {
   try {
     var tasks=getStoredTasks();
-    tasks.push(task);
+    tasks.push(Object.assign({}, task, { storedAt: Date.now() }));
     localStorage.setItem('fd_tasks',JSON.stringify(tasks));
   } catch(e){}
 }
@@ -3115,9 +3131,15 @@ function getAllAdminTasks() {
   });
   // Also read from localStorage to catch tasks from previous sessions
   try {
+    var resetAt = parseInt(localStorage.getItem('fd_resetAt') || '0');
     getStoredTasks().forEach(function(t) {
       if (t.ref && seenRefs[t.ref]) return; // skip if already in DOM
       if (!t.company || t.company === '—') return;
+      // Skip tasks stored before the last reset
+      if (resetAt > 0) {
+        var tMs = t.storedAt || 0;
+        if (tMs && tMs < resetAt) return;
+      }
       tasks.push({
         name: t.title || '',
         timeStr: t.timeStr || '',
@@ -3364,20 +3386,36 @@ function renderCustomerList() {
         chips += '<span class="cust-price-chip">🗑 ' + cat.name + ': <b>' + fmt(cat.price) + '</b></span>';
       });
     }
-    return '<div class="cust-card">'
+    var isBanned = !!c.banned;
+    var banBtn = isBanned
+      ? '<button onclick="toggleCustomerBan(\'' + c.id + '\')" style="background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:4px 10px;font-size:11px;font-weight:700;color:#dc2626;cursor:pointer;">✓ Afnáma bann</button>'
+      : '<button onclick="toggleCustomerBan(\'' + c.id + '\')" style="background:#f1f5f9;border:1px solid #e2e8f0;border-radius:8px;padding:4px 10px;font-size:11px;font-weight:600;color:#64748b;cursor:pointer;">🚫 Setja í bann</button>';
+    var bannedBanner = isBanned
+      ? '<div style="background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:7px 12px;margin-bottom:8px;display:flex;align-items:center;gap:8px;">'
+        + '<span style="font-size:13px;">🚫</span>'
+        + '<div style="flex:1;"><div style="font-size:12px;font-weight:700;color:#dc2626;">Viðskiptavinur í banni</div>'
+        + (c.banReason ? '<div style="font-size:11px;color:#64748b;">Ástæða: ' + c.banReason + '</div>' : '')
+        + '</div></div>'
+      : '';
+    return '<div class="cust-card" style="' + (isBanned ? 'border-color:#fecaca;background:#fff5f5;' : '') + '">'
       + '<div class="cust-card-hdr">'
       +   '<div style="display:flex;align-items:center;gap:10px;">'
-      +     '<div class="cust-av" style="background:' + col + '">' + ini + '</div>'
+      +     '<div class="cust-av" style="background:' + (isBanned ? '#dc2626' : col) + '">' + (isBanned ? '🚫' : ini) + '</div>'
       +     '<div>'
       +       '<div style="display:flex;align-items:center;gap:6px;">'
       +         '<span class="cust-name">' + c.name + '</span>'
       +         '<span class="cust-type-pill ' + (isSub ? 'cust-type-sub' : 'cust-type-nosub') + '">' + (isSub ? 'Áskrift' : 'Án áskriftar') + '</span>'
+      +         (isBanned ? '<span style="background:#fef2f2;border:1px solid #fecaca;border-radius:20px;padding:1px 8px;font-size:10px;font-weight:700;color:#dc2626;">🚫 Bannað</span>' : '')
       +       '</div>'
       +       '<div class="cust-meta">' + c.kt + ' &nbsp;·&nbsp; ' + c.email + ' &nbsp;·&nbsp; ' + c.phone + '</div>'
       +     '</div>'
       +   '</div>'
-      +   '<button class="atask-btn del" onclick="deleteCustomer(&apos;' + c.id + '&apos;)">✕ Eyða</button>'
+      +   '<div style="display:flex;gap:6px;align-items:center;">'
+      +     banBtn
+      +     '<button class="atask-btn del" onclick="deleteCustomer(\'' + c.id + '\')">✕ Eyða</button>'
+      +   '</div>'
       + '</div>'
+      + bannedBanner
       + '<div class="cust-price-chips">' + chips + '</div>'
       + (c.note ? '<div style="font-size:11px;color:#64748b;margin-top:8px;padding-top:8px;border-top:1px solid #f1f5f9;">💬 ' + c.note + '</div>' : '')
       + '</div>';
@@ -3620,6 +3658,16 @@ function fbAddToDoneList(data) {
   var list = document.getElementById('admin-done-list');
   if (!list) return;
   if (document.querySelector('[data-fbid="' + data.fbId + '"]')) return;
+
+  // Skip tasks created before the last reset
+  try {
+    var resetAt = parseInt(localStorage.getItem('fd_resetAt') || '0');
+    if (resetAt > 0 && data.createdAt) {
+      var taskMs = data.createdAt.toDate ? data.createdAt.toDate().getTime() : 0;
+      if (taskMs > 0 && taskMs < resetAt) return;
+    }
+  } catch(e) {}
+
   var type = data.type || 'ut';
   var tm = typeMap[type] || typeMap.ut;
   var div = document.createElement('div');
@@ -4397,6 +4445,15 @@ function createTask(){
   const aSkiptTekinn=document.getElementById('a-skipt-tekinn').value.trim();
   const aSkiptAfhentur=document.getElementById('a-skipt-afhentur').value.trim();
   if(!addr){showToast('Sláðu inn heimilisfang');return;}
+  // Ban check — block task creation for banned customers
+  if(aCompany) {
+    var allCusts = getCustomers();
+    var matchedCust = allCusts.find(function(x){ return x.name.toLowerCase() === aCompany.toLowerCase(); });
+    if(matchedCust && matchedCust.banned) {
+      showToast('🚫 ' + aCompany + ' er í banni — ekki hægt að stofna beiðni');
+      return;
+    }
+  }
   const type=document.getElementById('a-type').value;
   const aDate=document.getElementById('a-date')?document.getElementById('a-date').value:new Date().toISOString().split('T')[0];
   const size=document.getElementById('a-size').value;
@@ -4746,10 +4803,14 @@ function resetAppData() {
   }
   setStatus('⏳ Hreinsun hafin...', true);
 
-  // 1. Clear localStorage tasks
+  // 1. Set resetAt timestamp — used to filter out old tasks even if Firebase delete fails
+  var resetAt = Date.now();
+  try { localStorage.setItem('fd_resetAt', String(resetAt)); } catch(e) {}
+
+  // 2. Clear localStorage tasks
   try { localStorage.removeItem('fd_tasks'); } catch(e) {}
 
-  // 2. Reset containers on all customers (keep all other fields)
+  // 3. Reset containers on all customers (keep all other fields)
   try {
     var custs = getCustomers();
     custs = custs.map(function(c) {
@@ -4758,46 +4819,53 @@ function resetAppData() {
     saveCustomers(custs);
   } catch(e) {}
 
-  // 3. Clear DOM task lists
+  // 4. Clear DOM task lists and timelog
   var openList = document.getElementById('admin-task-list');
   var doneList = document.getElementById('admin-done-list');
   if (openList) openList.innerHTML = '';
   if (doneList) doneList.innerHTML = '';
-
-  // 4. Clear timelog DOM
   var timelogEl = document.getElementById('timelog-list');
   if (timelogEl) timelogEl.innerHTML = '<p style="color:#94a3b8;font-size:13px;text-align:center;padding:20px;">Engar skráningar.</p>';
 
-  // 5. Delete Firebase collections
+  // 5. Delete Firebase collections — with per-collection status
   onFirebaseReady(function() {
     var fb = window._fb;
-    var deleted = 0;
-    var total = 0;
-    var done = 0;
+    var results = {};
+    var collections = ['tasks', 'timelog', 'routes', 'drivers'];
+    var idx = 0;
 
     function deleteCollection(name, cb) {
       fb.getDocs(fb.collection(fb.db, name)).then(function(snap) {
-        if (snap.empty) { cb(); return; }
-        var dels = [];
-        snap.forEach(function(doc) {
-          dels.push(fb.deleteDoc(fb.doc(fb.db, name, doc.id)));
-          total++;
+        if (snap.empty) { results[name] = '0 skjöl'; cb(); return; }
+        var dels = snap.docs.map(function(doc) {
+          return fb.deleteDoc(fb.doc(fb.db, name, doc.id));
         });
-        Promise.all(dels).then(function() { deleted += dels.length; cb(); })
-          .catch(function(e) { console.warn('Villa við að eyða ' + name + ':', e); cb(); });
-      }).catch(function() { cb(); });
+        Promise.all(dels)
+          .then(function() { results[name] = '✓ ' + dels.length + ' eydd'; cb(); })
+          .catch(function(e) {
+            results[name] = '⚠ Villa (' + (e.code || e.message || 'óþekkt') + ')';
+            cb();
+          });
+      }).catch(function(e) {
+        results[name] = '⚠ Lesavilla';
+        cb();
+      });
     }
 
-    var collections = ['tasks', 'timelog', 'routes', 'drivers'];
-    var idx = 0;
     function next() {
       if (idx >= collections.length) {
-        // Refresh UI
         renderCustOverview();
         renderCustomerList();
         renderDriverCards();
-        updateDskStats && updateDskStats();
-        setStatus('✓ Hreinsun lokið! ' + deleted + ' færslur eyddar úr Firebase. Appið er tilbúið til alvöru notkunar.', true);
+        if (typeof updateDskStats === 'function') updateDskStats();
+        var summary = collections.map(function(n){ return n + ': ' + results[n]; }).join(' · ');
+        // Check if any collection had errors
+        var anyError = collections.some(function(n){ return (results[n]||'').indexOf('⚠') !== -1; });
+        if (anyError) {
+          setStatus('⚠ Hreinsun lokið með fyrirvara — ' + summary + '. Beiðnir sem ekki tókst að eyða úr Firebase verða sjálfkrafa síaðar út.', false);
+        } else {
+          setStatus('✓ Hreinsun lokið — ' + summary + '. Appið er tilbúið til alvöru notkunar.', true);
+        }
         return;
       }
       setStatus('⏳ Hreinsa ' + collections[idx] + '...', true);
@@ -4805,6 +4873,30 @@ function resetAppData() {
     }
     next();
   });
+}
+
+// ── Customer Ban Management ──
+function toggleCustomerBan(id) {
+  var custs = getCustomers();
+  var c = custs.find(function(x){ return x.id === id; });
+  if (!c) return;
+  if (c.banned) {
+    c.banned = false;
+    c.banReason = '';
+    saveCustomers(custs);
+    renderCustomerList();
+    renderCustOverview();
+    showToast('✓ Bann afnámað — ' + c.name);
+  } else {
+    var reason = prompt('Ástæða banns á ' + c.name + ':\n(t.d. "Ógreiddar reikningar", "Samningur útrunninn")', '');
+    if (reason === null) return;
+    c.banned = true;
+    c.banReason = reason.trim() || 'Ekki tilgreind';
+    saveCustomers(custs);
+    renderCustomerList();
+    renderCustOverview();
+    showToast('🚫 ' + c.name + ' sett í bann');
+  }
 }
 
 
@@ -4886,10 +4978,12 @@ function filterCompanyDD(q) {
   companyDDIndex = -1;
   dd.innerHTML = filtered.map(function(c, i) {
     var isSub = c.type === 'sub';
+    var isBanned = !!c.banned;
     var pill = '<span style="font-size:10px;font-weight:700;padding:1px 7px;border-radius:20px;margin-left:6px;background:' + (isSub ? '#fff7ed' : '#f1f5f9') + ';color:' + (isSub ? '#c2410c' : '#475569') + ';">' + (isSub ? 'Áskrift' : 'Án áskriftar') + '</span>';
-    return '<div class="ac-item" data-idx="' + i + '" onmousedown="pickCompany(' + i + ', ' + JSON.stringify(filtered).replace(/</g,'\u003c') + ')">'
-      + '<span class="ac-main">' + c.name + pill + '</span>'
-      + '<span class="ac-sub">' + c.kt + (c.phone ? ' · ' + c.phone : '') + '</span>'
+    var bannedPill = isBanned ? '<span style="font-size:10px;font-weight:700;padding:1px 7px;border-radius:20px;margin-left:4px;background:#fef2f2;color:#dc2626;border:1px solid #fecaca;">🚫 Bannað</span>' : '';
+    return '<div class="ac-item" data-idx="' + i + '" style="' + (isBanned ? 'background:#fff5f5;' : '') + '">'
+      + '<span class="ac-main">' + c.name + pill + bannedPill + '</span>'
+      + '<span class="ac-sub">' + c.kt + (c.phone ? ' · ' + c.phone : '') + (isBanned && c.banReason ? ' · 🚫 ' + c.banReason : '') + '</span>'
       + '</div>';
   }).join('');
   dd.style.display = 'block';
@@ -4899,9 +4993,17 @@ function filterCompanyDD(q) {
     var el = dd.querySelector('[data-idx="' + i + '"]');
     if (el) el.onmousedown = function() { pickCompanyObj(c); };
   });
-}
 
 function pickCompanyObj(c) {
+  if (c.banned) {
+    var msg = '🚫 ' + c.name + ' er í banni og er ekki hægt að skrá beiðni.\n\nÁstæða: ' + (c.banReason || 'Ekki tilgreind') + '\n\nFarðu í Viðskiptavinir flipann til að afnáma bannið.';
+    alert(msg);
+    document.getElementById('a-company').value = '';
+    document.getElementById('company-dd').style.display = 'none';
+    window._selectedCompanyKt = '';
+    window._selectedCompanyPhone = '';
+    return;
+  }
   document.getElementById('a-company').value = c.name;
   document.getElementById('company-dd').style.display = 'none';
   companyDDIndex = -1;

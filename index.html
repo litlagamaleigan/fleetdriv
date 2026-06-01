@@ -4383,6 +4383,7 @@ function proceedLogin(user) {
     populateDriverDropdown();
     fbListenAdminTasks();
     pushUsersToFirebase();
+  } else {
     // Store logged-in user globally
     window._currentUser = user;
     // Hide login screen and save session

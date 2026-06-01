@@ -167,6 +167,27 @@ body{background:#e8edf3;display:flex;justify-content:center;align-items:flex-sta
 .stop-info p:last-child{color:#64748b;font-size:11px;margin-top:2px;}
 .stop-time{color:#475569;font-size:11px;font-weight:600;margin-left:auto;}
 .msg-card{margin:8px 12px;background:#fff;border-radius:14px;padding:12px 14px;border:1px solid #e2e8f0;}
+/* ── Chat styles ── */
+.chat-driver-btn{display:flex;align-items:center;gap:10px;padding:10px 14px;background:#fff;border:1px solid #e2e8f0;border-radius:12px;margin-bottom:6px;cursor:pointer;width:100%;text-align:left;position:relative;}
+.chat-driver-btn:hover{background:#f8fafc;}
+.chat-driver-btn.active{border-color:#e8620a;background:#fff7f0;}
+.chat-unread{position:absolute;right:12px;top:50%;transform:translateY(-50%);background:#e8620a;color:#fff;border-radius:20px;padding:2px 8px;font-size:11px;font-weight:700;min-width:20px;text-align:center;}
+.chat-thread{display:flex;flex-direction:column;gap:6px;padding:10px 0;max-height:320px;overflow-y:auto;}
+.chat-bubble{max-width:78%;padding:9px 13px;border-radius:16px;font-size:13px;line-height:1.4;word-break:break-word;}
+.chat-bubble.from-admin{align-self:flex-end;background:#e8620a;color:#fff;border-bottom-right-radius:4px;}
+.chat-bubble.from-driver{align-self:flex-start;background:#f1f5f9;color:#0f172a;border-bottom-left-radius:4px;}
+.chat-meta{font-size:10px;margin-top:3px;opacity:0.7;}
+.chat-input-row{display:flex;gap:8px;margin-top:8px;}
+.chat-input-row input{flex:1;padding:10px 14px;border:1px solid #e2e8f0;border-radius:12px;font-size:13px;outline:none;}
+.chat-input-row input:focus{border-color:#e8620a;}
+.chat-send-btn{background:#e8620a;border:none;border-radius:12px;padding:10px 16px;color:#fff;font-size:13px;font-weight:700;cursor:pointer;flex-shrink:0;}
+/* Driver chat */
+.drv-chat-thread{display:flex;flex-direction:column;gap:6px;padding:10px 14px;flex:1;overflow-y:auto;}
+.drv-chat-input{display:flex;gap:8px;padding:10px 14px;border-top:1px solid #e2e8f0;background:#fff;}
+.drv-chat-input input{flex:1;padding:10px 14px;border:1px solid #e2e8f0;border-radius:20px;font-size:13px;outline:none;}
+.drv-chat-input input:focus{border-color:#e8620a;}
+.drv-chat-input button{background:#e8620a;border:none;border-radius:50%;width:40px;height:40px;color:#fff;font-size:18px;cursor:pointer;flex-shrink:0;}
+.chat-nav-badge{position:absolute;top:2px;right:2px;background:#e8620a;color:#fff;border-radius:50%;width:16px;height:16px;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;}
 .msg-from{color:#1d4ed8;font-size:11px;font-weight:700;margin-bottom:4px;}
 .msg-txt{color:#0f172a;font-size:13px;line-height:1.5;}
 .msg-time{color:#94a3b8;font-size:10px;margin-top:5px;}
@@ -862,17 +883,25 @@ body{background:#e8edf3;display:flex;justify-content:center;align-items:flex-sta
   <div class="screen" id="sc-skil">
     <div class="simple-hdr">
       <h2>Skilaboð</h2>
-      <p>Frá stjórnanda og kerfi</p>
+      <p>Samtal við stjórnanda</p>
     </div>
-    <div class="simple-body">
-      <div id="msg-list">
-        <!-- Skilaboð -->
+    <div style="display:flex;flex-direction:column;flex:1;overflow:hidden;">
+      <div class="drv-chat-thread" id="drv-chat-thread">
+        <p style="color:#94a3b8;font-size:13px;text-align:center;padding:20px;">Engin skilaboð enn.</p>
+      </div>
+      <div class="drv-chat-input">
+        <input type="text" id="drv-chat-input" placeholder="Skrifaðu skilaboð til admin..." onkeydown="if(event.key==='Enter')sendDriverMessage()"/>
+        <button onclick="sendDriverMessage()">➤</button>
       </div>
     </div>
     <div class="bottom-nav">
       <button class="nav-item" onclick="navTo('dash')"><svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg><span>Heim</span></button>
       <button class="nav-item" onclick="navTo('leid')"><svg viewBox="0 0 24 24"><path d="M21 3L3 10.53v.98l6.84 2.65L12.48 21h.98z"/></svg><span>Leið</span></button>
-      <button class="nav-item on" onclick="navTo('skil')"><svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/></svg><span>Skilaboð</span></button>
+      <button class="nav-item on" style="position:relative;" onclick="navTo('skil')" id="nav-skil">
+        <svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/></svg>
+        <span>Skilaboð</span>
+        <span id="drv-unread-badge" style="display:none;" class="chat-nav-badge">0</span>
+      </button>
       <button class="nav-item" onclick="navTo('prof')"><svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg><span>Prófíll</span></button>
     </div>
   </div>
@@ -951,6 +980,7 @@ body{background:#e8edf3;display:flex;justify-content:center;align-items:flex-sta
       <button class="admin-tab" onclick="adminTab('custoverview',this)">Yfirlit</button>
       <button class="admin-tab" onclick="adminTab('users',this)">Notendur</button>
       <button class="admin-tab" onclick="adminTab('settings',this)">Stillingar</button>
+      <button class="admin-tab" onclick="adminTab('chat',this)" id="chat-tab-btn">💬 Chat</button>
         <button class="admin-tab" onclick="adminTab('map',this)" id="map-tab-btn">🗺 Kort</button>
     </div>
 
@@ -1221,12 +1251,21 @@ body{background:#e8edf3;display:flex;justify-content:center;align-items:flex-sta
     <div class="admin-section" id="asec-drivers">
       <div id="driver-cards-list"></div>
 
-      <!-- TIMELOG -->
+      <!-- TÍMASAMANTEKT -->
       <div style="margin-top:16px;">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
-          <h4 style="font-size:13px;font-weight:700;color:#0f172a;">🕐 Innstimplun / Útstimplun</h4>
-          <button onclick="loadTimelog()" style="background:#f1f5f9;border:none;border-radius:8px;padding:5px 12px;font-size:11px;cursor:pointer;font-weight:600;">↻ Uppfæra</button>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px;">
+          <h4 style="font-size:13px;font-weight:700;color:#0f172a;">📊 Tímasamantekt</h4>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <select id="timelog-month-sel" onchange="loadTimelog()" style="border:1px solid #e2e8f0;border-radius:8px;padding:5px 10px;font-size:12px;font-weight:600;background:#fff;"></select>
+            <button onclick="loadTimelog()" style="background:#f1f5f9;border:none;border-radius:8px;padding:5px 12px;font-size:11px;cursor:pointer;font-weight:600;">↻ Uppfæra</button>
+          </div>
         </div>
+        <div id="timelog-summary"></div>
+      </div>
+
+      <!-- STIGA LOG -->
+      <div style="margin-top:16px;">
+        <h4 style="font-size:13px;font-weight:700;color:#0f172a;margin-bottom:10px;">🕐 Innstimplun / Útstimplun</h4>
         <div id="timelog-list">
           <p style="color:#94a3b8;font-size:13px;text-align:center;padding:20px;">Smelltu á Uppfæra til að sjá skráningar.</p>
         </div>
@@ -1552,6 +1591,23 @@ body{background:#e8edf3;display:flex;justify-content:center;align-items:flex-sta
         <p style="font-size:12px;color:#64748b;line-height:1.6;">FleetDriv v2 · Litla Gámaleigan · Gámakeyrslukerfi. Öll gögn fara sjálfkrafa í Google Sheets í gegnum SheetDB þegar ökumaður klárar beiðni.</p>
       </div>
     </div>
+
+    <!-- CHAT -->
+    <div class="admin-section" id="asec-chat">
+      <div id="chat-driver-btns" style="margin-bottom:12px;"></div>
+      <div id="chat-conv" style="display:none;">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+          <button onclick="closeChatConv()" style="background:#f1f5f9;border:none;border-radius:8px;padding:5px 12px;font-size:12px;font-weight:600;cursor:pointer;">← Til baka</button>
+          <div id="chat-conv-title" style="font-size:14px;font-weight:700;color:#0f172a;"></div>
+        </div>
+        <div class="chat-thread" id="chat-thread"></div>
+        <div class="chat-input-row">
+          <input type="text" id="chat-admin-input" placeholder="Skrifaðu skilaboð..." onkeydown="if(event.key==='Enter')sendAdminMessage()"/>
+          <button class="chat-send-btn" onclick="sendAdminMessage()">➤</button>
+        </div>
+      </div>
+    </div>
+
   </div>
 </div>
 
@@ -2506,66 +2562,238 @@ function punchOut(user) {
   }
 }
 
+function buildMonthOptions() {
+  var sel = document.getElementById('timelog-month-sel');
+  if (!sel || sel.options.length > 0) return;
+  var now = new Date();
+  for (var i = 0; i < 6; i++) {
+    var d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    var val = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
+    var months = ['Janúar','Febrúar','Mars','Apríl','Maí','Júní','Júlí','Ágúst','September','Október','Nóvember','Desember'];
+    var lbl = months[d.getMonth()] + ' ' + d.getFullYear();
+    var opt = document.createElement('option');
+    opt.value = val; opt.textContent = lbl;
+    sel.appendChild(opt);
+  }
+}
+
 function loadTimelog() {
+  buildMonthOptions();
+  var sel = document.getElementById('timelog-month-sel');
+  var selVal = sel ? sel.value : '';
+  var now = new Date();
+  var year = selVal ? parseInt(selVal.split('-')[0]) : now.getFullYear();
+  var month = selVal ? parseInt(selVal.split('-')[1]) - 1 : now.getMonth();
+  var monthStart = new Date(year, month, 1);
+  var monthEnd = new Date(year, month + 1, 0, 23, 59, 59);
+
   onFirebaseReady(function() {
     var fb = window._fb;
-    // Get last 7 days of timelog
-    var sevenDaysAgo = new Date();
-    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
     fb.getDocs(fb.query(
       fb.collection(fb.db, 'timelog'),
-      fb.orderBy('timestamp', 'desc')
+      fb.orderBy('timestamp', 'asc')
     )).then(function(snap) {
       var logs = [];
-      snap.forEach(function(doc) { logs.push(doc.data()); });
-      // Sort by timestamp desc
-      logs.sort(function(a,b) {
-        var ta = a.timestamp && a.timestamp.toDate ? a.timestamp.toDate().getTime() : 0;
-        var tb = b.timestamp && b.timestamp.toDate ? b.timestamp.toDate().getTime() : 0;
-        return tb - ta;
+      snap.forEach(function(doc) {
+        var d = doc.data();
+        if (d.timestamp && d.timestamp.toDate) {
+          var t = d.timestamp.toDate();
+          if (t >= monthStart && t <= monthEnd) logs.push(d);
+        }
       });
-      renderTimelog(logs);
+      logs.sort(function(a, b) {
+        var ta = a.timestamp.toDate().getTime();
+        var tb = b.timestamp.toDate().getTime();
+        return ta - tb;
+      });
+      var pairs = buildTimelogPairs(logs);
+      renderTimelogSummary(pairs);
+      renderTimelog(logs, pairs);
     }).catch(function(e) {
       console.warn('Timelog load error:', e);
-      renderTimelog([]);
+      renderTimelogSummary([]);
+      renderTimelog([], []);
     });
   });
 }
 
-function renderTimelog(logs) {
-  var container = document.getElementById('timelog-list');
+// ── Pair in/out records per driver per day ──
+function buildTimelogPairs(logs) {
+  // Group by username + dateStr
+  var byKey = {};
+  logs.forEach(function(log) {
+    var key = (log.username || log.name) + '|' + (log.dateStr || '');
+    if (!byKey[key]) byKey[key] = { name: log.name, initials: log.initials, color: log.color, username: log.username, dateStr: log.dateStr, ins: [], outs: [] };
+    if (log.action === 'in')  byKey[key].ins.push(log);
+    if (log.action === 'out') byKey[key].outs.push(log);
+  });
+
+  var pairs = [];
+  Object.keys(byKey).forEach(function(key) {
+    var g = byKey[key];
+    var inLog  = g.ins.length  ? g.ins[0]  : null;
+    var outLog = g.outs.length ? g.outs[g.outs.length - 1] : null;
+    var minutes = null;
+    if (inLog && outLog) {
+      var inMs  = inLog.timestamp  && inLog.timestamp.toDate  ? inLog.timestamp.toDate().getTime()  : parseTimeStr(inLog.timeStr);
+      var outMs = outLog.timestamp && outLog.timestamp.toDate ? outLog.timestamp.toDate().getTime() : parseTimeStr(outLog.timeStr);
+      minutes = Math.round((outMs - inMs) / 60000);
+      if (minutes < 0) minutes = 0;
+    }
+    var dagvinna  = minutes !== null ? Math.min(minutes, 480) : null;   // up to 8h
+    var yfirvinnu = minutes !== null ? Math.max(0, minutes - 480) : null; // over 8h
+    pairs.push({
+      name: g.name, initials: g.initials, color: g.color, username: g.username,
+      dateStr: g.dateStr, inLog: inLog, outLog: outLog,
+      minutes: minutes, dagvinna: dagvinna, yfirvinnu: yfirvinnu
+    });
+  });
+  return pairs;
+}
+
+function parseTimeStr(str) {
+  if (!str) return 0;
+  var p = str.split(':');
+  return (parseInt(p[0]) * 60 + parseInt(p[1])) * 60000;
+}
+
+function fmtMinutes(min) {
+  if (min === null || min === undefined) return '—';
+  var h = Math.floor(min / 60);
+  var m = min % 60;
+  return h + ':' + String(m).padStart(2, '0');
+}
+
+// ── Monthly summary per driver ──
+function renderTimelogSummary(pairs) {
+  var container = document.getElementById('timelog-summary');
   if (!container) return;
-  if (logs.length === 0) {
-    container.innerHTML = '<p style="color:#94a3b8;font-size:13px;text-align:center;padding:20px;">Engar skráningar.</p>';
+  if (!pairs.length) {
+    container.innerHTML = '<p style="color:#94a3b8;font-size:13px;text-align:center;padding:16px;">Engar tímaskráningar í þessum mánuði.</p>';
     return;
   }
-  var html = '';
-  logs.forEach(function(log) {
-    var isIn = log.action === 'in';
-    var color = isIn ? '#16a34a' : '#dc2626';
-    var bgColor = isIn ? '#f0fdf4' : '#fef2f2';
-    var borderColor = isIn ? '#bbf7d0' : '#fecaca';
-    var icon = isIn ? '🟢' : '🔴';
-    var label = isIn ? (currentLang==='en'?'Clock in':'Innstimplun') : (currentLang==='en'?'Clock out':'Útstimplun');
-    var hasGps = log.lat && log.lng;
-    var mapsUrl = hasGps ? ('https://www.google.com/maps?q=' + log.lat + ',' + log.lng) : null;
-    var latRound = hasGps ? log.lat.toFixed(5) : null;
-    var lngRound = hasGps ? log.lng.toFixed(5) : null;
-    var gpsHtml = hasGps
-      ? '<a href="' + mapsUrl + '" target="_blank" style="display:inline-flex;align-items:center;gap:4px;background:#dbeafe;border:1px solid #bfdbfe;border-radius:7px;padding:2px 8px;color:#1d4ed8;font-size:10px;font-weight:700;text-decoration:none;margin-top:4px;">📍 ' + latRound + ', ' + lngRound + ' · Opna í Maps</a>'
-      : '<span style="font-size:10px;color:#94a3b8;">📍 GPS ekki tiltækt</span>';
-    html += '<div style="display:flex;align-items:flex-start;gap:12px;padding:10px 14px;background:' + bgColor + ';border:1px solid ' + borderColor + ';border-radius:10px;margin-bottom:6px;">'
-      + '<div style="background:' + (log.color||'#64748b') + ';border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:700;flex-shrink:0;margin-top:2px;">' + (log.initials||'?') + '</div>'
-      + '<div style="flex:1;">'
-      +   '<div style="font-size:13px;font-weight:700;color:#0f172a;">' + (log.name||'—') + ' <span style="color:' + color + ';font-size:11px;">' + icon + ' ' + label + '</span></div>'
-      +   '<div style="font-size:11px;color:#64748b;margin-top:2px;">'
-      +     (isIn && log.vehicle && log.vehicle!=='—' ? '🚛 ' + log.vehicle + ' · ' : '')
-      +     (log.dateStr||'') + ' · ' + (log.timeStr||'')
+
+  // Aggregate per driver
+  var byDriver = {};
+  pairs.forEach(function(p) {
+    var key = p.username || p.name;
+    if (!byDriver[key]) byDriver[key] = { name: p.name, initials: p.initials, color: p.color, totalMin: 0, dagvinnaMin: 0, yfirvinnuMin: 0, shifts: 0, incomplete: 0 };
+    var d = byDriver[key];
+    d.shifts++;
+    if (p.minutes !== null) {
+      d.totalMin    += p.minutes;
+      d.dagvinnaMin += p.dagvinna;
+      d.yfirvinnuMin+= p.yfirvinnu;
+    } else {
+      d.incomplete++;
+    }
+  });
+
+  var html = '<div style="display:flex;flex-direction:column;gap:10px;margin-bottom:8px;">';
+  Object.values(byDriver).forEach(function(d) {
+    var hasOT = d.yfirvinnuMin > 0;
+    html += '<div style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:14px;">'
+      + '<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">'
+      +   '<div style="background:' + (d.color||'#64748b') + ';border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:700;flex-shrink:0;">' + (d.initials||'?') + '</div>'
+      +   '<div><div style="font-size:14px;font-weight:700;color:#0f172a;">' + d.name + '</div>'
+      +   '<div style="font-size:11px;color:#64748b;">' + d.shifts + ' vaktir' + (d.incomplete ? ' · ' + d.incomplete + ' óloknar' : '') + '</div></div>'
+      + '</div>'
+      + '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">'
+      +   '<div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:9px;padding:8px;text-align:center;">'
+      +     '<div style="font-size:17px;font-weight:800;color:#166534;">' + fmtMinutes(d.totalMin) + '</div>'
+      +     '<div style="font-size:10px;color:#64748b;font-weight:600;margin-top:2px;">Heildartímar</div>'
       +   '</div>'
-      +   '<div style="margin-top:4px;">' + gpsHtml + '</div>'
+      +   '<div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:9px;padding:8px;text-align:center;">'
+      +     '<div style="font-size:17px;font-weight:800;color:#1d4ed8;">' + fmtMinutes(d.dagvinnaMin) + '</div>'
+      +     '<div style="font-size:10px;color:#64748b;font-weight:600;margin-top:2px;">Dagvinna</div>'
+      +   '</div>'
+      +   '<div style="background:' + (hasOT ? '#fff7ed' : '#f8fafc') + ';border:1px solid ' + (hasOT ? '#fed7aa' : '#e2e8f0') + ';border-radius:9px;padding:8px;text-align:center;">'
+      +     '<div style="font-size:17px;font-weight:800;color:' + (hasOT ? '#c2410c' : '#94a3b8') + ';">' + fmtMinutes(d.yfirvinnuMin) + '</div>'
+      +     '<div style="font-size:10px;color:#64748b;font-weight:600;margin-top:2px;">Yfirvinnu</div>'
+      +   '</div>'
       + '</div>'
       + '</div>';
   });
+  html += '</div>';
+  container.innerHTML = html;
+}
+
+// ── Detailed timelog with paired rows ──
+function renderTimelog(logs, pairs) {
+  var container = document.getElementById('timelog-list');
+  if (!container) return;
+  if (!logs.length) {
+    container.innerHTML = '<p style="color:#94a3b8;font-size:13px;text-align:center;padding:20px;">Engar skráningar.</p>';
+    return;
+  }
+
+  // Build a lookup map: username|dateStr -> pair
+  var pairMap = {};
+  if (pairs) {
+    pairs.forEach(function(p) {
+      pairMap[(p.username||p.name) + '|' + p.dateStr] = p;
+    });
+  }
+
+  // Group logs by date for display
+  var byDate = {};
+  var dateOrder = [];
+  logs.slice().reverse().forEach(function(log) {
+    var d = log.dateStr || '—';
+    if (!byDate[d]) { byDate[d] = []; dateOrder.push(d); }
+    byDate[d].push(log);
+  });
+  // Deduplicate dateOrder
+  dateOrder = dateOrder.filter(function(v, i, a){ return a.indexOf(v) === i; });
+
+  var html = '';
+  dateOrder.forEach(function(dateStr) {
+    html += '<div style="font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px;margin:10px 0 6px;">' + dateStr + '</div>';
+
+    // Find all pairs for this date
+    var datePairs = pairs ? pairs.filter(function(p){ return p.dateStr === dateStr; }) : [];
+    var shownUsers = {};
+
+    datePairs.forEach(function(p) {
+      shownUsers[p.username || p.name] = true;
+      var hasHours = p.minutes !== null;
+      var inTime  = p.inLog  ? p.inLog.timeStr  : '—';
+      var outTime = p.outLog ? p.outLog.timeStr : '—';
+      var inGps   = p.inLog  && p.inLog.lat  ? '<a href="https://www.google.com/maps?q=' + p.inLog.lat + ',' + p.inLog.lng + '" target="_blank" style="color:#1d4ed8;font-size:10px;text-decoration:none;">📍 Inn</a>' : '';
+      var outGps  = p.outLog && p.outLog.lat ? '<a href="https://www.google.com/maps?q=' + p.outLog.lat + ',' + p.outLog.lng + '" target="_blank" style="color:#dc2626;font-size:10px;text-decoration:none;">📍 Út</a>' : '';
+
+      html += '<div style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:#fff;border:1px solid #e2e8f0;border-radius:10px;margin-bottom:6px;">'
+        + '<div style="background:' + (p.color||'#64748b') + ';border-radius:50%;width:34px;height:34px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px;font-weight:700;flex-shrink:0;">' + (p.initials||'?') + '</div>'
+        + '<div style="flex:1;">'
+        +   '<div style="font-size:12px;font-weight:700;color:#0f172a;">' + (p.name||'—') + '</div>'
+        +   '<div style="display:flex;align-items:center;gap:8px;margin-top:3px;flex-wrap:wrap;">'
+        +     '<span style="font-size:11px;color:#16a34a;">🟢 ' + inTime + '</span>'
+        +     (inGps ? '<span>' + inGps + '</span>' : '')
+        +     '<span style="color:#94a3b8;">→</span>'
+        +     (p.outLog ? '<span style="font-size:11px;color:#dc2626;">🔴 ' + outTime + '</span>' : '<span style="font-size:11px;color:#f59e0b;">⏳ Á vakt</span>')
+        +     (outGps ? '<span>' + outGps + '</span>' : '')
+        +     (p.inLog && p.inLog.vehicle && p.inLog.vehicle !== '—' ? '<span style="font-size:10px;color:#64748b;">🚛 ' + p.inLog.vehicle + '</span>' : '')
+        +   '</div>'
+        + '</div>'
+        + (hasHours ? '<div style="text-align:right;flex-shrink:0;">'
+        +   '<div style="font-size:14px;font-weight:800;color:#0f172a;">' + fmtMinutes(p.minutes) + '</div>'
+        +   '<div style="font-size:9px;font-weight:600;color:#64748b;">HEILD</div>'
+        +   (p.yfirvinnu > 0 ? '<div style="font-size:9px;color:#c2410c;font-weight:600;">+' + fmtMinutes(p.yfirvinnu) + ' YV</div>' : '')
+        + '</div>' : '<div style="font-size:10px;color:#f59e0b;font-weight:600;flex-shrink:0;">Á vakt</div>')
+        + '</div>';
+    });
+
+    // Show any unpaired logs (e.g. only in or only out with no pair)
+    byDate[dateStr].forEach(function(log) {
+      if (shownUsers[log.username || log.name]) return;
+      var isIn = log.action === 'in';
+      html += '<div style="display:flex;align-items:center;gap:10px;padding:8px 14px;background:' + (isIn?'#f0fdf4':'#fef2f2') + ';border:1px solid ' + (isIn?'#bbf7d0':'#fecaca') + ';border-radius:10px;margin-bottom:6px;opacity:0.8;">'
+        + '<div style="background:' + (log.color||'#64748b') + ';border-radius:50%;width:34px;height:34px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px;font-weight:700;flex-shrink:0;">' + (log.initials||'?') + '</div>'
+        + '<div style="flex:1;font-size:12px;color:#64748b;">' + (log.name||'—') + ' · ' + (isIn ? '🟢 Innstimplun ' : '🔴 Útstimplun ') + log.timeStr + ' · Engin samsvörun</div>'
+        + '</div>';
+    });
+  });
+
   container.innerHTML = html;
 }
 
@@ -3644,14 +3872,80 @@ function fbListenAdminTasks() {
           // Add to done list
           fbAddToDoneList(data);
 
-        } else if (data.status === 'open' && change.type === 'added') {
-          // Tag matching untagged admin card with fbid (fallback for timing issues)
-          var untagged = document.querySelector('#admin-task-list .atask:not([data-fbid])');
-          if (untagged) untagged.setAttribute('data-fbid', data.fbId);
+        } else if (data.status === 'open') {
+          if (change.type === 'added') {
+            // If card already exists in DOM (just created this session), just tag it
+            var untagged = document.querySelector('#admin-task-list .atask:not([data-fbid])');
+            if (untagged) {
+              untagged.setAttribute('data-fbid', data.fbId);
+            } else if (!document.querySelector('#admin-task-list [data-fbid="' + data.fbId + '"]')) {
+              // Card doesn't exist — build it from Firebase data (e.g. after page reload)
+              fbAddToOpenList(data);
+            }
+          } else if (change.type === 'removed') {
+            var card = document.querySelector('#admin-task-list [data-fbid="' + data.fbId + '"]');
+            if (card) card.remove();
+          }
         }
       });
     });
   });
+}
+
+function fbAddToOpenList(data) {
+  var list = document.getElementById('admin-task-list');
+  if (!list) return;
+  if (document.querySelector('#admin-task-list [data-fbid="' + data.fbId + '"]')) return;
+
+  // Skip tasks created before the last reset
+  try {
+    var resetAt = parseInt(localStorage.getItem('fd_resetAt') || '0');
+    if (resetAt > 0 && data.createdAt) {
+      var taskMs = data.createdAt.toDate ? data.createdAt.toDate().getTime() : 0;
+      if (taskMs > 0 && taskMs < resetAt) return;
+    }
+  } catch(e) {}
+
+  var type = data.type || 'ut';
+  var tm = typeMap[type] || typeMap.ut;
+  var driverColor = data.driverColor || '#64748b';
+  var driverInitials = data.driverInitials || '?';
+  var driverName = data.driverName || '—';
+  var addr = data.address || '—';
+  var time = data.time || '';
+  var size = data.size || '';
+  var disposal = data.disposal || '';
+  var note = data.note || '';
+
+  var div = document.createElement('div');
+  div.className = 'atask';
+  div.setAttribute('data-fbid', data.fbId);
+  div.dataset.company = data.company || '';
+  div.innerHTML = '<div class="atask-top">'
+    + '<div><div class="atask-name">' + (data.title || tm.name) + '</div>'
+    + '<div class="atask-addr" data-field="addr">' + addr + (time ? ' · ' + time : '') + (data.date && data.date !== new Date().toISOString().split('T')[0] ? ' · 📅 ' + data.date : '') + '</div></div>'
+    + '<span class="admin-badge-pill ' + tm.adminBadge + '">' + tm.name + '</span>'
+    + '</div>'
+    + '<div class="atask-tags">'
+    + (size ? '<span class="atask-tag" data-field="size">' + size + '</span>' : '')
+    + (disposal && disposal !== '—' ? '<span class="atask-tag blue" data-field="disposal">→ ' + disposal + '</span>' : '')
+    + (data.company && data.company !== '—' ? '<span class="atask-tag">🏢 ' + data.company + '</span>' : '')
+    + '</div>'
+    + '<div class="atask-foot">'
+    +   '<div class="atask-driver-wrap"><div class="driver-dot" style="background:' + driverColor + '">' + driverInitials + '</div><span class="driver-name">' + driverName + '</span></div>'
+    +   '<div class="atask-actions">'
+    +     '<button class="atask-btn" onclick="toggleOpenEdit(this)">✏ Breyta</button>'
+    +     '<button class="atask-btn del" onclick="deleteOpenTask(this)">✕ Eyða</button>'
+    +   '</div>'
+    + '</div>'
+    + '<div class="edit-form open-task-edit">'
+    +   '<label>Heimilisfang</label><input type="text" data-update="addr" value="' + addr + '"/>'
+    +   '<label>Tími</label><input type="time" data-update="time" value="' + time + '"/>'
+    +   '<label>Athugasemd</label><textarea data-update="note" rows="2">' + note + '</textarea>'
+    +   '<button class="edit-save" onclick="saveOpenEdit(this)">✓ Vista</button>'
+    + '</div>';
+  list.appendChild(div);
+  updateDskStats && updateDskStats();
 }
 
 function fbAddToDoneList(data) {
@@ -4045,6 +4339,7 @@ function doLogin(){
       setActiveNav('dash');
       startDriverGPS();
       fbListenDriverTasks(user.username);
+      initDriverChat(user.username);
       setTimeout(function(){ if(currentLang==='en') translatePage('en'); }, 300);
     };
     showVehicleSelect(user, _pendingVehicleCallback);
@@ -4088,6 +4383,7 @@ function navTo(key){
   const map={dash:'sc-dash',leid:'sc-leid',skil:'sc-skil',prof:'sc-prof'};
   show(map[key]);
   setActiveNav(key);
+  if (key === 'skil') onDriverChatOpen();
 }
 
 // ── Task detail ──
@@ -4424,7 +4720,8 @@ function adminTab(tab,el){
   document.querySelectorAll('.admin-section').forEach(s=>s.classList.remove('active'));
   document.getElementById('asec-'+tab).classList.add('active');
   if(tab==='custoverview') renderCustOverview();
-  if(tab==='drivers') { renderDriverCards(); loadTimelog(); }
+  if(tab==='drivers') { renderDriverCards(); buildMonthOptions(); loadTimelog(); }
+  if(tab==='chat') { loadChatUnreadCounts(); }
   if(tab==='map') {
     setTimeout(function(){
       initAdminMap();
@@ -4776,7 +5073,243 @@ function loadSavedUrl(){
 }
 
 
-// ── Reset Test Data ──
+// ── Chat System ──
+var chatUnsubscribe = null;
+var chatCurrentDriver = null; // { username, name, color, initials }
+var drvChatUnsubscribe = null;
+
+// ── Admin: render driver buttons ──
+function renderChatDriverBtns(unreadCounts) {
+  var list = document.getElementById('chat-driver-btns');
+  if (!list) return;
+  var drivers = DEFAULT_USERS.filter(function(u){ return u.role === 'driver'; });
+  if (!drivers.length) { list.innerHTML = '<p style="color:#94a3b8;font-size:13px;">Enginn ökumaður skráður.</p>'; return; }
+  list.innerHTML = '<div style="font-size:12px;font-weight:700;color:#64748b;margin-bottom:8px;">Veldu ökumann til að opna samtal</div>'
+    + drivers.map(function(d) {
+        var unread = (unreadCounts && unreadCounts[d.username]) || 0;
+        var isActive = chatCurrentDriver && chatCurrentDriver.username === d.username;
+        return '<button class="chat-driver-btn' + (isActive ? ' active' : '') + '" onclick="openChatConv(' + JSON.stringify(d).replace(/"/g,'&quot;') + ')">'
+          + '<div style="background:' + d.color + ';border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:700;flex-shrink:0;">' + d.initials + '</div>'
+          + '<div><div style="font-size:13px;font-weight:700;color:#0f172a;">' + d.name + '</div>'
+          + '<div style="font-size:11px;color:#64748b;">' + d.username + '</div></div>'
+          + (unread > 0 ? '<span class="chat-unread">' + unread + '</span>' : '')
+          + '</button>';
+      }).join('');
+}
+
+function openChatConv(driver) {
+  chatCurrentDriver = driver;
+  document.getElementById('chat-driver-btns').style.display = 'none';
+  var conv = document.getElementById('chat-conv');
+  conv.style.display = 'block';
+  document.getElementById('chat-conv-title').innerHTML =
+    '<div style="display:flex;align-items:center;gap:8px;"><div style="background:' + driver.color + ';border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px;font-weight:700;">' + driver.initials + '</div>' + driver.name + '</div>';
+  loadChatThread(driver.username);
+}
+
+function closeChatConv() {
+  if (chatUnsubscribe) { chatUnsubscribe(); chatUnsubscribe = null; }
+  chatCurrentDriver = null;
+  document.getElementById('chat-conv').style.display = 'none';
+  document.getElementById('chat-driver-btns').style.display = 'block';
+  loadChatUnreadCounts();
+}
+
+function loadChatThread(driverUsername) {
+  if (chatUnsubscribe) { chatUnsubscribe(); chatUnsubscribe = null; }
+  var thread = document.getElementById('chat-thread');
+  thread.innerHTML = '<p style="color:#94a3b8;font-size:12px;text-align:center;">Hleð...</p>';
+  var threadId = 'admin_' + driverUsername;
+  onFirebaseReady(function() {
+    var fb = window._fb;
+    var q = fb.query(
+      fb.collection(fb.db, 'messages'),
+      fb.where('thread', '==', threadId),
+      fb.orderBy('timestamp', 'asc')
+    );
+    chatUnsubscribe = fb.onSnapshot(q, function(snap) {
+      var msgs = [];
+      snap.forEach(function(doc) { msgs.push(Object.assign({ id: doc.id }, doc.data())); });
+      renderChatThread(msgs, driverUsername);
+      // Mark driver messages as read
+      snap.forEach(function(doc) {
+        var d = doc.data();
+        if (d.fromRole === 'driver' && !d.read) {
+          fb.updateDoc(fb.doc(fb.db, 'messages', doc.id), { read: true });
+        }
+      });
+    });
+  });
+}
+
+function renderChatThread(msgs, driverUsername) {
+  var thread = document.getElementById('chat-thread');
+  if (!thread) return;
+  if (!msgs.length) {
+    thread.innerHTML = '<p style="color:#94a3b8;font-size:12px;text-align:center;padding:20px;">Engin skilaboð enn — sendu fyrsta skilaboðið!</p>';
+    return;
+  }
+  thread.innerHTML = msgs.map(function(m) {
+    var isAdmin = m.fromRole === 'admin';
+    var t = m.timestamp && m.timestamp.toDate ? m.timestamp.toDate() : null;
+    var tStr = t ? t.getHours().toString().padStart(2,'0') + ':' + t.getMinutes().toString().padStart(2,'0') : '';
+    return '<div style="display:flex;flex-direction:column;align-items:' + (isAdmin ? 'flex-end' : 'flex-start') + ';margin-bottom:2px;">'
+      + '<div class="chat-bubble ' + (isAdmin ? 'from-admin' : 'from-driver') + '">'
+      + escHtml(m.text)
+      + '<div class="chat-meta">' + (isAdmin ? 'Admin' : m.fromName) + ' · ' + tStr + (isAdmin && !m.read ? ' · ✓' : isAdmin ? ' · ✓✓' : '') + '</div>'
+      + '</div></div>';
+  }).join('');
+  thread.scrollTop = thread.scrollHeight;
+}
+
+function sendAdminMessage() {
+  var input = document.getElementById('chat-admin-input');
+  var text = input ? input.value.trim() : '';
+  if (!text || !chatCurrentDriver) return;
+  input.value = '';
+  var threadId = 'admin_' + chatCurrentDriver.username;
+  onFirebaseReady(function() {
+    var fb = window._fb;
+    fb.addDoc(fb.collection(fb.db, 'messages'), {
+      thread: threadId,
+      from: 'admin',
+      fromName: 'Admin',
+      fromRole: 'admin',
+      to: chatCurrentDriver.username,
+      toName: chatCurrentDriver.name,
+      text: text,
+      timestamp: fb.serverTimestamp(),
+      read: false
+    });
+  });
+}
+
+function loadChatUnreadCounts() {
+  onFirebaseReady(function() {
+    var fb = window._fb;
+    fb.getDocs(fb.query(
+      fb.collection(fb.db, 'messages'),
+      fb.where('fromRole', '==', 'driver'),
+      fb.where('read', '==', false)
+    )).then(function(snap) {
+      var counts = {};
+      snap.forEach(function(doc) {
+        var d = doc.data();
+        var uname = d.from || '';
+        counts[uname] = (counts[uname] || 0) + 1;
+      });
+      renderChatDriverBtns(counts);
+    }).catch(function() { renderChatDriverBtns({}); });
+  });
+}
+
+// ── Driver: chat with admin ──
+function initDriverChat(username) {
+  if (drvChatUnsubscribe) { drvChatUnsubscribe(); drvChatUnsubscribe = null; }
+  var threadId = 'admin_' + username;
+  onFirebaseReady(function() {
+    var fb = window._fb;
+    var q = fb.query(
+      fb.collection(fb.db, 'messages'),
+      fb.where('thread', '==', threadId),
+      fb.orderBy('timestamp', 'asc')
+    );
+    drvChatUnsubscribe = fb.onSnapshot(q, function(snap) {
+      var msgs = [];
+      var unread = 0;
+      snap.forEach(function(doc) {
+        var d = Object.assign({ id: doc.id }, doc.data());
+        msgs.push(d);
+        if (d.fromRole === 'admin' && !d.read) unread++;
+      });
+      renderDriverChat(msgs, username);
+      updateDrvUnreadBadge(unread);
+      // Mark admin messages as read if chat screen is open
+      if (document.getElementById('sc-skil').classList.contains('active')) {
+        snap.forEach(function(doc) {
+          var d = doc.data();
+          if (d.fromRole === 'admin' && !d.read) {
+            fb.updateDoc(fb.doc(fb.db, 'messages', doc.id), { read: true });
+          }
+        });
+        updateDrvUnreadBadge(0);
+      }
+    });
+  });
+}
+
+function renderDriverChat(msgs, username) {
+  var thread = document.getElementById('drv-chat-thread');
+  if (!thread) return;
+  if (!msgs.length) {
+    thread.innerHTML = '<p style="color:#94a3b8;font-size:13px;text-align:center;padding:20px;">Engin skilaboð enn.</p>';
+    return;
+  }
+  thread.innerHTML = msgs.map(function(m) {
+    var isAdmin = m.fromRole === 'admin';
+    var t = m.timestamp && m.timestamp.toDate ? m.timestamp.toDate() : null;
+    var tStr = t ? t.getHours().toString().padStart(2,'0') + ':' + t.getMinutes().toString().padStart(2,'0') : '';
+    return '<div style="display:flex;flex-direction:column;align-items:' + (isAdmin ? 'flex-start' : 'flex-end') + ';margin-bottom:2px;">'
+      + '<div class="chat-bubble ' + (isAdmin ? 'from-driver' : 'from-admin') + '" style="' + (isAdmin ? '' : 'background:#e8620a;color:#fff;') + '">'
+      + escHtml(m.text)
+      + '<div class="chat-meta">' + (isAdmin ? 'Admin' : 'Þú') + ' · ' + tStr + '</div>'
+      + '</div></div>';
+  }).join('');
+  thread.scrollTop = thread.scrollHeight;
+}
+
+function sendDriverMessage() {
+  var input = document.getElementById('drv-chat-input');
+  var text = input ? input.value.trim() : '';
+  var user = window._currentUser;
+  if (!text || !user) return;
+  input.value = '';
+  var threadId = 'admin_' + user.username;
+  onFirebaseReady(function() {
+    var fb = window._fb;
+    fb.addDoc(fb.collection(fb.db, 'messages'), {
+      thread: threadId,
+      from: user.username,
+      fromName: user.name,
+      fromRole: 'driver',
+      to: 'admin',
+      toName: 'Admin',
+      text: text,
+      timestamp: fb.serverTimestamp(),
+      read: false
+    });
+  });
+}
+
+function updateDrvUnreadBadge(count) {
+  var badge = document.getElementById('drv-unread-badge');
+  if (!badge) return;
+  if (count > 0) { badge.textContent = count; badge.style.display = 'flex'; }
+  else { badge.style.display = 'none'; }
+}
+
+// Mark messages as read when driver opens chat screen
+function onDriverChatOpen() {
+  var user = window._currentUser;
+  if (!user) return;
+  onFirebaseReady(function() {
+    var fb = window._fb;
+    var threadId = 'admin_' + user.username;
+    fb.getDocs(fb.query(
+      fb.collection(fb.db, 'messages'),
+      fb.where('thread', '==', threadId),
+      fb.where('fromRole', '==', 'admin'),
+      fb.where('read', '==', false)
+    )).then(function(snap) {
+      snap.forEach(function(doc) {
+        fb.updateDoc(fb.doc(fb.db, 'messages', doc.id), { read: true });
+      });
+      updateDrvUnreadBadge(0);
+    });
+  });
+}
+
+
 function confirmReset() {
   var ok = confirm(
     'Þetta mun eyða:\n\n' +
@@ -4826,6 +5359,8 @@ function resetAppData() {
   if (doneList) doneList.innerHTML = '';
   var timelogEl = document.getElementById('timelog-list');
   if (timelogEl) timelogEl.innerHTML = '<p style="color:#94a3b8;font-size:13px;text-align:center;padding:20px;">Engar skráningar.</p>';
+  var summaryEl = document.getElementById('timelog-summary');
+  if (summaryEl) summaryEl.innerHTML = '';
 
   // 5. Delete Firebase collections — with per-collection status
   onFirebaseReady(function() {

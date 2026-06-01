@@ -2827,7 +2827,7 @@ function showReassignPanel(btn) {
   panel.className = 'reassign-panel';
   panel.style.cssText = 'padding:10px 14px;background:#f0fdf4;border-top:1px solid #bbf7d0;';
   
-  var drivers = DEFAULT_USERS.filter(function(u){ return u.role==='driver'; });
+  var drivers = getUsers().filter(function(u){ return u.role==='driver'; });
   var opts = drivers.map(function(d) {
     return '<option value="' + d.username + '" data-name="' + d.name + '" data-initials="' + d.initials + '" data-color="' + d.color + '">' + d.name + '</option>';
   }).join('');
@@ -2954,7 +2954,7 @@ function updateDskDrivers() {
   var list = document.getElementById('dsk-drivers');
   if (!list) return;
   list.innerHTML = '';
-  DEFAULT_USERS.filter(function(u){ return u.role==='driver'; }).forEach(function(u) {
+  getUsers().filter(function(u){ return u.role==='driver'; }).forEach(function(u) {
     var online = window._onlineDrivers && window._onlineDrivers[u.username];
     var row = document.createElement('div');
     row.style.cssText = 'display:flex;align-items:center;gap:8px;padding:5px 4px;';
@@ -3771,6 +3771,11 @@ function createUser() {
   users.push(newUser);
   window._fdUsers = users;
   saveUsers(users);
+  // Also save to Firebase so other devices can log in
+  onFirebaseReady(function() {
+    var fb = window._fb;
+    fb.setDoc(fb.doc(fb.db, 'users', newUser.id), newUser).catch(function(e){ console.warn('Firebase user save:', e); });
+  });
 
   // Clear form
   document.getElementById('u-name').value='';
@@ -3792,6 +3797,11 @@ function deleteUser(id) {
   if (!confirm('Eyða þessum notanda?')) return;
   window._fdUsers = getUsers().filter(u => u.id !== id);
   saveUsers(window._fdUsers);
+  // Also delete from Firebase
+  onFirebaseReady(function() {
+    var fb = window._fb;
+    fb.deleteDoc(fb.doc(fb.db, 'users', id)).catch(function(){});
+  });
   renderUsersList();
   showToast('Notanda eytt');
 }
@@ -4268,16 +4278,50 @@ function setRole(r,el){
 function doLogin(){
   const username = document.getElementById('login-user').value.trim();
   const password = document.getElementById('login-pw') ? document.getElementById('login-pw').value : document.querySelector('.login-form input[type="password"]').value;
-  const users = getUsers();
-  const user = users.find(u => u.username === username && u.password === password);
-
   const errEl = document.getElementById('login-error');
-  if (!user) {
-    if (errEl) { errEl.style.display='block'; errEl.textContent='⚠ Rangt notandanafn eða lykilorð.'; }
-    return;
-  }
-  if (errEl) errEl.style.display='none';
 
+  function attemptLogin(users) {
+    const user = users.find(u => u.username === username && u.password === password);
+    if (!user) {
+      if (errEl) { errEl.style.display='block'; errEl.textContent='⚠ Rangt notandanafn eða lykilorð.'; }
+      return false;
+    }
+    if (errEl) errEl.style.display='none';
+    proceedLogin(user);
+    return true;
+  }
+
+  // Try local first
+  const localUsers = getUsers();
+  if (attemptLogin(localUsers)) return;
+
+  // Not found locally — check Firebase (covers users created on other devices)
+  if (errEl) { errEl.style.display='block'; errEl.textContent='⏳ Athuga...'; }
+  onFirebaseReady(function() {
+    var fb = window._fb;
+    fb.getDocs(fb.collection(fb.db, 'users')).then(function(snap) {
+      var fbUsers = [];
+      snap.forEach(function(doc) { fbUsers.push(doc.data()); });
+      // Merge Firebase users into local cache
+      if (fbUsers.length) {
+        var merged = localUsers.slice();
+        fbUsers.forEach(function(fu) {
+          if (!merged.find(function(u){ return u.id === fu.id; })) merged.push(fu);
+        });
+        window._fdUsers = merged;
+        saveUsers(merged);
+      }
+      var allUsers = window._fdUsers || localUsers;
+      if (!attemptLogin(allUsers)) {
+        if (errEl) { errEl.style.display='block'; errEl.textContent='⚠ Rangt notandanafn eða lykilorð.'; }
+      }
+    }).catch(function() {
+      if (errEl) { errEl.style.display='block'; errEl.textContent='⚠ Rangt notandanafn eða lykilorð.'; }
+    });
+  });
+}
+
+function proceedLogin(user) {
   const n=new Date();
   const daysIS_al=['Sun','Mán','Þri','Mið','Fim','Fös','Lau'];
   const daysEN_al=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
@@ -5082,7 +5126,7 @@ var drvChatUnsubscribe = null;
 function renderChatDriverBtns(unreadCounts) {
   var list = document.getElementById('chat-driver-btns');
   if (!list) return;
-  var drivers = DEFAULT_USERS.filter(function(u){ return u.role === 'driver'; });
+  var drivers = getUsers().filter(function(u){ return u.role === 'driver'; });
   if (!drivers.length) { list.innerHTML = '<p style="color:#94a3b8;font-size:13px;">Enginn ökumaður skráður.</p>'; return; }
   list.innerHTML = '<div style="font-size:12px;font-weight:700;color:#64748b;margin-bottom:8px;">Veldu ökumann til að opna samtal</div>'
     + drivers.map(function(d) {
@@ -5743,7 +5787,7 @@ var _pendingVehicleCallback = null;
 function renderDriverCards() {
   var list = document.getElementById('driver-cards-list');
   if (!list) return;
-  var drivers = DEFAULT_USERS.filter(function(u){ return u.role === 'driver'; });
+  var drivers = getUsers().filter(function(u){ return u.role === 'driver'; });
   list.innerHTML = '';
   drivers.forEach(function(u) {
     var isOnline = window._onlineDrivers && window._onlineDrivers[u.username];

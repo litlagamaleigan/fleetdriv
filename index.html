@@ -506,7 +506,7 @@ body{background:#e8edf3;display:flex;justify-content:center;align-items:flex-sta
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getFirestore, collection, addDoc, getDocs, onSnapshot, query, where, orderBy, doc, updateDoc, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, getDocs, onSnapshot, query, where, orderBy, doc, updateDoc, deleteDoc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
     import { getStorage, ref, uploadString, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
     const firebaseConfig = {
       apiKey: "AIzaSyD5dmkhOX3K5w1PA3Zi_lYlnXgjvfAtSLs",
@@ -519,7 +519,7 @@ body{background:#e8edf3;display:flex;justify-content:center;align-items:flex-sta
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
     const storage = getStorage(app);
-    window._fb = { db, storage, collection, addDoc, getDocs, onSnapshot, query, where, orderBy, doc, updateDoc, deleteDoc, serverTimestamp, ref, uploadString, getDownloadURL };
+    window._fb = { db, storage, collection, addDoc, getDocs, onSnapshot, query, where, orderBy, doc, updateDoc, deleteDoc, setDoc, serverTimestamp, ref, uploadString, getDownloadURL };
     window._fbReady = true;
     document.dispatchEvent(new Event('firebase-ready'));
   </script>

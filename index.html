@@ -3831,10 +3831,45 @@ function renderUsersList() {
   }).join('');
 }
 
-// Call on page load
+// Call on page load — sync users from Firebase before anyone tries to log in
 document.addEventListener('DOMContentLoaded', function() {
   if (!window._fdUsers) window._fdUsers = loadUsers();
+  // Sync Firebase users into localStorage so all devices have the full user list
+  syncUsersFromFirebase();
 });
+
+function syncUsersFromFirebase() {
+  onFirebaseReady(function() {
+    var fb = window._fb;
+    fb.getDocs(fb.collection(fb.db, 'users')).then(function(snap) {
+      if (snap.empty) return;
+      var fbUsers = [];
+      snap.forEach(function(doc) { fbUsers.push(doc.data()); });
+      var local = getUsers();
+      var changed = false;
+      fbUsers.forEach(function(fu) {
+        if (!fu.username || !fu.password) return;
+        var exists = local.find(function(u){ return u.id === fu.id || u.username === fu.username; });
+        if (!exists) { local.push(fu); changed = true; }
+      });
+      if (changed) {
+        window._fdUsers = local;
+        saveUsers(local);
+      }
+    }).catch(function(e){ console.warn('User sync failed:', e); });
+  });
+}
+
+function pushUsersToFirebase() {
+  onFirebaseReady(function() {
+    var fb = window._fb;
+    var users = getUsers();
+    users.forEach(function(u) {
+      if (!u.id || !u.username) return;
+      fb.setDoc(fb.doc(fb.db, 'users', u.id), u).catch(function(){});
+    });
+  });
+}
 
 
 // ── Firebase Integration ──
@@ -4347,7 +4382,7 @@ function proceedLogin(user) {
     renderCustOverview();
     populateDriverDropdown();
     fbListenAdminTasks();
-  } else {
+    pushUsersToFirebase();
     // Store logged-in user globally
     window._currentUser = user;
     // Hide login screen and save session

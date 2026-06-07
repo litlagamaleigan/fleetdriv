@@ -3515,15 +3515,9 @@ function getAllAdminTasks() {
   });
   // Also read from localStorage to catch tasks from previous sessions
   try {
-    var resetAt = parseInt(localStorage.getItem('fd_resetAt') || '0');
     getStoredTasks().forEach(function(t) {
-      if (t.ref && seenRefs[t.ref]) return; // skip if already in DOM
+      if (t.ref && seenRefs[t.ref]) return;
       if (!t.company || t.company === '—') return;
-      // Skip tasks stored before the last reset
-      if (resetAt > 0) {
-        var tMs = t.storedAt || 0;
-        if (tMs && tMs < resetAt) return;
-      }
       tasks.push({
         name: t.title || '',
         timeStr: t.timeStr || '',
@@ -4068,20 +4062,22 @@ function fbListenAdminTasks() {
         data.fbId = change.doc.id;
 
         if (data.status === 'completed') {
-          // Remove from open list if present
           var openCard = document.querySelector('#admin-task-list [data-fbid="' + data.fbId + '"]');
           if (openCard) openCard.remove();
-          // Add to done list
           fbAddToDoneList(data);
 
         } else if (data.status === 'open') {
           if (change.type === 'added') {
-            // If card already exists in DOM (just created this session), just tag it
             var untagged = document.querySelector('#admin-task-list .atask:not([data-fbid])');
             if (untagged) {
               untagged.setAttribute('data-fbid', data.fbId);
             } else if (!document.querySelector('#admin-task-list [data-fbid="' + data.fbId + '"]')) {
-              // Card doesn't exist — build it from Firebase data (e.g. after page reload)
+              fbAddToOpenList(data);
+            }
+          } else if (change.type === 'modified') {
+            // Update existing card or add if missing
+            var existing = document.querySelector('#admin-task-list [data-fbid="' + data.fbId + '"]');
+            if (!existing) {
               fbAddToOpenList(data);
             }
           } else if (change.type === 'removed') {
@@ -4098,15 +4094,6 @@ function fbAddToOpenList(data) {
   var list = document.getElementById('admin-task-list');
   if (!list) return;
   if (document.querySelector('#admin-task-list [data-fbid="' + data.fbId + '"]')) return;
-
-  // Skip tasks created before the last reset
-  try {
-    var resetAt = parseInt(localStorage.getItem('fd_resetAt') || '0');
-    if (resetAt > 0 && data.createdAt) {
-      var taskMs = data.createdAt.toDate ? data.createdAt.toDate().getTime() : 0;
-      if (taskMs > 0 && taskMs < resetAt) return;
-    }
-  } catch(e) {}
 
   var type = data.type || 'ut';
   var tm = typeMap[type] || typeMap.ut;
@@ -4154,15 +4141,6 @@ function fbAddToDoneList(data) {
   var list = document.getElementById('admin-done-list');
   if (!list) return;
   if (document.querySelector('[data-fbid="' + data.fbId + '"]')) return;
-
-  // Skip tasks created before the last reset
-  try {
-    var resetAt = parseInt(localStorage.getItem('fd_resetAt') || '0');
-    if (resetAt > 0 && data.createdAt) {
-      var taskMs = data.createdAt.toDate ? data.createdAt.toDate().getTime() : 0;
-      if (taskMs > 0 && taskMs < resetAt) return;
-    }
-  } catch(e) {}
 
   var type = data.type || 'ut';
   var tm = typeMap[type] || typeMap.ut;
@@ -4960,6 +4938,7 @@ function adminTab(tab,el){
   document.getElementById('asec-'+tab).classList.add('active');
   if(tab==='custoverview') renderCustOverview();
   if(tab==='drivers') { renderDriverCards(); buildMonthOptions(); loadTimelog(); }
+  if(tab==='tasks') { refreshAdminTasks(); }
   if(tab==='chat') { loadChatUnreadCounts(); }
   if(tab==='map') {
     setTimeout(function(){

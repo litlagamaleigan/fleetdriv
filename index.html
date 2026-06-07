@@ -1821,7 +1821,7 @@ function tryAutoLogin() {
       renderCustomerList();
       renderCustOverview();
       populateDriverDropdown();
-      fbListenAdminTasks();
+      refreshAdminTasks();
     } else {
       resumeDriverShift(user);
     }
@@ -4056,7 +4056,11 @@ function fbListenAdminTasks() {
     var fb = window._fb;
     var q = fb.query(fb.collection(fb.db, 'tasks'));
     if (fbUnsubscribeTasks) fbUnsubscribeTasks();
+    var isFirst = true;
     fbUnsubscribeTasks = fb.onSnapshot(q, function(snapshot) {
+      // Skip the initial snapshot — getDocs already handled it
+      if (isFirst) { isFirst = false; return; }
+
       snapshot.docChanges().forEach(function(change) {
         var data = change.doc.data();
         data.fbId = change.doc.id;
@@ -4067,17 +4071,8 @@ function fbListenAdminTasks() {
           fbAddToDoneList(data);
 
         } else if (data.status === 'open') {
-          if (change.type === 'added') {
-            var untagged = document.querySelector('#admin-task-list .atask:not([data-fbid])');
-            if (untagged) {
-              untagged.setAttribute('data-fbid', data.fbId);
-            } else if (!document.querySelector('#admin-task-list [data-fbid="' + data.fbId + '"]')) {
-              fbAddToOpenList(data);
-            }
-          } else if (change.type === 'modified') {
-            // Update existing card or add if missing
-            var existing = document.querySelector('#admin-task-list [data-fbid="' + data.fbId + '"]');
-            if (!existing) {
+          if (change.type === 'added' || change.type === 'modified') {
+            if (!document.querySelector('#admin-task-list [data-fbid="' + data.fbId + '"]')) {
               fbAddToOpenList(data);
             }
           } else if (change.type === 'removed') {
@@ -4086,6 +4081,7 @@ function fbListenAdminTasks() {
           }
         }
       });
+      updateDskStats && updateDskStats();
     });
   });
 }
@@ -4506,7 +4502,7 @@ function proceedLogin(user) {
     renderCustomerList();
     renderCustOverview();
     populateDriverDropdown();
-    fbListenAdminTasks();
+    refreshAdminTasks();
     pushUsersToFirebase();
   } else {
     // Store logged-in user globally
@@ -5760,14 +5756,44 @@ function resetAppData() {
 }
 
 function refreshAdminTasks() {
-  // Unsubscribe and re-subscribe to get fresh snapshot
+  // Cancel real-time listener
   if (fbUnsubscribeTasks) { fbUnsubscribeTasks(); fbUnsubscribeTasks = null; }
+
   var openList = document.getElementById('admin-task-list');
   var doneList = document.getElementById('admin-done-list');
-  if (openList) openList.innerHTML = '';
+  if (openList) openList.innerHTML = '<div style="text-align:center;padding:20px;color:#94a3b8;font-size:13px;">⏳ Sæki beiðnir...</div>';
   if (doneList) doneList.innerHTML = '';
-  fbListenAdminTasks();
-  showToast('↻ Beiðnir uppfærðar');
+
+  onFirebaseReady(function() {
+    var fb = window._fb;
+
+    // 1. Directly fetch ALL tasks once — reliable initial load
+    fb.getDocs(fb.collection(fb.db, 'tasks')).then(function(snap) {
+      if (openList) openList.innerHTML = '';
+      if (doneList) doneList.innerHTML = '';
+
+      snap.forEach(function(doc) {
+        var data = doc.data();
+        data.fbId = doc.id;
+        if (data.status === 'open') {
+          fbAddToOpenList(data);
+        } else if (data.status === 'completed') {
+          fbAddToDoneList(data);
+        }
+      });
+
+      updateDskStats && updateDskStats();
+
+      // 2. After initial load, set up real-time listener for NEW changes only
+      fbListenAdminTasks();
+
+    }).catch(function(e) {
+      console.error('getDocs villa:', e);
+      if (openList) openList.innerHTML = '<div style="text-align:center;padding:20px;color:#dc2626;font-size:13px;">⚠ Villa við að sækja beiðnir: ' + (e.code || e.message) + '</div>';
+      // Try listener as fallback
+      fbListenAdminTasks();
+    });
+  });
 }
 
 

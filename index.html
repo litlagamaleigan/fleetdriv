@@ -506,7 +506,7 @@ body{background:#e8edf3;display:flex;justify-content:center;align-items:flex-sta
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getFirestore, collection, addDoc, getDocs, onSnapshot, query, where, orderBy, doc, updateDoc, deleteDoc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, getDocs, getDoc, onSnapshot, query, where, orderBy, doc, updateDoc, deleteDoc, setDoc, serverTimestamp, Timestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
     import { getStorage, ref, uploadString, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
     const firebaseConfig = {
       apiKey: "AIzaSyD5dmkhOX3K5w1PA3Zi_lYlnXgjvfAtSLs",
@@ -519,7 +519,7 @@ body{background:#e8edf3;display:flex;justify-content:center;align-items:flex-sta
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
     const storage = getStorage(app);
-    window._fb = { db, storage, collection, addDoc, getDocs, onSnapshot, query, where, orderBy, doc, updateDoc, deleteDoc, setDoc, serverTimestamp, ref, uploadString, getDownloadURL };
+    window._fb = { db, storage, collection, addDoc, getDocs, getDoc, onSnapshot, query, where, orderBy, doc, updateDoc, deleteDoc, setDoc, serverTimestamp, Timestamp, ref, uploadString, getDownloadURL };
     window._fbReady = true;
     document.dispatchEvent(new Event('firebase-ready'));
   </script>
@@ -2619,6 +2619,16 @@ function buildMonthOptions() {
   }
 }
 
+// ── Robust timestamp conversion — handles Firestore Timestamp, JS Date, seconds object ──
+function toJsDate(ts) {
+  if (!ts) return null;
+  if (ts.toDate) return ts.toDate();                          // Firestore Timestamp
+  if (ts instanceof Date) return ts;                          // JS Date
+  if (ts.seconds) return new Date(ts.seconds * 1000);        // {seconds, nanoseconds}
+  if (typeof ts === 'number') return new Date(ts);            // milliseconds
+  return null;
+}
+
 function loadTimelog() {
   buildMonthOptions();
   var sel = document.getElementById('timelog-month-sel');
@@ -2639,15 +2649,25 @@ function loadTimelog() {
       snap.forEach(function(doc) {
         var d = doc.data();
         d.fbDocId = doc.id;
-        if (d.timestamp && d.timestamp.toDate) {
-          var t = d.timestamp.toDate();
+        var t = toJsDate(d.timestamp);
+        if (t) {
           if (t >= monthStart && t <= monthEnd) logs.push(d);
+        } else if (d.dateStr) {
+          // Fallback: parse dateStr if timestamp is missing/invalid
+          var parts = d.dateStr.replace(/\s/g,'').split('.');
+          if (parts.length === 3) {
+            var fallbackDate = new Date(parts[2] + '-' + parts[1].padStart(2,'0') + '-' + parts[0].padStart(2,'0'));
+            if (!isNaN(fallbackDate) && fallbackDate >= monthStart && fallbackDate <= monthEnd) {
+              d._fallbackDate = fallbackDate;
+              logs.push(d);
+            }
+          }
         }
       });
       logs.sort(function(a, b) {
-        var ta = a.timestamp.toDate().getTime();
-        var tb = b.timestamp.toDate().getTime();
-        return ta - tb;
+        var ta = toJsDate(a.timestamp) || a._fallbackDate || new Date(0);
+        var tb = toJsDate(b.timestamp) || b._fallbackDate || new Date(0);
+        return ta.getTime() - tb.getTime();
       });
       var pairs = buildTimelogPairs(logs);
       renderTimelogSummary(pairs);
@@ -2660,9 +2680,33 @@ function loadTimelog() {
   });
 }
 
-// ── Pair in/out records — supports multiple sessions per day ──
+var _IS_DAYS = ['Sun', 'Mán', 'Þri', 'Mið', 'Fim', 'Fös', 'Lau'];
+var _IS_DAYS_FULL = ['Sunnudagur', 'Mánudagur', 'Þriðjudagur', 'Miðvikudagur', 'Fimmtudagur', 'Föstudagur', 'Laugardagur'];
+
+function parseDateStr(dateStr) {
+  if (!dateStr) return null;
+  var parts = dateStr.replace(/\s/g, '').split('.');
+  if (parts.length !== 3) return null;
+  var d = new Date(parts[2] + '-' + parts[1].padStart(2,'0') + '-' + parts[0].padStart(2,'0'));
+  return isNaN(d.getTime()) ? null : d;
+}
+
+function getDayOfWeek(dateStr) {
+  var d = parseDateStr(dateStr);
+  return d ? _IS_DAYS[d.getDay()] : '';
+}
+
+function isWeekend(dateStr) {
+  var d = parseDateStr(dateStr);
+  if (!d) return false;
+  var day = d.getDay();
+  return day === 0 || day === 6; // 0=Sun, 6=Sat
+}
+
+
 function tsOf(l) {
-  return l.timestamp && l.timestamp.toDate ? l.timestamp.toDate().getTime() : parseTimeStr(l.timeStr);
+  var t = toJsDate(l.timestamp);
+  return t ? t.getTime() : parseTimeStr(l.timeStr);
 }
 
 function buildTimelogPairs(logs) {
@@ -2739,9 +2783,15 @@ function renderTimelogSummary(pairs) {
     var k = day.username;
     if (!byDriver[k]) byDriver[k] = { name: day.name, initials: day.initials, color: day.color, totalMin: 0, dagvinnaMin: 0, yfirvinnuMin: 0, daysWorked: 0 };
     var d = byDriver[k];
+    var wknd = isWeekend(day.dateStr);
     d.totalMin    += day.totalMin;
-    d.dagvinnaMin += Math.min(day.totalMin, 480);   // up to 8h per day
-    d.yfirvinnuMin+= Math.max(0, day.totalMin - 480); // over 8h
+    if (wknd) {
+      // Weekend: all hours are overtime
+      d.yfirvinnuMin += day.totalMin;
+    } else {
+      d.dagvinnaMin  += Math.min(day.totalMin, 480);   // up to 8h
+      d.yfirvinnuMin += Math.max(0, day.totalMin - 480); // over 8h
+    }
     d.daysWorked++;
   });
 
@@ -2817,6 +2867,9 @@ function renderTimelog(logs, pairs) {
   var html = '';
   dateOrder.forEach(function(dateStr) {
     var dayPairs = byDate[dateStr] || [];
+    var dayName = getDayOfWeek(dateStr);
+    var wknd = isWeekend(dateStr);
+
     // Group by driver within this date
     var byDriver = {};
     dayPairs.forEach(function(p) {
@@ -2825,13 +2878,17 @@ function renderTimelog(logs, pairs) {
       byDriver[k].pairs.push(p);
     });
 
-    html += '<div style="font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px;margin:12px 0 6px;">' + dateStr + '</div>';
+    // Date header with day name and weekend highlight
+    html += '<div style="display:flex;align-items:center;gap:8px;margin:12px 0 6px;">'
+      + '<span style="font-size:11px;font-weight:700;color:' + (wknd ? '#dc2626' : '#94a3b8') + ';text-transform:uppercase;letter-spacing:0.5px;">' + dateStr + '</span>'
+      + (dayName ? '<span style="font-size:10px;font-weight:700;padding:1px 8px;border-radius:20px;background:' + (wknd ? '#fef2f2' : '#f1f5f9') + ';color:' + (wknd ? '#dc2626' : '#64748b') + ';">' + dayName + (wknd ? ' · Yfirvinnu' : '') + '</span>' : '')
+      + '</div>';
 
     Object.values(byDriver).forEach(function(drv) {
       var totalMin = drv.pairs.reduce(function(s,p){ return s + (p.minutes||0); }, 0);
       var hasMulti = drv.pairs.length > 1;
-      var dagvinnaDay = Math.min(totalMin, 480);
-      var yfirvinnuDay = Math.max(0, totalMin - 480);
+      var dagvinnaDay = wknd ? 0 : Math.min(totalMin, 480);
+      var yfirvinnuDay = wknd ? totalMin : Math.max(0, totalMin - 480);
 
       html += '<div style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;margin-bottom:8px;overflow:hidden;">';
 
@@ -2860,12 +2917,12 @@ function renderTimelog(logs, pairs) {
           + (hasMulti ? '<div style="font-size:10px;font-weight:700;color:#94a3b8;min-width:16px;text-align:center;">' + (idx+1) + '</div>' : '<div style="min-width:16px;"></div>')
           + '<div style="flex:1;display:flex;align-items:center;gap:8px;flex-wrap:wrap;">'
           +   '<span style="font-size:12px;color:#16a34a;font-weight:600;">' + inGps + '🟢 ' + inTime
-          +   (p.inLog && p.inLog.fbDocId ? ' <button onclick="editTimelogEntry(\'' + p.inLog.fbDocId + '\',\'in\')" style="background:none;border:none;font-size:10px;cursor:pointer;color:#94a3b8;padding:0;">✏</button>' : '')
+          +   (p.inLog && p.inLog.fbDocId ? ' <button onclick="editTimelogEntry(\'' + p.inLog.fbDocId + '\',\'in\')" style="background:#f1f5f9;border:1px solid #e2e8f0;border-radius:6px;font-size:11px;cursor:pointer;color:#475569;padding:2px 5px;margin-left:2px;">✏</button>' : '')
           +   '</span>'
           +   '<span style="color:#cbd5e1;font-size:11px;">→</span>'
           +   (p.outLog
                 ? '<span style="font-size:12px;color:#dc2626;font-weight:600;">' + outGps + '🔴 ' + outTime
-                  + (p.outLog.fbDocId ? ' <button onclick="editTimelogEntry(\'' + p.outLog.fbDocId + '\',\'out\')" style="background:none;border:none;font-size:10px;cursor:pointer;color:#94a3b8;padding:0;">✏</button>' : '')
+                  + (p.outLog.fbDocId ? ' <button onclick="editTimelogEntry(\'' + p.outLog.fbDocId + '\',\'out\')" style="background:#f1f5f9;border:1px solid #e2e8f0;border-radius:6px;font-size:11px;cursor:pointer;color:#475569;padding:2px 5px;margin-left:2px;">✏</button>' : '')
                   + '</span>'
                 : '<span style="font-size:11px;color:#f59e0b;font-weight:600;">⏳ Á vakt '
                   + (p.inLog && p.inLog.fbDocId ? '<button onclick="addMissingPunchOut(\'' + p.inLog.fbDocId + '\',\'' + (p.inLog.username||'') + '\',\'' + (p.inLog.dateStr||'') + '\')" style="background:#fff7ed;border:1px solid #fed7aa;border-radius:6px;font-size:10px;cursor:pointer;color:#c2410c;padding:1px 6px;">+ Skrá út</button>' : '')
@@ -5267,25 +5324,25 @@ function editTimelogEntry(fbDocId, action) {
   if (!modal) return;
 
   title.textContent = (action === 'in' ? '🟢 Breyta innstimplun' : '🔴 Breyta útstimplun');
+  timeInput.value = '';
+  dateInput.value = '';
 
-  // Load current values from Firebase
+  // Fetch the specific document using getDoc
   onFirebaseReady(function() {
     var fb = window._fb;
-    fb.getDocs(fb.query(fb.collection(fb.db, 'timelog'))).then(function() {}).catch(function(){});
-    // Get the specific doc
-    fb.getDocs(fb.collection(fb.db, 'timelog')).then(function(snap) {
-      snap.forEach(function(doc) {
-        if (doc.id === fbDocId) {
-          var d = doc.data();
-          timeInput.value = d.timeStr || '';
-          // Convert IS date to ISO for date input
-          if (d.dateStr) {
-            var parts = d.dateStr.split('.');
-            if (parts.length === 3) dateInput.value = parts[2].trim() + '-' + parts[1].padStart(2,'0') + '-' + parts[0].padStart(2,'0');
+    fb.getDoc(fb.doc(fb.db, 'timelog', fbDocId)).then(function(docSnap) {
+      if (docSnap.exists()) {
+        var d = docSnap.data();
+        timeInput.value = d.timeStr || '';
+        if (d.dateStr) {
+          // Convert IS date dd.mm.yyyy to ISO yyyy-mm-dd for date input
+          var parts = d.dateStr.replace(/\s/g,'').split('.');
+          if (parts.length === 3) {
+            dateInput.value = parts[2] + '-' + parts[1].padStart(2,'0') + '-' + parts[0].padStart(2,'0');
           }
         }
-      });
-    });
+      }
+    }).catch(function(e) { console.warn('getDoc error:', e); });
   });
 
   modal.style.display = 'flex';
@@ -5303,28 +5360,28 @@ function saveTimelogEdit() {
   var dateVal = document.getElementById('timelog-edit-date').value;
   if (!timeVal) { showToast('⚠ Sláðu inn tíma'); return; }
 
-  // Convert ISO date to IS format
+  // Convert ISO date back to IS format dd.mm.yyyy
   var dateStr = '';
   if (dateVal) {
     var dp = dateVal.split('-');
     if (dp.length === 3) dateStr = dp[2] + '.' + dp[1] + '.' + dp[0];
   }
 
-  // Build new timestamp from date + time
+  // Build actual JavaScript Date from the inputs so timestamp is correct
   var newTimestamp = null;
   if (dateVal && timeVal) {
-    var tp = timeVal.split(':');
-    var newDate = new Date(dateVal + 'T' + timeVal + ':00');
-    if (!isNaN(newDate.getTime())) newTimestamp = newDate;
+    newTimestamp = new Date(dateVal + 'T' + timeVal + ':00');
+    if (isNaN(newTimestamp.getTime())) newTimestamp = null;
   }
 
   onFirebaseReady(function() {
     var fb = window._fb;
-    var updates = { timeStr: timeVal };
+    var updates = { timeStr: timeVal, editedByAdmin: true };
     if (dateStr) updates.dateStr = dateStr;
-    if (newTimestamp) updates.timestamp = fb.serverTimestamp(); // can't set exact past time, update timeStr/dateStr
+    // Store as plain JS Date — Firestore converts it to Timestamp automatically
+    // This ensures loadTimelog can always read it back via toJsDate()
+    if (newTimestamp) updates.timestamp = newTimestamp;
 
-    // Use a direct Firestore Timestamp if possible
     fb.updateDoc(fb.doc(fb.db, 'timelog', _timelogEditDocId), updates)
       .then(function() {
         showToast('✓ Tímaskráning uppfærð');

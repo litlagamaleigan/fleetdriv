@@ -13,7 +13,10 @@ body.admin-active .admin-panel{width:100%;max-width:100%;border-radius:0;box-sha
 body.admin-active .admin-hdr{flex-shrink:0;}
 body.admin-active .admin-body{flex:1;overflow:hidden;padding:0;min-height:0;}
 body.admin-active #dsk-body{height:100%;display:grid !important;}
-body.admin-active #dsk-main{height:100%;}
+body.admin-active #dsk-main{overflow-y:auto;}
+body.admin-active #admin-sections{display:block !important;}
+body.admin-active #admin-sections .admin-section{display:none;}
+body.admin-active #admin-sections .admin-section.active{display:block !important;}
 
 /* ── PHONE FRAME ── */
 .phone{width:390px;background:#0a0f1a;border-radius:48px;overflow:hidden;border:10px solid #141b28;position:relative;flex-shrink:0;box-shadow:0 24px 64px rgba(0,0,0,0.35);}
@@ -3041,12 +3044,21 @@ function initDesktopAdminMode() {
   if (!isDesktop()) return;
   document.body.classList.add('admin-mode');
   document.body.classList.add('admin-active');
+
   // Show desktop layout
   var dskBody = document.getElementById('dsk-body');
   if (dskBody) dskBody.style.display = 'grid';
-  // Hide mobile sections wrapper
+
+  // Move admin-sections INTO dsk-main so it appears in the right column
+  var dskMain = document.getElementById('dsk-main');
+  var adminSections = document.getElementById('admin-sections');
   var dskMobile = document.getElementById('dsk-mobile');
+  if (dskMain && adminSections) {
+    dskMain.appendChild(adminSections);
+    adminSections.style.display = 'block';
+  }
   if (dskMobile) dskMobile.style.display = 'none';
+
   updateDskStats();
   updateDskDrivers();
   dskShowSection('tasks');
@@ -3058,27 +3070,16 @@ function exitDesktopAdminMode() {
   document.body.classList.remove('admin-active');
   var dskBody = document.getElementById('dsk-body');
   if (dskBody) dskBody.style.display = 'none';
-  var dskMobile = document.getElementById('dsk-mobile');
-  if (dskMobile) dskMobile.style.display = '';
 }
 
 function dskShowSection(tab) {
-  var container = document.getElementById('dsk-section');
-  if (!container) return;
-
-  // Clear container — but save any section it currently holds back to admin-sections
-  var adminSections = document.getElementById('admin-sections');
-  while (container.firstChild) {
-    if (adminSections) adminSections.appendChild(container.firstChild);
-    else container.removeChild(container.firstChild);
-  }
-
-  // Find target — might be in admin-sections or already moved somewhere
+  // No DOM moving — just show/hide sections in place
+  document.querySelectorAll('.admin-section').forEach(function(s) {
+    s.style.display = 'none';
+    s.classList.remove('active');
+  });
   var target = document.getElementById('asec-' + tab);
   if (!target) return;
-
-  // Move to visible container and show
-  container.appendChild(target);
   target.style.display = 'block';
   target.classList.add('active');
   updateDskStats();

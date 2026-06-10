@@ -7,6 +7,13 @@
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
 body{background:#e8edf3;display:flex;justify-content:center;align-items:flex-start;padding:2rem 1rem;font-family:system-ui,sans-serif;min-height:100vh;gap:36px;flex-wrap:wrap;}
+/* ── Full-screen admin mode ── */
+body.admin-active{padding:0;background:#f1f5f9;display:block;overflow:hidden;}
+body.admin-active .admin-panel{width:100%;max-width:100%;border-radius:0;box-shadow:none;border:none;height:100vh;display:flex;flex-direction:column;overflow:hidden;}
+body.admin-active .admin-hdr{flex-shrink:0;}
+body.admin-active .admin-body{flex:1;overflow:hidden;padding:0;min-height:0;}
+body.admin-active #dsk-body{height:100%;display:grid !important;}
+body.admin-active #dsk-main{height:100%;}
 
 /* ── PHONE FRAME ── */
 .phone{width:390px;background:#0a0f1a;border-radius:48px;overflow:hidden;border:10px solid #141b28;position:relative;flex-shrink:0;box-shadow:0 24px 64px rgba(0,0,0,0.35);}
@@ -3033,6 +3040,7 @@ function isDesktop() { return window.innerWidth >= 900; }
 function initDesktopAdminMode() {
   if (!isDesktop()) return;
   document.body.classList.add('admin-mode');
+  document.body.classList.add('admin-active');
   // Show desktop layout
   var dskBody = document.getElementById('dsk-body');
   if (dskBody) dskBody.style.display = 'grid';
@@ -3047,6 +3055,7 @@ function initDesktopAdminMode() {
 
 function exitDesktopAdminMode() {
   document.body.classList.remove('admin-mode');
+  document.body.classList.remove('admin-active');
   var dskBody = document.getElementById('dsk-body');
   if (dskBody) dskBody.style.display = 'none';
   var dskMobile = document.getElementById('dsk-mobile');

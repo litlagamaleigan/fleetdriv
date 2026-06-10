@@ -1035,7 +1035,7 @@ body{background:#e8edf3;display:flex;justify-content:center;align-items:flex-sta
     </div>
   </div>
   <!-- Mobile sections (hidden on desktop) -->
-  <div id="dsk-mobile" class="admin-sections-wrap"><div class="admin-sections">
+  <div id="dsk-mobile" class="admin-sections-wrap"><div class="admin-sections" id="admin-sections">
     <!-- NEW TASK -->
     <div class="admin-section active" id="asec-new">
       <div class="form-card">
@@ -3046,11 +3046,29 @@ function exitDesktopAdminMode() {
 }
 
 function dskShowSection(tab) {
-  var target = document.getElementById('asec-' + tab);
   var container = document.getElementById('dsk-section');
-  if (!target || !container) return;
-  container.innerHTML = '';
-  // Move section into desktop container
+  if (!container) return;
+
+  // Return previously shown section back to admin-sections (its original parent)
+  // so getElementById can still find it later
+  var adminSections = document.getElementById('admin-sections');
+  var prev = container.firstChild;
+  while (prev) {
+    var next = prev.nextSibling;
+    if (adminSections) adminSections.appendChild(prev);
+    else container.removeChild(prev);
+    prev = next;
+  }
+
+  // Hide all sections
+  document.querySelectorAll('.admin-section').forEach(function(s) {
+    s.style.display = 'none';
+    s.classList.remove('active');
+  });
+
+  var target = document.getElementById('asec-' + tab);
+  if (!target) return;
+
   container.appendChild(target);
   target.style.display = 'block';
   target.classList.add('active');

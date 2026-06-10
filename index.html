@@ -3033,42 +3033,42 @@ function isDesktop() { return window.innerWidth >= 900; }
 function initDesktopAdminMode() {
   if (!isDesktop()) return;
   document.body.classList.add('admin-mode');
+  // Show desktop layout
+  var dskBody = document.getElementById('dsk-body');
+  if (dskBody) dskBody.style.display = 'grid';
+  // Hide mobile sections wrapper
+  var dskMobile = document.getElementById('dsk-mobile');
+  if (dskMobile) dskMobile.style.display = 'none';
   updateDskStats();
   updateDskDrivers();
-  // Default: show tasks
   dskShowSection('tasks');
-  // Update sidebar active
   dskSetActive('tasks');
 }
 
 function exitDesktopAdminMode() {
   document.body.classList.remove('admin-mode');
+  var dskBody = document.getElementById('dsk-body');
+  if (dskBody) dskBody.style.display = 'none';
+  var dskMobile = document.getElementById('dsk-mobile');
+  if (dskMobile) dskMobile.style.display = '';
 }
 
 function dskShowSection(tab) {
   var container = document.getElementById('dsk-section');
   if (!container) return;
 
-  // Return previously shown section back to admin-sections (its original parent)
-  // so getElementById can still find it later
+  // Clear container — but save any section it currently holds back to admin-sections
   var adminSections = document.getElementById('admin-sections');
-  var prev = container.firstChild;
-  while (prev) {
-    var next = prev.nextSibling;
-    if (adminSections) adminSections.appendChild(prev);
-    else container.removeChild(prev);
-    prev = next;
+  while (container.firstChild) {
+    if (adminSections) adminSections.appendChild(container.firstChild);
+    else container.removeChild(container.firstChild);
   }
 
-  // Hide all sections
-  document.querySelectorAll('.admin-section').forEach(function(s) {
-    s.style.display = 'none';
-    s.classList.remove('active');
-  });
-
+  // Find target — might be in admin-sections or already moved somewhere
   var target = document.getElementById('asec-' + tab);
   if (!target) return;
 
+  // Move to visible container and show
   container.appendChild(target);
   target.style.display = 'block';
   target.classList.add('active');

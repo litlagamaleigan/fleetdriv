@@ -1280,16 +1280,22 @@ body{background:#e8edf3;display:flex;justify-content:center;align-items:flex-sta
 
     <!-- MAP -->
     <div class="admin-section" id="asec-map">
+      <!-- Controls -->
+      <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px;align-items:center;">
+        <input type="date" id="map-date-sel" style="padding:7px 12px;border:1px solid #e2e8f0;border-radius:8px;font-size:13px;font-weight:600;" onchange="loadAdminMap()"/>
+        <button onclick="loadAdminMap()" style="background:#f1f5f9;border:none;border-radius:8px;padding:7px 14px;font-size:12px;font-weight:600;cursor:pointer;">↻ Uppfæra</button>
+        <button onclick="clearTodayRoutes()" style="background:#fee2e2;border:none;border-radius:8px;padding:7px 14px;font-size:12px;font-weight:600;cursor:pointer;color:#dc2626;">🗑 Hreinsa leiðir</button>
+      </div>
+      <!-- Driver filter pills -->
+      <div id="map-driver-filter" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;"></div>
+      <!-- Map -->
       <div id="admin-map-container" style="border-radius:12px;overflow:hidden;border:1px solid #e2e8f0;">
-        <div id="admin-map" style="height:480px;background:#e8f4f0;display:flex;align-items:center;justify-content:center;">
+        <div id="admin-map" style="height:420px;background:#e8f4f0;display:flex;align-items:center;justify-content:center;">
           <p style="color:#64748b;">Hleð kort...</p>
         </div>
       </div>
-      <div style="margin-top:12px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;" id="map-driver-legend"></div>
-      <div style="margin-top:8px;display:flex;gap:8px;">
-        <button onclick="loadAdminMap()" style="background:#f1f5f9;border:none;border-radius:8px;padding:8px 16px;font-size:12px;font-weight:600;cursor:pointer;">↻ Uppfæra</button>
-        <button onclick="clearTodayRoutes()" style="background:#fee2e2;border:none;border-radius:8px;padding:8px 16px;font-size:12px;font-weight:600;cursor:pointer;color:#dc2626;">🗑 Hreinsa leiðir dagsins</button>
-      </div>
+      <!-- Route summary per driver -->
+      <div id="map-route-summary" style="margin-top:12px;"></div>
     </div>
 
     <!-- CUSTOMERS -->
@@ -3022,17 +3028,6 @@ function confirmReassign(btn) {
 
 
 // ── Desktop Admin Mode ──
-function initDesktopAdminMode() {
-  if (window.innerWidth < 900) return;
-  document.body.classList.add('admin-mode');
-}
-
-function exitDesktopAdminMode() {
-  document.body.classList.remove('admin-mode');
-}
-
-
-// ── Desktop Admin Mode ──
 function isDesktop() { return window.innerWidth >= 900; }
 
 function initDesktopAdminMode() {
@@ -3154,114 +3149,227 @@ function initAdminMap() {
   });
 }
 
+var _mapSelectedDriver = 'all';
+
+function setMapDriver(username) {
+  _mapSelectedDriver = username;
+  // Update pill active state
+  document.querySelectorAll('.map-drv-pill').forEach(function(p) {
+    p.style.background = p.dataset.drv === username ? '#e8620a' : '#f1f5f9';
+    p.style.color = p.dataset.drv === username ? '#fff' : '#0f172a';
+    p.style.borderColor = p.dataset.drv === username ? '#e8620a' : '#e2e8f0';
+  });
+  loadAdminMap();
+}
+
 function loadAdminMap() {
   if (!adminMap) { initAdminMap(); }
   if (!adminMap) { showToast('Google Maps ekki tilbúið'); return; }
 
-  // Clear existing markers and polylines
-  Object.values(adminMapMarkers).forEach(function(m){ m.setMap(null); });
-  Object.values(adminMapPolylines).forEach(function(p){ p.setMap(null); });
+  // Clear existing markers/polylines
+  Object.values(adminMapMarkers).forEach(function(m){ if(m.setMap) m.setMap(null); });
+  Object.values(adminMapPolylines).forEach(function(p){ if(p.setMap) p.setMap(null); });
   adminMapMarkers = {};
   adminMapPolylines = {};
 
-  var legend = document.getElementById('map-driver-legend');
-  if (legend) legend.innerHTML = '';
+  // Get selected date (default: today)
+  var dateInput = document.getElementById('map-date-sel');
+  var selectedDate = dateInput && dateInput.value ? dateInput.value : new Date().toISOString().split('T')[0];
+  if (dateInput && !dateInput.value) dateInput.value = selectedDate;
+
+  var isToday = selectedDate === new Date().toISOString().split('T')[0];
 
   onFirebaseReady(function() {
     var fb = window._fb;
-    var todayStr = new Date().toISOString().split('T')[0];
 
-    // Load current positions
-    fb.getDocs(fb.collection(fb.db, 'drivers')).then(function(snap) {
-      snap.forEach(function(doc) {
-        var d = doc.data();
-        if (!d.lat || !d.lng) return;
-        var color = d.color || '#e8620a';
-        var initials = d.initials || '?';
-
-        // Custom marker
-        var markerIcon = {
-          path: google.maps.SymbolPath.CIRCLE,
-          scale: 16,
-          fillColor: color,
-          fillOpacity: 1,
-          strokeColor: '#fff',
-          strokeWeight: 2
-        };
-        var marker = new google.maps.Marker({
-          position: { lat: d.lat, lng: d.lng },
-          map: adminMap,
-          title: d.name,
-          label: { text: initials, color: '#fff', fontSize: '11px', fontWeight: 'bold' },
-          icon: markerIcon,
-          zIndex: 10
+    // Load driver positions (only for today)
+    if (isToday) {
+      fb.getDocs(fb.collection(fb.db, 'drivers')).then(function(snap) {
+        snap.forEach(function(doc) {
+          var d = doc.data();
+          if (!d.lat || !d.lng) return;
+          if (_mapSelectedDriver !== 'all' && d.username !== _mapSelectedDriver) return;
+          var marker = new google.maps.Marker({
+            position: { lat: d.lat, lng: d.lng },
+            map: adminMap,
+            title: d.name,
+            label: { text: d.initials||'?', color: '#fff', fontSize: '11px', fontWeight: 'bold' },
+            icon: { path: google.maps.SymbolPath.CIRCLE, scale: 16, fillColor: d.color||'#e8620a', fillOpacity: 1, strokeColor: '#fff', strokeWeight: 2 },
+            zIndex: 20
+          });
+          var iw = new google.maps.InfoWindow({ content: '<div style="padding:8px;font-size:13px;"><strong>' + (d.name||'—') + '</strong><br>' + (d.vehicle?'🚛 '+d.vehicle+'<br>':'') + '<span style="color:#16a34a;font-size:11px;">● Á leið núna</span></div>' });
+          marker.addListener('click', function(){ iw.open(adminMap, marker); });
+          adminMapMarkers[d.username] = marker;
         });
-
-        var infoWindow = new google.maps.InfoWindow({
-          content: '<div style="padding:8px;font-size:13px;">'
-            + '<strong>' + (d.name||'—') + '</strong><br>'
-            + (d.vehicle ? '🚛 ' + d.vehicle + '<br>' : '')
-            + '<span style="color:#16a34a;font-size:11px;">● GPS virkt</span>'
-            + '</div>'
-        });
-        marker.addListener('click', function() {
-          infoWindow.open(adminMap, marker);
-        });
-        adminMapMarkers[d.username] = marker;
-
-        // Add to legend
-        if (legend) {
-          var pill = document.createElement('div');
-          pill.style.cssText = 'display:flex;align-items:center;gap:6px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:20px;padding:4px 10px;';
-          pill.innerHTML = '<div style="width:12px;height:12px;border-radius:50%;background:'+color+';"></div>'
-            + '<span style="font-size:12px;font-weight:600;">' + (d.name||'—') + '</span>'
-            + (d.vehicle ? '<span style="font-size:11px;color:#64748b;">' + d.vehicle + '</span>' : '');
-          legend.appendChild(pill);
-        }
       });
-    });
+    }
 
-    // Load today's routes
+    // Load routes for selected date
     fb.getDocs(fb.query(
       fb.collection(fb.db, 'routes'),
-      fb.where('date', '==', todayStr),
+      fb.where('date', '==', selectedDate),
       fb.orderBy('timestamp', 'asc')
     )).then(function(snap) {
       var routesByDriver = {};
       snap.forEach(function(doc) {
         var d = doc.data();
-        if (!routesByDriver[d.username]) {
-          routesByDriver[d.username] = { points: [], color: d.color || '#e8620a', name: d.name };
-        }
+        if (!d.lat || !d.lng) return;
+        if (_mapSelectedDriver !== 'all' && d.username !== _mapSelectedDriver) return;
+        if (!routesByDriver[d.username]) routesByDriver[d.username] = { points: [], color: d.color||'#e8620a', name: d.name, initials: d.initials||'?', raw: [] };
+        var ts = d.timestamp && d.timestamp.toDate ? d.timestamp.toDate() : (d.timestamp instanceof Date ? d.timestamp : null);
         routesByDriver[d.username].points.push({ lat: d.lat, lng: d.lng });
+        routesByDriver[d.username].raw.push({ lat: d.lat, lng: d.lng, ts: ts, speed: d.speed, accuracy: d.accuracy });
       });
+
+      // Build driver filter pills
+      var filterDiv = document.getElementById('map-driver-filter');
+      if (filterDiv && filterDiv.children.length === 0) {
+        var allBtn = document.createElement('button');
+        allBtn.className = 'map-drv-pill';
+        allBtn.dataset.drv = 'all';
+        allBtn.textContent = '👁 Allir';
+        allBtn.style.cssText = 'padding:5px 12px;border-radius:20px;border:1px solid #e8620a;background:#e8620a;color:#fff;font-size:12px;font-weight:700;cursor:pointer;';
+        allBtn.onclick = function(){ setMapDriver('all'); };
+        filterDiv.appendChild(allBtn);
+
+        getUsers().filter(function(u){ return u.role==='driver'; }).forEach(function(u) {
+          var btn = document.createElement('button');
+          btn.className = 'map-drv-pill';
+          btn.dataset.drv = u.username;
+          btn.textContent = u.name;
+          btn.style.cssText = 'padding:5px 12px;border-radius:20px;border:1px solid #e2e8f0;background:#f1f5f9;color:#0f172a;font-size:12px;font-weight:600;cursor:pointer;';
+          btn.onclick = function(){ setMapDriver(u.username); };
+          filterDiv.appendChild(btn);
+        });
+      }
+
+      // Draw routes and build summary
+      var bounds = new google.maps.LatLngBounds();
+      var summaryHtml = '';
+      var hasPoints = false;
 
       Object.keys(routesByDriver).forEach(function(username) {
         var route = routesByDriver[username];
-        if (route.points.length < 2) return;
-        var polyline = new google.maps.Polyline({
-          path: route.points,
-          geodesic: true,
-          strokeColor: route.color,
-          strokeOpacity: 0.8,
-          strokeWeight: 4
-        });
-        polyline.setMap(adminMap);
-        adminMapPolylines[username] = polyline;
+        if (route.points.length < 1) return;
+        hasPoints = true;
 
-        // Add click listener to show time info
-        polyline.addListener('click', function(e) {
-          var iw = new google.maps.InfoWindow({
-            content: '<div style="padding:6px;font-size:12px;">Leið: <strong>' + route.name + '</strong><br>Punktar: ' + route.points.length + '</div>',
-            position: e.latLng
+        // Draw polyline
+        if (route.points.length >= 2) {
+          var polyline = new google.maps.Polyline({
+            path: route.points,
+            geodesic: true,
+            strokeColor: route.color,
+            strokeOpacity: 0.85,
+            strokeWeight: 5
           });
-          iw.open(adminMap);
+          polyline.setMap(adminMap);
+          adminMapPolylines[username] = polyline;
+        }
+
+        // Start and end markers
+        var first = route.raw[0];
+        var last = route.raw[route.raw.length - 1];
+
+        var startMarker = new google.maps.Marker({
+          position: { lat: first.lat, lng: first.lng },
+          map: adminMap,
+          title: 'Byrjun: ' + (first.ts ? fmtMapTime(first.ts) : '—'),
+          label: { text: '▶', color: '#fff', fontSize: '10px' },
+          icon: { path: google.maps.SymbolPath.CIRCLE, scale: 10, fillColor: '#16a34a', fillOpacity: 1, strokeColor: '#fff', strokeWeight: 2 },
+          zIndex: 15
         });
+        new google.maps.InfoWindow({ content: '<div style="padding:6px;font-size:12px;"><b>' + route.name + '</b><br>🟢 Byrjun: ' + (first.ts ? fmtMapTime(first.ts) : '—') + '</div>' }).open(adminMap, startMarker);
+        startMarker.addListener('click', function(){});
+
+        if (route.raw.length > 1) {
+          var endMarker = new google.maps.Marker({
+            position: { lat: last.lat, lng: last.lng },
+            map: adminMap,
+            title: 'Endir: ' + (last.ts ? fmtMapTime(last.ts) : '—'),
+            label: { text: '■', color: '#fff', fontSize: '10px' },
+            icon: { path: google.maps.SymbolPath.CIRCLE, scale: 10, fillColor: '#dc2626', fillOpacity: 1, strokeColor: '#fff', strokeWeight: 2 },
+            zIndex: 15
+          });
+          endMarker.addListener('click', function(){
+            new google.maps.InfoWindow({ content: '<div style="padding:6px;font-size:12px;"><b>' + route.name + '</b><br>🔴 Endir: ' + (last.ts ? fmtMapTime(last.ts) : '—') + '</div>' }).open(adminMap, endMarker);
+          });
+        }
+
+        // Add time markers every ~10 points
+        var step = Math.max(1, Math.floor(route.raw.length / 8));
+        route.raw.forEach(function(pt, idx) {
+          if (idx === 0 || idx === route.raw.length-1) return;
+          if (idx % step !== 0) return;
+          if (!pt.ts) return;
+          var tm = new google.maps.Marker({
+            position: { lat: pt.lat, lng: pt.lng },
+            map: adminMap,
+            icon: { path: google.maps.SymbolPath.CIRCLE, scale: 5, fillColor: route.color, fillOpacity: 0.7, strokeColor: '#fff', strokeWeight: 1 },
+            zIndex: 5
+          });
+          var tContent = '<div style="padding:6px;font-size:12px;"><b>' + route.name + '</b><br>🕐 ' + fmtMapTime(pt.ts) + (pt.speed !== null && pt.speed !== undefined ? '<br>🚗 ' + pt.speed + ' km/klst' : '') + '</div>';
+          var iw = new google.maps.InfoWindow({ content: tContent });
+          tm.addListener('click', function(){ iw.open(adminMap, tm); });
+        });
+
+        // Extend bounds
+        route.points.forEach(function(p){ bounds.extend(p); });
+
+        // Calculate total km
+        var totalKm = 0;
+        for (var i = 1; i < route.raw.length; i++) {
+          totalKm += gpsDistance(route.raw[i-1].lat, route.raw[i-1].lng, route.raw[i].lat, route.raw[i].lng);
+        }
+        totalKm = (totalKm / 1000).toFixed(1);
+        var durationMin = null;
+        if (first.ts && last.ts) durationMin = Math.round((last.ts.getTime() - first.ts.getTime()) / 60000);
+
+        summaryHtml += '<div style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:12px 14px;margin-bottom:8px;">'
+          + '<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">'
+          +   '<div style="background:' + route.color + ';border-radius:50%;width:32px;height:32px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px;font-weight:700;">' + route.initials + '</div>'
+          +   '<div style="font-size:13px;font-weight:700;color:#0f172a;">' + route.name + '</div>'
+          + '</div>'
+          + '<div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px;">'
+          +   '<div style="text-align:center;background:#f8fafc;border-radius:8px;padding:8px;">'
+          +     '<div style="font-size:15px;font-weight:800;color:#0f172a;">' + totalKm + '</div>'
+          +     '<div style="font-size:10px;color:#64748b;font-weight:600;">km</div>'
+          +   '</div>'
+          +   '<div style="text-align:center;background:#f0fdf4;border-radius:8px;padding:8px;">'
+          +     '<div style="font-size:13px;font-weight:800;color:#166534;">' + (first.ts ? fmtMapTime(first.ts) : '—') + '</div>'
+          +     '<div style="font-size:10px;color:#64748b;font-weight:600;">Byrjun</div>'
+          +   '</div>'
+          +   '<div style="text-align:center;background:#fef2f2;border-radius:8px;padding:8px;">'
+          +     '<div style="font-size:13px;font-weight:800;color:#991b1b;">' + (last.ts ? fmtMapTime(last.ts) : '—') + '</div>'
+          +     '<div style="font-size:10px;color:#64748b;font-weight:600;">Endir</div>'
+          +   '</div>'
+          +   '<div style="text-align:center;background:#eff6ff;border-radius:8px;padding:8px;">'
+          +     '<div style="font-size:13px;font-weight:800;color:#1d4ed8;">' + (durationMin !== null ? fmtMinutes(durationMin) : '—') + '</div>'
+          +     '<div style="font-size:10px;color:#64748b;font-weight:600;">Tími</div>'
+          +   '</div>'
+          + '</div>'
+          + '<div style="font-size:11px;color:#94a3b8;margin-top:6px;">' + route.points.length + ' GPS punktar · Dagur: ' + selectedDate + '</div>'
+          + '</div>';
       });
+
+      var summaryEl = document.getElementById('map-route-summary');
+      if (summaryEl) {
+        summaryEl.innerHTML = hasPoints ? summaryHtml : '<p style="color:#94a3b8;font-size:13px;text-align:center;padding:16px;">Engar leiðargögn fundust fyrir þennan dag.</p>';
+      }
+
+      if (hasPoints && !bounds.isEmpty()) {
+        adminMap.fitBounds(bounds);
+      }
     }).catch(function(e) {
       console.warn('Route load error:', e);
+      var summaryEl = document.getElementById('map-route-summary');
+      if (summaryEl) summaryEl.innerHTML = '<p style="color:#dc2626;font-size:13px;padding:12px;">⚠ Villa við að sækja leiðargögn: ' + (e.code||e.message) + '</p>';
     });
   });
+}
+
+function fmtMapTime(date) {
+  if (!date) return '—';
+  return date.getHours().toString().padStart(2,'0') + ':' + date.getMinutes().toString().padStart(2,'0');
 }
 
 function clearTodayRoutes() {
@@ -4559,11 +4667,14 @@ function doLogout(){
   sessionStorage.removeItem('fd_session');
   try { localStorage.removeItem('fd_driver_session'); } catch(e) {}
   stopDriverGPS();
-  _lastGpsLat = null; _lastGpsLng = null;
   if(window._currentUser && window._currentUser.role !== 'admin') punchOut(window._currentUser);
+  window._currentUser = null;
 
   if(fbUnsubscribeTasks){fbUnsubscribeTasks();fbUnsubscribeTasks=null;}
   if(fbUnsubscribeDriverTasks){fbUnsubscribeDriverTasks();fbUnsubscribeDriverTasks=null;}
+  if(window.drvChatUnsubscribe){window.drvChatUnsubscribe();window.drvChatUnsubscribe=null;}
+  if(window._mapRefreshInterval){clearInterval(window._mapRefreshInterval);window._mapRefreshInterval=null;}
+
   document.getElementById('admin-panel').style.display='none';
   document.getElementById('phone').style.display='block';
   show('sc-login');
@@ -4839,12 +4950,14 @@ function completeTask(){
   const adminDone=document.getElementById('admin-js-done');
   if(adminDone) adminDone.textContent=doneTasks;
 
-  // Add message
+  // Add completion message to chat (if msg-list exists for backwards compat)
   const msgList=document.getElementById('msg-list');
-  const mc=document.createElement('div');
-  mc.className='msg-card';
-  mc.innerHTML=`<div class="msg-from">Kerfi</div><div class="msg-txt">Þú kláraðir: ${curTask?curTask.title:'Verkefni'} (${ref})</div><div class="msg-time">${timeStr}</div>`;
-  msgList.insertBefore(mc,msgList.firstChild);
+  if(msgList) {
+    const mc=document.createElement('div');
+    mc.className='msg-card';
+    mc.innerHTML=`<div class="msg-from">Kerfi</div><div class="msg-txt">Þú kláraðir: ${curTask?curTask.title:'Verkefni'} (${ref})</div><div class="msg-time">${timeStr}</div>`;
+    msgList.insertBefore(mc,msgList.firstChild);
+  }
 }
 
 function addToAdminDone(task,data){
@@ -4936,11 +5049,8 @@ function adminTab(tab,el){
   if(tab==='drivers') { renderDriverCards(); buildMonthOptions(); loadTimelog(); }
   if(tab==='tasks') { refreshAdminTasks(); }
   if(tab==='chat') { loadChatUnreadCounts(); }
-  if(tab==='map') {
-    setTimeout(function(){
-      initAdminMap();
-      if(adminMap) loadAdminMap();
-    }, 200);
+  if(tab==='map' && !isDesktop()) {
+    setTimeout(function(){ initAdminMap(); if(adminMap) loadAdminMap(); }, 200);
   }
   if(tab==='settings') loadVehicles(function(vs){ _vehicles=vs; renderVehicleList(); });
   if(tab==='new') setTimeout(initAddressAutocomplete, 100);
@@ -5010,65 +5120,6 @@ function createTask(){
       <button class="edit-save" onclick="saveOpenEdit(this)">✓ Vista</button>
     </div>`;
   list.insertBefore(div,list.firstChild);
-
-  // Add to driver list if it's Jón
-  if(driverKey==='JS'){
-    const driverTasks=document.getElementById('driver-tasks');
-    const numColors={ut:'num-ut',losa:'num-losa',lostu:'num-lostu',toma:'num-toma'};
-    const badgeColors={ut:'b-ut',losa:'b-lo',lostu:'b-ls',toma:'b-tm'};
-    const totalOpen=driverTasks.querySelectorAll('.task-card').length+1;
-    const card=document.createElement('div');
-    card.className='task-card';
-    card.innerHTML=`
-      <div class="tc-top">
-        <div class="tc-num ${numColors[type]||'num-ut'}">${totalOpen}</div>
-        <div class="tc-info"><div class="tc-name">${taskTitle}</div><div class="tc-addr">${addr}</div></div>
-        <span class="badge ${badgeColors[type]||'b-ut'}">${tm.name}</span>
-      </div>
-      <div class="tc-foot"><span class="tc-meta"><b>${size}</b></span><span class="tc-meta">${disposal}</span><span class="eta-pill">${time}</span></div>`;
-    card.addEventListener('click',()=>{
-      curTask={title:taskTitle,sub:addr+', Reykjavík',date:aDate,type,mapsAddr:maps,km:'—',taskKey:null,cardEl:card,company:aCompany,companyKt:window._selectedCompanyKt||'',companyPhone:(document.getElementById('a-contact-phone')?document.getElementById('a-contact-phone').value.trim():'')||window._selectedCompanyPhone||'',containerNum:adminContainerNum,skiptTekinn:aSkiptTekinn,skiptAfhentur:aSkiptAfhentur};
-      document.getElementById('t-title').textContent=taskTitle;
-      document.getElementById('t-sub').textContent=addr;
-      document.getElementById('map-lbl').textContent=addr;
-      document.getElementById('map-km').textContent='—';
-      const pill=document.getElementById('t-pill');
-      pill.textContent=tm.name;
-      pill.className='badge '+badgeColors[type];
-      document.getElementById('pz').className='photo-zone';
-      document.getElementById('ptxt').textContent=currentLang==='en'?'Take photo':'Taka mynd';
-      document.getElementById('d-kg').value='';
-      document.getElementById('d-note').value='';
-      document.getElementById('d-container').value='';
-  ['d-skipt-tekinn','d-skipt-afhentur','d-tima-start','d-tima-hours','d-tima-km-start','d-tima-km-end'].forEach(function(id){var e=document.getElementById(id);if(e)e.value='';});
-      const dg3=document.getElementById('d-disposal-group');if(dg3)dg3.style.display=(type==='ut'||type==='tima'||type==='farslin'||type==='farsl')?'none':'block';
-      var kgr3=document.getElementById('d-kg-row');if(kgr3)kgr3.style.display=type==='ut'?'none':'flex';
-      var cgd3=document.getElementById('d-category-group');if(cgd3)cgd3.style.display=type==='ut'?'none':'block';
-      var dcg3=document.getElementById('d-company-group');if(dcg3)dcg3.style.display=type==='ut'?'none':'block';
-      var dng3=document.getElementById('d-note-group');if(dng3)dng3.style.display=type==='ut'?'none':'block';
-      var afg3=document.getElementById('d-afhending-group');if(afg3)afg3.style.display=type==='ut'?'block':'none';
-      var ph3=document.getElementById('d-contact-phone-display');if(ph3)ph3.textContent=(curTask&&(curTask.companyPhone||curTask.phone))||'—';
-      if(type==='ut'){var ad3=document.getElementById('d-afhending-addr-display');if(ad3)ad3.textContent=curTask&&curTask.sub?curTask.sub:'—';}
-      const tg3=document.getElementById('d-tima-group');if(tg3)tg3.style.display=type==='tima'?'block':'none';
-      const sg3=document.getElementById('d-skipt-group');if(sg3)sg3.style.display=type==='skipt'?'block':'none';
-      if(type==='skipt'){
-        var dtk=document.getElementById('d-skipt-tekinn');if(dtk)dtk.value=aSkiptTekinn||'';
-        var daf=document.getElementById('d-skipt-afhentur');if(daf)daf.value=aSkiptAfhentur||'';
-      }
-      const dcc=document.getElementById('d-company');if(dcc)dcc.value=aCompany;
-      const dccd=document.getElementById('d-company-display');if(dccd)dccd.textContent=aCompany||'—';
-      show('sc-task');
-    });
-    driverTasks.appendChild(card);
-    openTasks++;
-    document.getElementById('open-count').textContent=openTasks;
-    const total=openTasks+doneTasks;
-    const pct=Math.round((doneTasks/total)*100)+'%';
-    document.getElementById('pct-count').textContent=pct;
-    document.getElementById('prog-pct').textContent=pct;
-    document.getElementById('prog-fill').style.width=pct;
-    document.getElementById('route-sub').textContent='34.6 km · '+openTasks+(currentLang==='en'?' stops left':' stopp eftir');
-  }
 
   // Clear form
   document.getElementById('a-addr').value='';
@@ -6233,63 +6284,152 @@ function gpsDistance(lat1, lng1, lat2, lng2) {
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
 }
 
+// ── Wake Lock ──
+var _wakeLock = null;
+var _wakeLockRetryTimer = null;
+
+async function requestWakeLock() {
+  // Modern browsers: Screen Wake Lock API
+  if ('wakeLock' in navigator) {
+    try {
+      _wakeLock = await navigator.wakeLock.request('screen');
+      _wakeLock.addEventListener('release', function() {
+        // System can release it (e.g. battery low) — re-request after 3 sec
+        if (window._currentUser && window._currentUser.role !== 'admin') {
+          _wakeLockRetryTimer = setTimeout(requestWakeLock, 3000);
+        }
+      });
+      console.log('Wake Lock: virkt ✓');
+    } catch(e) {
+      console.warn('Wake Lock ekki stutt:', e.message);
+      showIosWakeLockTip();
+    }
+  } else {
+    showIosWakeLockTip();
+  }
+}
+
+function showIosWakeLockTip() {
+  // iOS / unsupported browser — show a tip banner
+  var existing = document.getElementById('wakelock-tip');
+  if (existing) return;
+  var banner = document.createElement('div');
+  banner.id = 'wakelock-tip';
+  banner.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#1e293b;color:#fff;border-radius:12px;padding:10px 16px;font-size:11px;font-weight:600;z-index:9000;text-align:center;max-width:280px;box-shadow:0 4px 20px rgba(0,0,0,0.3);';
+  banner.innerHTML = '📱 Til að GPS virki — farðu í <b>Stillingar → Skjár → Sjálfvirkur læsing → Aldrei</b><br><span style="opacity:0.7;font-size:10px;">Eða haltu skjánum vakandi meðan á vakt stendur</span>';
+  document.body.appendChild(banner);
+  setTimeout(function(){ if(banner.parentNode) banner.parentNode.removeChild(banner); }, 8000);
+}
+
+function releaseWakeLock() {
+  if (_wakeLockRetryTimer) { clearTimeout(_wakeLockRetryTimer); _wakeLockRetryTimer = null; }
+  if (_wakeLock) { try { _wakeLock.release(); } catch(e){} _wakeLock = null; }
+}
+
+// Re-acquire wake lock when tab becomes visible again
+document.addEventListener('visibilitychange', function() {
+  if (document.visibilityState === 'visible' && window._currentUser && window._currentUser.role !== 'admin') {
+    if (!_wakeLock || _wakeLock.released) requestWakeLock();
+  }
+});
+
+// ── GPS ──
+var _gpsHeartbeatTimer = null;
+var _gpsLastSavedTime = 0;
+var GPS_HEARTBEAT_MS = 15000; // save position at least every 15 seconds even if not moved
+
 function startDriverGPS() {
   if (!navigator.geolocation) return;
+  requestWakeLock();
+
   driverWatchId = navigator.geolocation.watchPosition(
     function(pos) {
-      var user = window._currentUser;
-      if (!user) return;
-
-      // Ignore inaccurate positions (over 50 meters accuracy)
-      if (pos.coords.accuracy > 50) return;
-
-      var lat = pos.coords.latitude;
-      var lng = pos.coords.longitude;
-
-      // Only save if moved more than 15 meters from last saved point
-      if (_lastGpsLat !== null) {
-        var dist = gpsDistance(_lastGpsLat, _lastGpsLng, lat, lng);
-        if (dist < 15) {
-          // Still update current position dot without saving route point
-          updateDriverPosition(user, lat, lng);
-          return;
-        }
-      }
-      _lastGpsLat = lat;
-      _lastGpsLng = lng;
-
-      onFirebaseReady(function() {
-        var fb = window._fb;
-        var driverRef = fb.doc(fb.db, 'drivers', user.username);
-        var now = new Date();
-        var todayStr = now.toISOString().split('T')[0];
-        fb.setDoc(driverRef, {
-          username: user.username, lat: lat, lng: lng,
-          name: user.name, initials: user.initials,
-          color: user.color, vehicle: user.vehicle||'',
-          updatedAt: fb.serverTimestamp()
-        }, { merge: true }).catch(function(){});
-        // Save route point
-        fb.addDoc(fb.collection(fb.db, 'routes'), {
-          username: user.username, name: user.name,
-          color: user.color, initials: user.initials,
-          lat: lat, lng: lng,
-          accuracy: pos.coords.accuracy,
-          date: todayStr,
-          timestamp: fb.serverTimestamp()
-        });
-      });
+      handleGpsPosition(pos);
     },
-    function(err) { console.warn('GPS villa:', err.message); },
-    { enableHighAccuracy: true, maximumAge: 5000, timeout: 15000 }
+    function(err) {
+      console.warn('GPS villa:', err.message);
+      // On error, try again in 5 sec
+      setTimeout(function() {
+        if (window._currentUser) startGpsHeartbeat();
+      }, 5000);
+    },
+    { enableHighAccuracy: true, maximumAge: 0, timeout: 20000 }
   );
+
+  // Heartbeat: if watchPosition stops firing (screen sleep, background), force a one-shot position every 15s
+  startGpsHeartbeat();
+}
+
+function startGpsHeartbeat() {
+  if (_gpsHeartbeatTimer) clearInterval(_gpsHeartbeatTimer);
+  _gpsHeartbeatTimer = setInterval(function() {
+    if (!window._currentUser || window._currentUser.role === 'admin') return;
+    var now = Date.now();
+    // If no position saved in last 20 seconds, force a getCurrentPosition
+    if (now - _gpsLastSavedTime > 20000) {
+      navigator.geolocation && navigator.geolocation.getCurrentPosition(
+        function(pos) { handleGpsPosition(pos); },
+        function(){},
+        { enableHighAccuracy: true, maximumAge: 0, timeout: 10000 }
+      );
+    }
+  }, GPS_HEARTBEAT_MS);
+}
+
+function handleGpsPosition(pos) {
+  var user = window._currentUser;
+  if (!user || user.role === 'admin') return;
+
+  // Accept positions up to 80m accuracy (more forgiving than before)
+  if (pos.coords.accuracy > 80) {
+    updateDriverPosition(user, pos.coords.latitude, pos.coords.longitude);
+    return;
+  }
+
+  var lat = pos.coords.latitude;
+  var lng = pos.coords.longitude;
+  var now = Date.now();
+
+  // Save route point if: moved > 15m OR more than 15 seconds since last save
+  var distMoved = (_lastGpsLat !== null) ? gpsDistance(_lastGpsLat, _lastGpsLng, lat, lng) : 999;
+  var timeSinceSave = now - _gpsLastSavedTime;
+
+  if (distMoved >= 15 || timeSinceSave >= 15000) {
+    _lastGpsLat = lat;
+    _lastGpsLng = lng;
+    _gpsLastSavedTime = now;
+
+    onFirebaseReady(function() {
+      var fb = window._fb;
+      var todayStr = new Date().toISOString().split('T')[0];
+      // Update live position
+      fb.setDoc(fb.doc(fb.db, 'drivers', user.username), {
+        username: user.username, lat: lat, lng: lng,
+        name: user.name, initials: user.initials,
+        color: user.color, vehicle: user.vehicle||'',
+        updatedAt: fb.serverTimestamp()
+      }, { merge: true }).catch(function(){});
+      // Save route point
+      fb.addDoc(fb.collection(fb.db, 'routes'), {
+        username: user.username, name: user.name,
+        color: user.color, initials: user.initials,
+        lat: lat, lng: lng,
+        accuracy: Math.round(pos.coords.accuracy),
+        speed: pos.coords.speed ? Math.round(pos.coords.speed * 3.6) : null, // km/h
+        date: todayStr,
+        timestamp: fb.serverTimestamp()
+      });
+    });
+  } else {
+    // Just update live position dot, don't save route point
+    updateDriverPosition(user, lat, lng);
+  }
 }
 
 function updateDriverPosition(user, lat, lng) {
   onFirebaseReady(function() {
     var fb = window._fb;
-    var driverRef = fb.doc(fb.db, 'drivers', user.username);
-    fb.setDoc(driverRef, {
+    fb.setDoc(fb.doc(fb.db, 'drivers', user.username), {
       username: user.username, lat: lat, lng: lng,
       name: user.name, initials: user.initials,
       color: user.color, vehicle: user.vehicle||'',
@@ -6300,6 +6440,9 @@ function updateDriverPosition(user, lat, lng) {
 
 function stopDriverGPS() {
   if (driverWatchId !== null) { navigator.geolocation.clearWatch(driverWatchId); driverWatchId = null; }
+  if (_gpsHeartbeatTimer) { clearInterval(_gpsHeartbeatTimer); _gpsHeartbeatTimer = null; }
+  releaseWakeLock();
+  _lastGpsLat = null; _lastGpsLng = null; _gpsLastSavedTime = 0;
 }
 
 window.initGoogleMaps = initGoogleMaps;

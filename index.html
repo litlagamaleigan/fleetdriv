@@ -12,12 +12,11 @@ body.admin-active{padding:0;background:#f1f5f9;display:block;overflow:hidden;}
 body.admin-active .admin-panel{width:100%;max-width:100%;border-radius:0;box-shadow:none;border:none;height:100vh;display:flex;flex-direction:column;overflow:hidden;}
 body.admin-active .admin-hdr{flex-shrink:0;}
 body.admin-active .admin-body{flex:1;overflow:hidden;padding:0;min-height:0;}
-body.admin-active #dsk-body{height:100%;display:grid !important;overflow:hidden;}
-body.admin-active #dsk-main{overflow-y:auto;height:100%;display:flex;flex-direction:column;gap:16px;padding:24px;box-sizing:border-box;}
+body.admin-active #dsk-body{height:100%;display:grid !important;grid-template-columns:220px 1fr;grid-template-rows:1fr;overflow:hidden;}
+body.admin-active #dsk-body>div:first-child{overflow-y:auto;min-height:0;}
+body.admin-active #dsk-main{overflow-y:auto;min-height:0;padding:24px;box-sizing:border-box;display:flex;flex-direction:column;gap:16px;}
 body.admin-active #dsk-section{display:none !important;}
-body.admin-active #admin-sections{display:block !important;flex:1;}
-body.admin-active #admin-sections .admin-section{display:none !important;}
-body.admin-active #admin-sections .admin-section.active{display:block !important;}
+body.admin-active #admin-sections{flex:1;}
 
 /* ── PHONE FRAME ── */
 .phone{width:390px;background:#0a0f1a;border-radius:48px;overflow:hidden;border:10px solid #141b28;position:relative;flex-shrink:0;box-shadow:0 24px 64px rgba(0,0,0,0.35);}
@@ -3054,16 +3053,18 @@ function initDesktopAdminMode() {
   var dskMain = document.getElementById('dsk-main');
   var adminSections = document.getElementById('admin-sections');
   var dskMobile = document.getElementById('dsk-mobile');
-  if (dskMain && adminSections) {
+  if (dskMain && adminSections && adminSections.parentNode !== dskMain) {
     dskMain.appendChild(adminSections);
-    adminSections.style.display = '';
   }
   if (dskMobile) dskMobile.style.display = 'none';
 
-  // Clear any inline display styles from sections so CSS takes control
-  document.querySelectorAll('.admin-section').forEach(function(s) {
-    s.style.display = '';
-  });
+  // Hide ALL sections — dskShowSection will show the right one
+  if (adminSections) {
+    adminSections.querySelectorAll('.admin-section').forEach(function(s) {
+      s.style.display = 'none';
+      s.classList.remove('active');
+    });
+  }
 
   updateDskStats();
   updateDskDrivers();
@@ -3079,13 +3080,18 @@ function exitDesktopAdminMode() {
 }
 
 function dskShowSection(tab) {
-  // Use only CSS classes — no inline styles that override !important rules
-  document.querySelectorAll('.admin-section').forEach(function(s) {
-    s.classList.remove('active');
-    s.style.display = ''; // clear any inline style so CSS takes over
-  });
+  // Hide all sections inside #admin-sections with inline style
+  var adminSections = document.getElementById('admin-sections');
+  if (adminSections) {
+    adminSections.querySelectorAll('.admin-section').forEach(function(s) {
+      s.style.display = 'none';
+      s.classList.remove('active');
+    });
+  }
+  // Show target
   var target = document.getElementById('asec-' + tab);
-  if (!target) return;
+  if (!target) { console.warn('Section not found: asec-' + tab); return; }
+  target.style.display = 'block';
   target.classList.add('active');
   updateDskStats();
 }
@@ -5203,9 +5209,150 @@ function toggleEdit(btn){
 }
 
 function toggleOpenEdit(btn){
-  const form=btn.closest('.atask').querySelector('.edit-form');
-  form.classList.toggle('open');
+  var card = btn.closest('.atask');
+  var fbId = card ? card.getAttribute('data-fbid') : null;
+  openOpenEditModal(fbId, card);
 }
+
+function openOpenEditModal(fbId, card) {
+  var modal = document.getElementById('open-edit-modal');
+  if (!modal) return;
+
+  // Populate driver dropdown
+  var driverSel = document.getElementById('oem-driver');
+  driverSel.innerHTML = '';
+  getUsers().filter(function(u){ return u.role === 'driver'; }).forEach(function(u) {
+    var opt = document.createElement('option');
+    opt.value = u.username;
+    opt.textContent = u.name;
+    opt.setAttribute('data-name', u.name);
+    opt.setAttribute('data-initials', u.initials||'');
+    opt.setAttribute('data-color', u.color||'#64748b');
+    driverSel.appendChild(opt);
+  });
+
+  // Pre-fill from card DOM
+  document.getElementById('oem-fbid').value = fbId || '';
+  if (card) {
+    var addrEl = card.querySelector('[data-field="addr"]');
+    if (addrEl) {
+      var addrText = addrEl.textContent || '';
+      var parts = addrText.split(' · ');
+      document.getElementById('oem-addr').value = parts[0] || '';
+      if (parts[1]) document.getElementById('oem-time').value = parts[1];
+    }
+    var nameEl = card.querySelector('.atask-name');
+    if (nameEl) {
+      var title = nameEl.textContent || '';
+      // Extract type from badge
+      var badge = card.querySelector('.admin-badge-pill');
+    }
+    var companyTag = card.querySelector('.atask-tag:not(.blue)');
+    if (companyTag) {
+      var ct = companyTag.textContent.replace('🏢 ', '');
+      document.getElementById('oem-company').value = ct;
+    }
+    var sizeTag = card.querySelector('[data-field="size"]');
+    if (sizeTag) document.getElementById('oem-size').value = sizeTag.textContent;
+    var driverNameEl = card.querySelector('.driver-name');
+    if (driverNameEl) {
+      var dname = driverNameEl.textContent;
+      var matchOpt = Array.from(driverSel.options).find(function(o){ return o.getAttribute('data-name') === dname; });
+      if (matchOpt) driverSel.value = matchOpt.value;
+    }
+  }
+
+  // If Firebase ID exists, fetch full data
+  if (fbId) {
+    onFirebaseReady(function() {
+      var fb = window._fb;
+      fb.getDoc(fb.doc(fb.db, 'tasks', fbId)).then(function(snap) {
+        if (!snap.exists()) return;
+        var d = snap.data();
+        if (d.address) document.getElementById('oem-addr').value = d.address;
+        if (d.time) document.getElementById('oem-time').value = d.time;
+        if (d.date) document.getElementById('oem-date').value = d.date;
+        if (d.type) document.getElementById('oem-type').value = d.type;
+        if (d.size) document.getElementById('oem-size').value = d.size;
+        if (d.company) document.getElementById('oem-company').value = d.company;
+        if (d.note) document.getElementById('oem-note').value = d.note;
+        if (d.containerNum) document.getElementById('oem-container').value = d.containerNum;
+        if (d.driverUsername) {
+          var opt = Array.from(driverSel.options).find(function(o){ return o.value === d.driverUsername; });
+          if (opt) driverSel.value = d.driverUsername;
+        }
+      }).catch(function(){});
+    });
+  }
+
+  modal.style.display = 'flex';
+}
+
+function closeOpenEditModal() {
+  var modal = document.getElementById('open-edit-modal');
+  if (modal) modal.style.display = 'none';
+}
+
+function saveOpenEditModal() {
+  var fbId = document.getElementById('oem-fbid').value;
+  var addr = document.getElementById('oem-addr').value.trim();
+  var time = document.getElementById('oem-time').value;
+  var date = document.getElementById('oem-date').value;
+  var type = document.getElementById('oem-type').value;
+  var size = document.getElementById('oem-size').value;
+  var company = document.getElementById('oem-company').value.trim();
+  var note = document.getElementById('oem-note').value.trim();
+  var container = document.getElementById('oem-container').value.trim();
+  var driverSel = document.getElementById('oem-driver');
+  var driverUsername = driverSel.value;
+  var driverOpt = driverSel.options[driverSel.selectedIndex];
+  var driverName = driverOpt ? driverOpt.getAttribute('data-name') : '';
+  var driverInitials = driverOpt ? driverOpt.getAttribute('data-initials') : '';
+  var driverColor = driverOpt ? driverOpt.getAttribute('data-color') : '#64748b';
+  var tm = typeMap[type] || typeMap.ut;
+
+  if (!addr) { showToast('⚠ Sláðu inn heimilisfang'); return; }
+
+  // Update DOM card
+  var card = fbId ? document.querySelector('#admin-task-list [data-fbid="' + fbId + '"]') : null;
+  if (card) {
+    var nameEl = card.querySelector('.atask-name');
+    if (nameEl) nameEl.textContent = tm.name + (container ? ' · Gámur #' + container : '');
+    var addrEl = card.querySelector('[data-field="addr"]');
+    if (addrEl) addrEl.textContent = addr + (time ? ' · ' + time : '');
+    var badgeEl = card.querySelector('.admin-badge-pill');
+    if (badgeEl) { badgeEl.textContent = tm.name; badgeEl.className = 'admin-badge-pill ' + tm.adminBadge; }
+    var sizeEl = card.querySelector('[data-field="size"]');
+    if (sizeEl) sizeEl.textContent = size;
+    var dot = card.querySelector('.driver-dot');
+    var driverNameEl = card.querySelector('.driver-name');
+    if (dot) { dot.textContent = driverInitials; dot.style.background = driverColor; }
+    if (driverNameEl) driverNameEl.textContent = driverName;
+    card.dataset.company = company;
+  }
+
+  // Save to Firebase
+  if (fbId) {
+    onFirebaseReady(function() {
+      var fb = window._fb;
+      fb.updateDoc(fb.doc(fb.db, 'tasks', fbId), {
+        address: addr, time: time, date: date, type: type,
+        size: size, company: company, note: note, containerNum: container,
+        driverUsername: driverUsername, driverName: driverName,
+        driverInitials: driverInitials
+      }).then(function() {
+        showToast('✓ Beiðni uppfærð');
+        closeOpenEditModal();
+      }).catch(function(e) {
+        showToast('⚠ Villa: ' + (e.code || e.message));
+      });
+    });
+  } else {
+    showToast('✓ Breytingar vistaðar');
+    closeOpenEditModal();
+  }
+}
+
 
 function saveEdit(btn){
   btn.closest('.edit-form').classList.remove('open');
@@ -6735,6 +6882,73 @@ function showToast(msg){
     </div>
   </div>
 </div>
-
+<!-- Full open task edit modal -->
+<div id="open-edit-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9998;align-items:center;justify-content:center;padding:20px;">
+  <div style="background:#fff;border-radius:16px;width:100%;max-width:520px;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,0.3);">
+    <div style="background:#0f172a;padding:16px 20px;border-radius:16px 16px 0 0;display:flex;align-items:center;justify-content:space-between;">
+      <h3 style="color:#fff;font-size:15px;font-weight:700;margin:0;">✏ Breyta beiðni</h3>
+      <button onclick="closeOpenEditModal()" style="background:none;border:none;color:#94a3b8;font-size:20px;cursor:pointer;padding:0;">✕</button>
+    </div>
+    <div style="padding:20px;display:flex;flex-direction:column;gap:12px;">
+      <input type="hidden" id="oem-fbid"/>
+      <div>
+        <label style="font-size:11px;font-weight:700;color:#64748b;display:block;margin-bottom:4px;">TEGUND BEIÐNI</label>
+        <select id="oem-type" style="width:100%;padding:9px 12px;border:1px solid #e2e8f0;border-radius:10px;font-size:13px;">
+          <option value="ut">Afhending gáms</option>
+          <option value="skipt">Skipta út gám</option>
+          <option value="losa">Losun gáms</option>
+          <option value="lostu">Losa og taka</option>
+          <option value="toma">Tæma gám</option>
+          <option value="tima">Tímaverkefni</option>
+          <option value="farslin">Farsíl</option>
+        </select>
+      </div>
+      <div>
+        <label style="font-size:11px;font-weight:700;color:#64748b;display:block;margin-bottom:4px;">HEIMILISFANG</label>
+        <input type="text" id="oem-addr" style="width:100%;padding:9px 12px;border:1px solid #e2e8f0;border-radius:10px;font-size:13px;box-sizing:border-box;" placeholder="Heimilisfang"/>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+        <div>
+          <label style="font-size:11px;font-weight:700;color:#64748b;display:block;margin-bottom:4px;">DAGSETNING</label>
+          <input type="date" id="oem-date" style="width:100%;padding:9px 12px;border:1px solid #e2e8f0;border-radius:10px;font-size:13px;box-sizing:border-box;"/>
+        </div>
+        <div>
+          <label style="font-size:11px;font-weight:700;color:#64748b;display:block;margin-bottom:4px;">TÍMI</label>
+          <input type="time" id="oem-time" style="width:100%;padding:9px 12px;border:1px solid #e2e8f0;border-radius:10px;font-size:13px;box-sizing:border-box;"/>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+        <div>
+          <label style="font-size:11px;font-weight:700;color:#64748b;display:block;margin-bottom:4px;">STÆRÐ GÁMS</label>
+          <select id="oem-size" style="width:100%;padding:9px 12px;border:1px solid #e2e8f0;border-radius:10px;font-size:13px;">
+            <option value="5 m³">5 m³</option><option value="10 m³">10 m³</option>
+            <option value="15 m³">15 m³</option><option value="20 m³">20 m³</option>
+            <option value="30 m³">30 m³</option><option value="40 m³">40 m³</option>
+          </select>
+        </div>
+        <div>
+          <label style="font-size:11px;font-weight:700;color:#64748b;display:block;margin-bottom:4px;">GÁMANÚMER</label>
+          <input type="text" id="oem-container" style="width:100%;padding:9px 12px;border:1px solid #e2e8f0;border-radius:10px;font-size:13px;box-sizing:border-box;" placeholder="G-000"/>
+        </div>
+      </div>
+      <div>
+        <label style="font-size:11px;font-weight:700;color:#64748b;display:block;margin-bottom:4px;">VIÐSKIPTAVINUR</label>
+        <input type="text" id="oem-company" style="width:100%;padding:9px 12px;border:1px solid #e2e8f0;border-radius:10px;font-size:13px;box-sizing:border-box;" placeholder="Nafn fyrirtækis"/>
+      </div>
+      <div>
+        <label style="font-size:11px;font-weight:700;color:#64748b;display:block;margin-bottom:4px;">ÖKUMAÐUR</label>
+        <select id="oem-driver" style="width:100%;padding:9px 12px;border:1px solid #e2e8f0;border-radius:10px;font-size:13px;"></select>
+      </div>
+      <div>
+        <label style="font-size:11px;font-weight:700;color:#64748b;display:block;margin-bottom:4px;">ATHUGASEMD</label>
+        <textarea id="oem-note" rows="3" style="width:100%;padding:9px 12px;border:1px solid #e2e8f0;border-radius:10px;font-size:13px;box-sizing:border-box;resize:vertical;" placeholder="Sérstæðar upplýsingar..."></textarea>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:4px;">
+        <button onclick="saveOpenEditModal()" style="flex:1;padding:12px;background:#e8620a;border:none;border-radius:10px;color:#fff;font-size:13px;font-weight:700;cursor:pointer;">✓ Vista breytingar</button>
+        <button onclick="closeOpenEditModal()" style="padding:12px 20px;background:#f1f5f9;border:none;border-radius:10px;color:#475569;font-size:13px;font-weight:600;cursor:pointer;">Hætta við</button>
+      </div>
+    </div>
+  </div>
+</div>
 </body>
 </html>

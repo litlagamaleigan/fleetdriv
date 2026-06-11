@@ -1228,8 +1228,13 @@ body.admin-active #admin-sections .admin-section.active{display:block !important
           <input class="af-input" id="a-container-num" type="text" placeholder="t.d. G-204"/>
         </div>
         <div class="af-full" id="a-phone-row">
-          <label class="af-label">Sími tengiliðs</label>
-          <input class="af-input" id="a-contact-phone" type="tel" placeholder="555-1234"/>
+          <label class="af-label">Sími tengiliðs
+            <span id="a-phone-hint" style="font-size:10px;color:#f59e0b;font-weight:600;margin-left:6px;display:none;">⚠ Enginn sími skráður á viðskiptavin</span>
+          </label>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <input class="af-input" id="a-contact-phone" type="tel" placeholder="Sláðu inn símanúmer..." style="flex:1;"/>
+            <button type="button" id="a-phone-save-btn" onclick="savePhoneToCustomer()" style="display:none;padding:8px 12px;background:#e8620a;border:none;border-radius:8px;color:#fff;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;">💾 Vista á viðskiptavin</button>
+          </div>
         </div>
         <div class="af-full">
           <label class="af-label">Athugasemd til ökumanns</label>
@@ -3048,11 +3053,6 @@ function initDesktopAdminMode() {
 function exitDesktopAdminMode() {
   document.body.classList.remove('admin-mode');
   document.body.classList.remove('admin-active');
-}
-
-function exitDesktopAdminMode() {
-  document.body.classList.remove('admin-mode');
-  document.body.classList.remove('admin-active');
   var dskBody = document.getElementById('dsk-body');
   if (dskBody) dskBody.style.display = 'none';
 }
@@ -4678,6 +4678,7 @@ function doLogout(){
   stopDriverGPS();
   if(window._currentUser && window._currentUser.role !== 'admin') punchOut(window._currentUser);
   window._currentUser = null;
+  exitDesktopAdminMode();
 
   if(fbUnsubscribeTasks){fbUnsubscribeTasks();fbUnsubscribeTasks=null;}
   if(fbUnsubscribeDriverTasks){fbUnsubscribeDriverTasks();fbUnsubscribeDriverTasks=null;}
@@ -5138,6 +5139,9 @@ function createTask(){
   window._selectedCompanyKt=''; window._selectedCompanyPhone='';
   var acn=document.getElementById('a-container-num');if(acn)acn.value='';
   var acp=document.getElementById('a-contact-phone');if(acp)acp.value='';
+  var phoneHint=document.getElementById('a-phone-hint');if(phoneHint)phoneHint.style.display='none';
+  var phoneSaveBtn=document.getElementById('a-phone-save-btn');if(phoneSaveBtn)phoneSaveBtn.style.display='none';
+  window._selectedCompanyId='';
   var adate=document.getElementById('a-date');if(adate)adate.value=new Date().toISOString().split('T')[0];
   placesAutocomplete=null; initAddressAutocomplete();
   const cdd=document.getElementById('company-dd');if(cdd)cdd.style.display='none';
@@ -5998,6 +6002,30 @@ function refreshAdminTasks() {
 }
 
 
+function savePhoneToCustomer() {
+  var phone = document.getElementById('a-contact-phone').value.trim();
+  var companyName = document.getElementById('a-company').value.trim();
+  if (!phone) { showToast('⚠ Sláðu inn símanúmer'); return; }
+  if (!companyName) { showToast('⚠ Enginn viðskiptavinur valinn'); return; }
+
+  var customers = getCustomers();
+  var c = customers.find(function(x) {
+    return x.name.toLowerCase() === companyName.toLowerCase();
+  });
+  if (!c) { showToast('⚠ Viðskiptavinur finnst ekki í gagnagrunni'); return; }
+
+  c.phone = phone;
+  saveCustomers(customers);
+  window._selectedCompanyPhone = phone;
+
+  var hint = document.getElementById('a-phone-hint');
+  var btn = document.getElementById('a-phone-save-btn');
+  if (hint) hint.style.display = 'none';
+  if (btn) btn.style.display = 'none';
+
+  showToast('✓ Símanúmer ' + phone + ' vistað á ' + c.name);
+}
+
 function toggleCustomerBan(id) {
   var custs = getCustomers();
   var c = custs.find(function(x){ return x.id === id; });
@@ -6132,8 +6160,24 @@ function pickCompanyObj(c) {
   companyDDIndex = -1;
   window._selectedCompanyKt = c.kt || '';
   window._selectedCompanyPhone = c.phone || '';
+  window._selectedCompanyId = c.id || '';
+
   var phoneInput = document.getElementById('a-contact-phone');
-  if (phoneInput && c.phone) phoneInput.value = c.phone;
+  var phoneHint = document.getElementById('a-phone-hint');
+  var phoneSaveBtn = document.getElementById('a-phone-save-btn');
+
+  if (phoneInput) {
+    if (c.phone) {
+      phoneInput.value = c.phone;
+      if (phoneHint) phoneHint.style.display = 'none';
+      if (phoneSaveBtn) phoneSaveBtn.style.display = 'none';
+    } else {
+      phoneInput.value = '';
+      phoneInput.focus();
+      if (phoneHint) phoneHint.style.display = 'inline';
+      if (phoneSaveBtn) phoneSaveBtn.style.display = 'inline-block';
+    }
+  }
 }
 
 function pickCompany(i, arr) {

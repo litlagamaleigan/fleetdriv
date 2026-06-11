@@ -8,15 +8,21 @@
 *{box-sizing:border-box;margin:0;padding:0;}
 body{background:#e8edf3;display:flex;justify-content:center;align-items:flex-start;padding:2rem 1rem;font-family:system-ui,sans-serif;min-height:100vh;gap:36px;flex-wrap:wrap;}
 /* ── Full-screen admin mode ── */
-body.admin-active{padding:0;background:#f1f5f9;display:block;overflow:hidden;}
-body.admin-active .admin-panel{width:100%;max-width:100%;border-radius:0;box-shadow:none;border:none;height:100vh;display:flex;flex-direction:column;overflow:hidden;}
+body.admin-active{padding:0;background:#f1f5f9;display:block;}
+body.admin-active .admin-panel{width:100%;max-width:100%;border-radius:0;box-shadow:none;border:none;min-height:100vh;display:flex;flex-direction:column;}
 body.admin-active .admin-hdr{flex-shrink:0;}
-body.admin-active .admin-body{flex:1;overflow:hidden;padding:0;min-height:0;}
-body.admin-active #dsk-body{height:100%;display:grid !important;grid-template-columns:220px 1fr;grid-template-rows:1fr;overflow:hidden;}
-body.admin-active #dsk-body>div:first-child{overflow-y:auto;min-height:0;}
-body.admin-active #dsk-main{overflow-y:auto;min-height:0;padding:24px;box-sizing:border-box;display:flex;flex-direction:column;gap:16px;}
-body.admin-active #dsk-section{display:none !important;}
+body.admin-active .admin-tabs{display:none;}
+body.admin-active .admin-body{flex:1;display:flex;flex-direction:row;min-height:0;overflow:hidden;}
+/* Sidebar */
+body.admin-active #dsk-body{display:flex !important;width:220px;flex-shrink:0;flex-direction:column;background:#fff;border-right:1px solid #e2e8f0;overflow-y:auto;}
+body.admin-active #dsk-main{display:none !important;}
+/* Main content: stats + sections side by side in a column */
+body.admin-active #dsk-mobile{display:flex !important;flex:1;flex-direction:column;overflow-y:auto;background:#f1f5f9;padding:24px;gap:16px;box-sizing:border-box;}
+/* Stats */
+body.admin-active .admin-sections-wrap{display:flex !important;flex-direction:column;flex:1;}
 body.admin-active #admin-sections{flex:1;}
+body.admin-active #admin-sections .admin-section{display:none;}
+body.admin-active #admin-sections .admin-section.active{display:block !important;}
 
 /* ── PHONE FRAME ── */
 .phone{width:390px;background:#0a0f1a;border-radius:48px;overflow:hidden;border:10px solid #141b28;position:relative;flex-shrink:0;box-shadow:0 24px 64px rgba(0,0,0,0.35);}
@@ -3045,23 +3051,28 @@ function initDesktopAdminMode() {
   document.body.classList.add('admin-mode');
   document.body.classList.add('admin-active');
 
-  // Show desktop layout
-  var dskBody = document.getElementById('dsk-body');
-  if (dskBody) dskBody.style.display = 'grid';
-
-  // Move admin-sections INTO dsk-main so it appears in the right column
-  var dskMain = document.getElementById('dsk-main');
-  var adminSections = document.getElementById('admin-sections');
+  // Move stats into dsk-mobile so they show in main content column
   var dskMobile = document.getElementById('dsk-mobile');
-  if (dskMain && adminSections && adminSections.parentNode !== dskMain) {
-    dskMain.appendChild(adminSections);
+  var statsRow = document.getElementById('dsk-stats-row');
+  if (!statsRow) {
+    // Create stats row and move it into dsk-mobile
+    statsRow = document.createElement('div');
+    statsRow.id = 'dsk-stats-row';
+    statsRow.style.cssText = 'display:grid;grid-template-columns:repeat(4,1fr);gap:12px;';
+    // Find the stats from dsk-main and clone them
+    var dskMain = document.getElementById('dsk-main');
+    if (dskMain) {
+      var statsGrid = dskMain.querySelector('div[style*="grid-template-columns:repeat(4"]');
+      if (statsGrid) {
+        dskMobile.insertBefore(statsGrid, dskMobile.firstChild);
+      }
+    }
   }
-  if (dskMobile) dskMobile.style.display = 'none';
 
-  // Hide ALL sections — dskShowSection will show the right one
+  // Hide all sections, show tasks by default
+  var adminSections = document.getElementById('admin-sections');
   if (adminSections) {
     adminSections.querySelectorAll('.admin-section').forEach(function(s) {
-      s.style.display = 'none';
       s.classList.remove('active');
     });
   }
@@ -3080,19 +3091,16 @@ function exitDesktopAdminMode() {
 }
 
 function dskShowSection(tab) {
-  // Hide all sections inside #admin-sections with inline style
   var adminSections = document.getElementById('admin-sections');
   if (adminSections) {
     adminSections.querySelectorAll('.admin-section').forEach(function(s) {
-      s.style.display = 'none';
       s.classList.remove('active');
     });
   }
-  // Show target
   var target = document.getElementById('asec-' + tab);
-  if (!target) { console.warn('Section not found: asec-' + tab); return; }
-  target.style.display = 'block';
-  target.classList.add('active');
+  if (target) {
+    target.classList.add('active');
+  }
   updateDskStats();
 }
 

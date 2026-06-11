@@ -12,10 +12,11 @@ body.admin-active{padding:0;background:#f1f5f9;display:block;overflow:hidden;}
 body.admin-active .admin-panel{width:100%;max-width:100%;border-radius:0;box-shadow:none;border:none;height:100vh;display:flex;flex-direction:column;overflow:hidden;}
 body.admin-active .admin-hdr{flex-shrink:0;}
 body.admin-active .admin-body{flex:1;overflow:hidden;padding:0;min-height:0;}
-body.admin-active #dsk-body{height:100%;display:grid !important;}
-body.admin-active #dsk-main{overflow-y:auto;}
-body.admin-active #admin-sections{display:block !important;}
-body.admin-active #admin-sections .admin-section{display:none;}
+body.admin-active #dsk-body{height:100%;display:grid !important;overflow:hidden;}
+body.admin-active #dsk-main{overflow-y:auto;height:100%;display:flex;flex-direction:column;gap:16px;padding:24px;box-sizing:border-box;}
+body.admin-active #dsk-section{display:none !important;}
+body.admin-active #admin-sections{display:block !important;flex:1;}
+body.admin-active #admin-sections .admin-section{display:none !important;}
 body.admin-active #admin-sections .admin-section.active{display:block !important;}
 
 /* ── PHONE FRAME ── */
@@ -3055,9 +3056,14 @@ function initDesktopAdminMode() {
   var dskMobile = document.getElementById('dsk-mobile');
   if (dskMain && adminSections) {
     dskMain.appendChild(adminSections);
-    adminSections.style.display = 'block';
+    adminSections.style.display = '';
   }
   if (dskMobile) dskMobile.style.display = 'none';
+
+  // Clear any inline display styles from sections so CSS takes control
+  document.querySelectorAll('.admin-section').forEach(function(s) {
+    s.style.display = '';
+  });
 
   updateDskStats();
   updateDskDrivers();
@@ -3073,14 +3079,13 @@ function exitDesktopAdminMode() {
 }
 
 function dskShowSection(tab) {
-  // No DOM moving — just show/hide sections in place
+  // Use only CSS classes — no inline styles that override !important rules
   document.querySelectorAll('.admin-section').forEach(function(s) {
-    s.style.display = 'none';
     s.classList.remove('active');
+    s.style.display = ''; // clear any inline style so CSS takes over
   });
   var target = document.getElementById('asec-' + tab);
   if (!target) return;
-  target.style.display = 'block';
   target.classList.add('active');
   updateDskStats();
 }

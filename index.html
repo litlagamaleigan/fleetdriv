@@ -834,9 +834,13 @@ body.admin-active #admin-sections .admin-section.active{display:block !important
         </div>
         <div class="form-title">Skjölun</div>
         <div class="form-group">
-          <div class="photo-zone" id="pz" onclick="fakePhoto()">
+          <div class="photo-zone" id="pz">
             <svg viewBox="0 0 24 24"><path d="M12 15.2c-1.77 0-3.2-1.43-3.2-3.2 0-1.77 1.43-3.2 3.2-3.2 1.77 0 3.2 1.43 3.2 3.2 0 1.77-1.43 3.2-3.2 3.2zM9 2L7.17 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2h-3.17L15 2H9z"/></svg>
-            <span id="ptxt">Taka mynd</span>
+            <span id="ptxt">Mynd</span>
+            <div id="photo-btns" style="display:flex;gap:8px;margin-top:6px;">
+              <button type="button" onclick="takePhotoCamera(event)" style="background:#e8620a;border:none;border-radius:8px;padding:7px 14px;color:#fff;font-size:12px;font-weight:700;cursor:pointer;">📷 Myndavél</button>
+              <button type="button" onclick="uploadPhotoGallery(event)" style="background:#f1f5f9;border:1px solid #e2e8f0;border-radius:8px;padding:7px 14px;color:#0f172a;font-size:12px;font-weight:700;cursor:pointer;">📁 Hlaða upp</button>
+            </div>
           </div>
         </div>
         <div class="form-group" id="d-note-group">
@@ -1272,9 +1276,11 @@ body.admin-active #admin-sections .admin-section.active{display:block !important
       <div style="margin-top:16px;">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px;">
           <h4 style="font-size:13px;font-weight:700;color:#0f172a;">📊 Tímasamantekt</h4>
-          <div style="display:flex;align-items:center;gap:8px;">
+          <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
             <select id="timelog-month-sel" onchange="loadTimelog()" style="border:1px solid #e2e8f0;border-radius:8px;padding:5px 10px;font-size:12px;font-weight:600;background:#fff;"></select>
             <button onclick="loadTimelog()" style="background:#f1f5f9;border:none;border-radius:8px;padding:5px 12px;font-size:11px;cursor:pointer;font-weight:600;">↻ Uppfæra</button>
+            <button onclick="exportTimelogCSV()" style="background:#16a34a;border:none;border-radius:8px;padding:5px 12px;font-size:11px;cursor:pointer;font-weight:600;color:#fff;">📥 Flytja út CSV</button>
+            <button onclick="exportTimelogExcel()" style="background:#1d4ed8;border:none;border-radius:8px;padding:5px 12px;font-size:11px;cursor:pointer;font-weight:600;color:#fff;">📊 Excel</button>
           </div>
         </div>
         <div id="timelog-summary"></div>
@@ -1796,15 +1802,33 @@ function tryAutoLogin() {
     var driverSess = localStorage.getItem('fd_driver_session');
     if (driverSess) {
       var ds = JSON.parse(driverSess);
-      var users = getUsers();
-      var dUser = users.find(function(u){ return u.username === ds.username && u.password === ds.password; });
-      if (dUser) {
-        // Restore vehicle if it was selected
-        if (ds.vehicle) dUser.vehicle = ds.vehicle;
+      if (ds.username && ds.name) {
+        // Restore user from stored session data — no getUsers() needed
+        // This prevents new punchIn when driver returns to page
+        var dUser = {
+          username: ds.username,
+          password: ds.password || '',
+          name: ds.name,
+          initials: ds.initials || ds.name.substring(0,2).toUpperCase(),
+          color: ds.color || '#e8620a',
+          role: ds.role || 'driver',
+          id: ds.id || ds.username,
+          vehicle: ds.vehicle || ''
+        };
         window._currentUser = dUser;
         resumeDriverShift(dUser);
         return;
-      } else {
+      } else if (ds.username) {
+        // Old format session — try getUsers() lookup
+        var users = getUsers();
+        var dUser2 = users.find(function(u){ return u.username === ds.username; });
+        if (dUser2) {
+          if (ds.vehicle) dUser2.vehicle = ds.vehicle;
+          window._currentUser = dUser2;
+          resumeDriverShift(dUser2);
+          return;
+        }
+        // Not found even in getUsers — clear and show login
         localStorage.removeItem('fd_driver_session');
       }
     }
@@ -2689,6 +2713,7 @@ function loadTimelog() {
         return ta.getTime() - tb.getTime();
       });
       var pairs = buildTimelogPairs(logs);
+      _lastTimelogData = { logs: logs, pairs: pairs };
       renderTimelogSummary(pairs);
       renderTimelog(logs, pairs);
     }).catch(function(e) {
@@ -4261,13 +4286,17 @@ function fbAddToDoneList(data) {
   div.className = 'atask completed';
   div.setAttribute('data-fbid', data.fbId);
   div.dataset.company = (data.company && data.company !== '—') ? data.company : '';
+
+  var dateLabel = data.date ? '📅 ' + data.date : '';
+  var timeLabel = data.timeStr ? 'Lokið ' + data.timeStr : '';
+
   div.innerHTML = '<div class="atask-top">'
     + '<div><div class="atask-name">' + (data.title||'Beiðni') + '</div>'
-    + '<div class="atask-addr">' + (data.address||'—') + (data.date?' · 📅 '+data.date:'') + ' · Lokið ' + (data.timeStr||'') + '</div></div>'
+    + '<div class="atask-addr">' + (data.address||'—') + (dateLabel ? ' · ' + dateLabel : '') + (timeLabel ? ' · ' + timeLabel : '') + '</div></div>'
     + '<span class="admin-badge-pill ' + tm.adminBadge + '">' + tm.name + '</span>'
     + '</div>'
     + '<div class="atask-tags">'
-    + '<span class="atask-tag green">✓ Lokið ' + (data.timeStr||'') + '</span>'
+    + '<span class="atask-tag green">✓ ' + (dateLabel ? dateLabel + ' · ' : '') + (timeLabel||'Lokið') + '</span>'
     + (data.kg ? '<span class="atask-tag">' + data.kg + ' kg</span>' : '')
     + (data.category ? '<span class="atask-tag">' + data.category + '</span>' : '')
     + (data.disposal && data.disposal!=='—' ? '<span class="atask-tag blue">→ ' + data.disposal + '</span>' : '')
@@ -4276,7 +4305,10 @@ function fbAddToDoneList(data) {
     + (data.photoUrl ? '<span class="atask-tag green">📷 <a href="' + data.photoUrl + '" target="_blank" style="color:#16a34a;text-decoration:none;">Skoða mynd</a></span>' : '')
     + '</div>'
     + (data.ref ? '<div style="font-size:10px;color:#94a3b8;margin:4px 0 6px;">' + data.ref + '</div>' : '')
-    + '<div class="atask-foot"><div class="atask-driver-wrap"><div class="driver-dot" style="background:#64748b">' + (data.driverInitials||'—') + '</div><span class="driver-name">' + (data.driverName||'—') + '</span></div></div>';
+    + '<div class="atask-foot"><div class="atask-driver-wrap"><div class="driver-dot" style="background:#64748b">' + (data.driverInitials||'—') + '</div><span class="driver-name">' + (data.driverName||'—') + '</span></div>'
+    + '<button class="atask-btn" onclick="openDoneEditModal(\'' + data.fbId + '\')">✏ Breyta</button>'
+    + '</div>';
+
   list.insertBefore(div, list.firstChild);
   storeTask(Object.assign({}, data, {done: true}));
   renderCustOverview();
@@ -4415,7 +4447,13 @@ function fbAddDriverTask(data) {
     pill.className = 'badge ' + (badgeColors[type]||'b-ut');
     document.getElementById('pz').className = 'photo-zone';
     document.getElementById('pz').dataset.photoData = '';
-    document.getElementById('ptxt').textContent = currentLang==='en'?'Take photo':'Taka mynd';
+    document.getElementById('ptxt').textContent = currentLang==='en'?'Photo':'Mynd';
+    var photoBtns = document.getElementById('photo-btns');
+    if (photoBtns) photoBtns.style.display = 'flex';
+    var prevImg = document.getElementById('pz').querySelector('img.photo-preview');
+    if (prevImg) prevImg.src = '';
+    var changeBtn = document.getElementById('pz').querySelector('.change-photo-btn');
+    if (changeBtn) changeBtn.remove();
     document.getElementById('d-kg').value = '';
     document.getElementById('d-note').value = '';
     document.getElementById('d-container').value = '';
@@ -4486,25 +4524,65 @@ function fbCompleteTask(fbId, completionData, photoDataUrl) {
   });
 }
 
-function fakePhoto(){
-  var input = document.createElement('input');
-  input.type = 'file'; input.accept = 'image/*'; input.capture = 'environment';
-  input.onchange = function(e) {
-    var file = e.target.files[0]; if(!file) return;
-    var reader = new FileReader();
-    reader.onload = function(ev) {
-      var dataUrl = ev.target.result;
-      var pz = document.getElementById('pz');
-      pz.classList.add('done'); pz.dataset.photoData = dataUrl;
-      document.getElementById('ptxt').textContent = file.name + (currentLang==='en'?' · Taken':' · Tekin');
-      var img = pz.querySelector('img.photo-preview');
-      if(!img){img=document.createElement('img');img.className='photo-preview';img.style.cssText='width:60px;height:60px;object-fit:cover;border-radius:8px;margin-top:6px;';pz.appendChild(img);}
-      img.src = dataUrl;
-    };
-    reader.readAsDataURL(file);
+function handlePhotoFile(file) {
+  if (!file) return;
+  var reader = new FileReader();
+  reader.onload = function(ev) {
+    var dataUrl = ev.target.result;
+    var pz = document.getElementById('pz');
+    pz.classList.add('done');
+    pz.dataset.photoData = dataUrl;
+    document.getElementById('ptxt').textContent = file.name + (currentLang==='en'?' · Tekin':' · Tekin');
+    // Hide buttons, show preview + change button
+    var btns = document.getElementById('photo-btns');
+    if (btns) btns.style.display = 'none';
+    var img = pz.querySelector('img.photo-preview');
+    if(!img){img=document.createElement('img');img.className='photo-preview';img.style.cssText='width:80px;height:80px;object-fit:cover;border-radius:10px;margin-top:8px;';pz.appendChild(img);}
+    img.src = dataUrl;
+    // Add "Skipta um mynd" button
+    var existing = pz.querySelector('.change-photo-btn');
+    if (!existing) {
+      var changeBtn = document.createElement('button');
+      changeBtn.type = 'button';
+      changeBtn.className = 'change-photo-btn';
+      changeBtn.textContent = '🔄 Skipta um mynd';
+      changeBtn.style.cssText = 'margin-top:8px;background:#f1f5f9;border:1px solid #e2e8f0;border-radius:8px;padding:6px 12px;font-size:11px;font-weight:600;cursor:pointer;color:#475569;';
+      changeBtn.onclick = function(e) {
+        e.stopPropagation();
+        pz.classList.remove('done');
+        pz.dataset.photoData = '';
+        document.getElementById('ptxt').textContent = currentLang==='en'?'Photo':'Mynd';
+        if(btns) btns.style.display = 'flex';
+        if(img) img.src = '';
+        changeBtn.remove();
+      };
+      pz.appendChild(changeBtn);
+    }
   };
+  reader.readAsDataURL(file);
+}
+
+function takePhotoCamera(e) {
+  e && e.stopPropagation();
+  var input = document.createElement('input');
+  input.type = 'file';
+  input.accept = 'image/*';
+  input.capture = 'environment'; // forces camera on mobile
+  input.onchange = function(ev) { handlePhotoFile(ev.target.files[0]); };
   input.click();
 }
+
+function uploadPhotoGallery(e) {
+  e && e.stopPropagation();
+  var input = document.createElement('input');
+  input.type = 'file';
+  input.accept = 'image/*';
+  // NO capture attribute — opens gallery/file picker
+  input.onchange = function(ev) { handlePhotoFile(ev.target.files[0]); };
+  input.click();
+}
+
+function fakePhoto(){ takePhotoCamera(); } // backwards compatibility
 
 // ── State ──
 let role = 'admin';
@@ -4653,10 +4731,16 @@ function proceedLogin(user) {
         var sub=document.querySelector('.hdr-left .sub');
         if(sub) sub.textContent=(currentLang==='en'?'Vehicle':'Bifreið')+' '+ve+' · '+(currentLang==='en'?'GPS active':'GPS virkt');
       }
-      // Save shift to localStorage so it survives browser close/reopen
+      // Save FULL user object to localStorage — so session can be restored even if getUsers() changes
       try {
         localStorage.setItem('fd_driver_session', JSON.stringify({
-          username: user.username, password: user.password,
+          username: user.username,
+          password: user.password,
+          name: user.name,
+          initials: user.initials,
+          color: user.color,
+          role: user.role,
+          id: user.id,
           vehicle: window._currentUser.vehicle || '',
           shiftStart: Date.now()
         }));
@@ -4933,7 +5017,7 @@ function completeTask(){
   }
   sendToSheets({
     dagsetning:n.toLocaleDateString('is-IS'),
-    timi:timeStr,
+    timi: "'" + timeStr,
     tilvísun:ref,
     heimilisfang:curTask?curTask.sub:'—',
     efnisflokkur:category,
@@ -5492,7 +5576,236 @@ function loadSavedUrl(){
 }
 
 
-// ── Timelog Edit / Delete ──
+// ── Done Task Edit Modal ──
+function openDoneEditModal(fbId) {
+  var modal = document.getElementById('done-edit-modal');
+  if (!modal) return;
+  document.getElementById('dem-fbid').value = fbId || '';
+  // Clear fields
+  ['dem-date','dem-time','dem-addr','dem-kg','dem-container','dem-note'].forEach(function(id) {
+    var el = document.getElementById(id); if(el) el.value = '';
+  });
+  document.getElementById('dem-category').value = '';
+  document.getElementById('dem-disposal').value = '';
+
+  // Fetch current data from Firebase
+  if (fbId) {
+    onFirebaseReady(function() {
+      var fb = window._fb;
+      fb.getDoc(fb.doc(fb.db, 'tasks', fbId)).then(function(snap) {
+        if (!snap.exists()) return;
+        var d = snap.data();
+        if (d.date)        document.getElementById('dem-date').value = d.date;
+        if (d.timeStr)     document.getElementById('dem-time').value = d.timeStr;
+        if (d.address)     document.getElementById('dem-addr').value = d.address;
+        if (d.kg)          document.getElementById('dem-kg').value = d.kg;
+        if (d.containerNum) document.getElementById('dem-container').value = d.containerNum;
+        if (d.category)    document.getElementById('dem-category').value = d.category;
+        if (d.disposal)    document.getElementById('dem-disposal').value = d.disposal;
+        if (d.note)        document.getElementById('dem-note').value = d.note;
+      }).catch(function(){});
+    });
+  }
+  modal.style.display = 'flex';
+}
+
+function closeDoneEditModal() {
+  var modal = document.getElementById('done-edit-modal');
+  if (modal) modal.style.display = 'none';
+}
+
+function saveDoneEditModal() {
+  var fbId = document.getElementById('dem-fbid').value;
+  if (!fbId) return;
+
+  var updates = {
+    date:         document.getElementById('dem-date').value.trim(),
+    timeStr:      document.getElementById('dem-time').value,
+    address:      document.getElementById('dem-addr').value.trim(),
+    kg:           document.getElementById('dem-kg').value.trim(),
+    containerNum: document.getElementById('dem-container').value.trim(),
+    category:     document.getElementById('dem-category').value,
+    disposal:     document.getElementById('dem-disposal').value,
+    note:         document.getElementById('dem-note').value.trim()
+  };
+
+  onFirebaseReady(function() {
+    var fb = window._fb;
+    fb.updateDoc(fb.doc(fb.db, 'tasks', fbId), updates)
+      .then(function() {
+        // Update DOM card
+        var card = document.querySelector('[data-fbid="' + fbId + '"]');
+        if (card) {
+          var addrEl = card.querySelector('.atask-addr');
+          if (addrEl) {
+            addrEl.textContent = (updates.address||'—')
+              + (updates.date ? ' · 📅 ' + updates.date : '')
+              + (updates.timeStr ? ' · Lokið ' + updates.timeStr : '');
+          }
+          var greenTag = card.querySelector('.atask-tag.green');
+          if (greenTag && !greenTag.querySelector('a')) {
+            greenTag.textContent = '✓ ' + (updates.date ? '📅 ' + updates.date + ' · ' : '') + (updates.timeStr ? 'Lokið ' + updates.timeStr : 'Lokið');
+          }
+        }
+        showToast('✓ Beiðni uppfærð');
+        closeDoneEditModal();
+      }).catch(function(e) {
+        showToast('⚠ Villa: ' + (e.code || e.message));
+      });
+  });
+}
+
+
+var _lastTimelogData = { logs: [], pairs: [] };
+
+// Override loadTimelog to cache data for export
+var _origLoadTimelog = null;
+
+function exportTimelogCSV() {
+  if (!_lastTimelogData.logs.length) { showToast('⚠ Hlaðið fyrst tímasamantekt'); return; }
+  var sel = document.getElementById('timelog-month-sel');
+  var month = sel ? sel.options[sel.selectedIndex].text : 'timelog';
+  var rows = buildExportRows(_lastTimelogData.logs, _lastTimelogData.pairs);
+  var csv = rows.map(function(r) {
+    return r.map(function(cell) {
+      var s = String(cell == null ? '' : cell);
+      return s.includes(',') || s.includes('"') || s.includes('\n') ? '"' + s.replace(/"/g,'""') + '"' : s;
+    }).join(',');
+  }).join('\r\n');
+  var BOM = '\uFEFF';
+  var blob = new Blob([BOM + csv], { type: 'text/csv;charset=utf-8;' });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url;
+  a.download = 'FleetDriv-Timelog-' + month.replace(/ /g,'-') + '.csv';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showToast('✓ CSV flutt út');
+}
+
+function exportTimelogExcel() {
+  if (!_lastTimelogData.logs.length) { showToast('⚠ Hlaðið fyrst tímasamantekt'); return; }
+  var sel = document.getElementById('timelog-month-sel');
+  var month = sel ? sel.options[sel.selectedIndex].text : 'timelog';
+  var rows = buildExportRows(_lastTimelogData.logs, _lastTimelogData.pairs);
+
+  // Build simple HTML table that Excel opens correctly
+  var html = '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel">'
+    + '<head><meta charset="UTF-8"><style>th{background:#0f172a;color:#fff;padding:6px;}td{padding:5px;border:1px solid #e2e8f0;}'
+    + '.ov{background:#f0fdf4;font-weight:bold;}.weekend{background:#fef2f2;}'
+    + '</style></head><body><table>';
+  rows.forEach(function(r, ri) {
+    var isHeader = ri === 0;
+    var isTotal = r[0] === 'SAMTALS' || r[0] === '';
+    html += '<tr>';
+    r.forEach(function(cell) {
+      var tag = isHeader ? 'th' : 'td';
+      html += '<' + tag + '>' + escHtml(String(cell == null ? '' : cell)) + '</' + tag + '>';
+    });
+    html += '</tr>';
+  });
+  html += '</table></body></html>';
+
+  var blob = new Blob([html], { type: 'application/vnd.ms-excel;charset=utf-8;' });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url;
+  a.download = 'FleetDriv-Timelog-' + month.replace(/ /g,'-') + '.xls';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showToast('✓ Excel flutt út');
+}
+
+function buildExportRows(logs, pairs) {
+  var rows = [];
+
+  // === SECTION 1: Summary per driver ===
+  rows.push(['TÍMASAMANTEKT', '', '', '', '', '', '']);
+  rows.push(['Ökumaður', 'Vinnudagar', 'Vaktir', 'Heildartímar', 'Dagvinna', 'Yfirvinnu', 'Mánuður']);
+
+  var sel = document.getElementById('timelog-month-sel');
+  var monthLabel = sel ? sel.options[sel.selectedIndex].text : '';
+
+  // Aggregate per driver per day first
+  var dailyByDriver = {};
+  pairs.forEach(function(p) {
+    if (p.minutes === null) return;
+    var dk = (p.username||p.name) + '|' + p.dateStr;
+    if (!dailyByDriver[dk]) dailyByDriver[dk] = { name: p.name, username: p.username||p.name, dateStr: p.dateStr, totalMin: 0 };
+    dailyByDriver[dk].totalMin += p.minutes;
+  });
+
+  var byDriver = {};
+  var sessionsByDriver = {};
+  Object.values(dailyByDriver).forEach(function(day) {
+    var k = day.username;
+    if (!byDriver[k]) byDriver[k] = { name: day.name, totalMin: 0, dagvinnaMin: 0, yfirvinnuMin: 0, daysWorked: 0 };
+    var wknd = isWeekend(day.dateStr);
+    byDriver[k].totalMin += day.totalMin;
+    byDriver[k].daysWorked++;
+    if (wknd) { byDriver[k].yfirvinnuMin += day.totalMin; }
+    else { byDriver[k].dagvinnaMin += Math.min(day.totalMin, 480); byDriver[k].yfirvinnuMin += Math.max(0, day.totalMin - 480); }
+  });
+  pairs.forEach(function(p) {
+    var k = p.username||p.name;
+    if (!sessionsByDriver[k]) sessionsByDriver[k] = 0;
+    sessionsByDriver[k]++;
+  });
+
+  Object.keys(byDriver).forEach(function(k) {
+    var d = byDriver[k];
+    rows.push([d.name, d.daysWorked, sessionsByDriver[k]||0, fmtMinutes(d.totalMin), fmtMinutes(d.dagvinnaMin), fmtMinutes(d.yfirvinnuMin), monthLabel]);
+  });
+
+  rows.push(['', '', '', '', '', '', '']);
+
+  // === SECTION 2: Detailed log ===
+  rows.push(['NÁKVÆM SKRÁ - INNSTIMPLUN / ÚTSTIMPLUN', '', '', '', '', '', '']);
+  rows.push(['Dagsetning', 'Dagur', 'Ökumaður', 'Innstimplun', 'Útstimplun', 'Tímar', 'Ökutæki']);
+
+  // Sort pairs by date and driver
+  var sortedPairs = pairs.slice().sort(function(a, b) {
+    var da = parseDateStr(a.dateStr); var db = parseDateStr(b.dateStr);
+    if (!da || !db) return 0;
+    return da.getTime() - db.getTime() || (a.name||'').localeCompare(b.name||'');
+  });
+
+  sortedPairs.forEach(function(p) {
+    var dayName = getDayOfWeek(p.dateStr) || '';
+    var inTime = p.inLog ? p.inLog.timeStr : '—';
+    var outTime = p.outLog ? p.outLog.timeStr : 'Á vakt';
+    var hours = p.minutes !== null ? fmtMinutes(p.minutes) : '—';
+    var vehicle = (p.inLog && p.inLog.vehicle && p.inLog.vehicle !== '—') ? p.inLog.vehicle : '';
+    rows.push([p.dateStr, dayName, p.name||'—', inTime, outTime, hours, vehicle]);
+  });
+
+  // Also include unpaired logs
+  rows.push(['', '', '', '', '', '', '']);
+  rows.push(['ÓLOKNAR / SÉRSTAKAR FÆRSLUR', '', '', '', '', '', '']);
+  rows.push(['Dagsetning', 'Dagur', 'Ökumaður', 'Tegund', 'Tími', '', '']);
+  var pairedKeys = {};
+  pairs.forEach(function(p) {
+    if (p.inLog) pairedKeys[(p.inLog.username||p.inLog.name)+p.inLog.dateStr+p.inLog.timeStr] = true;
+    if (p.outLog) pairedKeys[(p.outLog.username||p.outLog.name)+p.outLog.dateStr+p.outLog.timeStr] = true;
+  });
+  var hasUnpaired = false;
+  logs.forEach(function(log) {
+    var key = (log.username||log.name) + log.dateStr + log.timeStr;
+    if (!pairedKeys[key]) {
+      hasUnpaired = true;
+      rows.push([log.dateStr, getDayOfWeek(log.dateStr)||'', log.name||'—', log.action==='in'?'Innstimplun':'Útstimplun', log.timeStr||'—', '', '']);
+    }
+  });
+  if (!hasUnpaired) rows.push(['Engar óloknar færslur', '', '', '', '', '', '']);
+
+  return rows;
+}
+
+
 var _timelogEditDocId = null;
 
 function editTimelogEntry(fbDocId, action) {
@@ -6365,11 +6678,13 @@ function skipVehicleSelect() {
   vs.style.display = 'none';
   vs.classList.remove('active');
   if(window._currentUser) punchIn(window._currentUser, null);
-  // Save shift to localStorage
+  // Save full user object to session
   try {
+    var u = window._currentUser;
     localStorage.setItem('fd_driver_session', JSON.stringify({
-      username: window._currentUser.username, password: window._currentUser.password,
-      vehicle: '', shiftStart: Date.now()
+      username: u.username, password: u.password,
+      name: u.name, initials: u.initials, color: u.color,
+      role: u.role, id: u.id, vehicle: '', shiftStart: Date.now()
     }));
   } catch(e) {}
   _pendingVehicleCallback && _pendingVehicleCallback(null);
@@ -6963,6 +7278,72 @@ function showToast(msg){
       </div>
     </div>
   </div>
+</div><!-- Done task edit modal -->
+<div id="done-edit-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9997;align-items:center;justify-content:center;padding:20px;">
+  <div style="background:#fff;border-radius:16px;width:100%;max-width:520px;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,0.3);">
+    <div style="background:#166534;padding:16px 20px;border-radius:16px 16px 0 0;display:flex;align-items:center;justify-content:space-between;">
+      <h3 style="color:#fff;font-size:15px;font-weight:700;margin:0;">✏ Breyta kláraðri beiðni</h3>
+      <button onclick="closeDoneEditModal()" style="background:none;border:none;color:#bbf7d0;font-size:20px;cursor:pointer;">✕</button>
+    </div>
+    <div style="padding:20px;display:flex;flex-direction:column;gap:12px;">
+      <input type="hidden" id="dem-fbid"/>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+        <div>
+          <label style="font-size:11px;font-weight:700;color:#64748b;display:block;margin-bottom:4px;">DAGSETNING</label>
+          <input type="text" id="dem-date" placeholder="d.m.yyyy" style="width:100%;padding:9px 12px;border:1px solid #e2e8f0;border-radius:10px;font-size:13px;box-sizing:border-box;"/>
+        </div>
+        <div>
+          <label style="font-size:11px;font-weight:700;color:#64748b;display:block;margin-bottom:4px;">TÍMI AFGREIÐSLU</label>
+          <input type="time" id="dem-time" style="width:100%;padding:9px 12px;border:1px solid #e2e8f0;border-radius:10px;font-size:13px;box-sizing:border-box;"/>
+        </div>
+      </div>
+      <div>
+        <label style="font-size:11px;font-weight:700;color:#64748b;display:block;margin-bottom:4px;">HEIMILISFANG</label>
+        <input type="text" id="dem-addr" style="width:100%;padding:9px 12px;border:1px solid #e2e8f0;border-radius:10px;font-size:13px;box-sizing:border-box;"/>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+        <div>
+          <label style="font-size:11px;font-weight:700;color:#64748b;display:block;margin-bottom:4px;">ÞYNGD (kg)</label>
+          <input type="text" id="dem-kg" style="width:100%;padding:9px 12px;border:1px solid #e2e8f0;border-radius:10px;font-size:13px;box-sizing:border-box;" placeholder="0"/>
+        </div>
+        <div>
+          <label style="font-size:11px;font-weight:700;color:#64748b;display:block;margin-bottom:4px;">GÁMANÚMER</label>
+          <input type="text" id="dem-container" style="width:100%;padding:9px 12px;border:1px solid #e2e8f0;border-radius:10px;font-size:13px;box-sizing:border-box;" placeholder="G-000"/>
+        </div>
+      </div>
+      <div>
+        <label style="font-size:11px;font-weight:700;color:#64748b;display:block;margin-bottom:4px;">EFNISFLOKKUR</label>
+        <select id="dem-category" translate="no" style="width:100%;padding:9px 12px;border:1px solid #e2e8f0;border-radius:10px;font-size:13px;">
+          <option value="">— Veldu flokk —</option>
+          <option value="Gras og hey">Gras og hey</option><option value="Trjágreinar">Trjágreinar</option>
+          <option value="Garðaúrgangur">Garðaúrgangur</option><option value="Blandaður úrgangur til brennslu">Blandaður úrgangur til brennslu</option>
+          <option value="Filmuplast ólitað">Filmuplast ólitað</option><option value="Hart plast">Hart plast</option>
+          <option value="Bylgjupappi">Bylgjupappi</option><option value="Málað timbur">Málað timbur</option>
+          <option value="Ómálað timbur">Ómálað timbur</option><option value="Mold">Mold</option>
+          <option value="Múrbrot">Múrbrot</option><option value="Gúmmíúrgangur">Gúmmíúrgangur</option>
+        </select>
+      </div>
+      <div>
+        <label style="font-size:11px;font-weight:700;color:#64748b;display:block;margin-bottom:4px;">LOSUNARSTAÐUR</label>
+        <select id="dem-disposal" translate="no" style="width:100%;padding:9px 12px;border:1px solid #e2e8f0;border-radius:10px;font-size:13px;">
+          <option value="">— Veldu stað —</option>
+          <option value="Sorpstöð Álfsnes">Sorpstöð Álfsnes</option><option value="Sorpustöð Gufunes">Sorpustöð Gufunes</option>
+          <option value="Terra umhverfisþjónusta">Terra umhverfisþjónusta</option><option value="Íslenska Gámafélagið">Íslenska Gámafélagið</option>
+          <option value="Bolalda">Bolalda</option><option value="Vatnsskarð">Vatnsskarð</option>
+          <option value="Höfuðstöð fyrirtækis">Höfuðstöð fyrirtækis</option>
+        </select>
+      </div>
+      <div>
+        <label style="font-size:11px;font-weight:700;color:#64748b;display:block;margin-bottom:4px;">ATHUGASEMD</label>
+        <textarea id="dem-note" rows="3" style="width:100%;padding:9px 12px;border:1px solid #e2e8f0;border-radius:10px;font-size:13px;box-sizing:border-box;resize:vertical;"></textarea>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:4px;">
+        <button onclick="saveDoneEditModal()" style="flex:1;padding:12px;background:#16a34a;border:none;border-radius:10px;color:#fff;font-size:13px;font-weight:700;cursor:pointer;">✓ Vista breytingar</button>
+        <button onclick="closeDoneEditModal()" style="padding:12px 20px;background:#f1f5f9;border:none;border-radius:10px;color:#475569;font-size:13px;font-weight:600;cursor:pointer;">Hætta við</button>
+      </div>
+    </div>
+  </div>
 </div>
+
 </body>
 </html>

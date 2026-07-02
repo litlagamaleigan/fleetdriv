@@ -987,6 +987,7 @@ body.admin-active #admin-sections .admin-section.active{display:block !important
       <button class="admin-tab active" onclick="adminTab('new',this)">+ Ný beiðni</button>
       <button class="admin-tab" onclick="adminTab('tasks',this)">Opin</button>
       <button class="admin-tab" onclick="adminTab('done',this)">Lokið</button>
+      <button class="admin-tab" onclick="adminTab('trash',this)">🗑 Ruslafata</button>
       <button class="admin-tab" onclick="adminTab('drivers',this)">Ökumenn</button>
       <button class="admin-tab" onclick="adminTab('customers',this)">Viðskiptavinir</button>
       <button class="admin-tab" onclick="adminTab('custoverview',this)">Yfirlit</button>
@@ -1009,6 +1010,7 @@ body.admin-active #admin-sections .admin-section.active{display:block !important
         <span id="dsk-badge" style="background:#fee2e2;color:#dc2626;border-radius:12px;padding:1px 7px;font-size:10px;font-weight:700;display:none;">0</span>
       </button>
       <button onclick="adminTab('done',this)" class="dsk-nav" style="padding:9px 12px;border-radius:8px;font-size:13px;border:none;background:none;color:#475569;cursor:pointer;width:100%;text-align:left;">📦 Lokið</button>
+      <button onclick="adminTab('trash',this)" class="dsk-nav" style="padding:9px 12px;border-radius:8px;font-size:13px;border:none;background:none;color:#94a3b8;cursor:pointer;width:100%;text-align:left;">🗑 Ruslafata</button>
       <button onclick="adminTab('drivers',this)" class="dsk-nav" style="padding:9px 12px;border-radius:8px;font-size:13px;border:none;background:none;color:#475569;cursor:pointer;width:100%;text-align:left;">🚛 Ökumenn</button>
       <button onclick="adminTab('map',this)" class="dsk-nav" style="padding:9px 12px;border-radius:8px;font-size:13px;border:none;background:none;color:#475569;cursor:pointer;width:100%;text-align:left;">🗺 Kort</button>
       <div style="height:1px;background:#e2e8f0;margin:8px 0;"></div>
@@ -1265,6 +1267,20 @@ body.admin-active #admin-sections .admin-section.active{display:block !important
     <!-- COMPLETED TASKS -->
     <div class="admin-section" id="asec-done">
       <div class="tasks-list" id="admin-done-list">
+      </div>
+    </div>
+
+    <!-- RUSLAFATA -->
+    <div class="admin-section" id="asec-trash">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+        <div>
+          <h3 style="font-size:15px;font-weight:700;color:#0f172a;margin:0;">🗑 Ruslafata</h3>
+          <p style="font-size:12px;color:#94a3b8;margin:4px 0 0;">Beiðnir sem hafa verið eyddar — hægt að endurheimta eða eyða alveg</p>
+        </div>
+        <button onclick="loadTrashList()" style="background:#f1f5f9;border:none;border-radius:8px;padding:6px 12px;font-size:12px;font-weight:600;cursor:pointer;">↻ Uppfæra</button>
+      </div>
+      <div id="admin-trash-list">
+        <p style="color:#94a3b8;font-size:13px;text-align:center;padding:30px;">Smelltu á Uppfæra til að sjá eyddar beiðnir</p>
       </div>
     </div>
 
@@ -4307,6 +4323,7 @@ function fbAddToDoneList(data) {
     + (data.ref ? '<div style="font-size:10px;color:#94a3b8;margin:4px 0 6px;">' + data.ref + '</div>' : '')
     + '<div class="atask-foot"><div class="atask-driver-wrap"><div class="driver-dot" style="background:#64748b">' + (data.driverInitials||'—') + '</div><span class="driver-name">' + (data.driverName||'—') + '</span></div>'
     + '<button class="atask-btn" onclick="openDoneEditModal(\'' + data.fbId + '\')">✏ Breyta</button>'
+    + '<button class="atask-btn del" onclick="softDeleteDoneTask(\'' + data.fbId + '\')">🗑 Eyða</button>'
     + '</div>';
 
   list.insertBefore(div, list.firstChild);
@@ -5142,6 +5159,7 @@ function adminTab(tab,el){
   if(tab==='custoverview') renderCustOverview();
   if(tab==='drivers') { renderDriverCards(); buildMonthOptions(); loadTimelog(); }
   if(tab==='tasks') { refreshAdminTasks(); }
+  if(tab==='trash') { loadTrashList(); }
   if(tab==='chat') { loadChatUnreadCounts(); }
   if(tab==='map' && !isDesktop()) {
     setTimeout(function(){ initAdminMap(); if(adminMap) loadAdminMap(); }, 200);
@@ -5576,7 +5594,139 @@ function loadSavedUrl(){
 }
 
 
-// ── Done Task Edit Modal ──
+// ── Ruslafata (Trash) System ──
+
+function softDeleteDoneTask(fbId) {
+  if (!confirm('Senda þessa beiðni í ruslafötuna?\n\nHún verður ekki eydd alveg — þú getur endurheimtað hana síðar.')) return;
+
+  onFirebaseReady(function() {
+    var fb = window._fb;
+    fb.updateDoc(fb.doc(fb.db, 'tasks', fbId), {
+      status: 'deleted',
+      deletedAt: fb.serverTimestamp(),
+      deletedBy: (window._currentUser && window._currentUser.name) || 'Admin'
+    }).then(function() {
+      // Remove from done list DOM
+      var card = document.querySelector('#admin-done-list [data-fbid="' + fbId + '"]');
+      if (card) card.remove();
+      showToast('🗑 Beiðni send í ruslafötu — hægt að endurheimta');
+    }).catch(function(e) {
+      showToast('⚠ Villa: ' + (e.code || e.message));
+    });
+  });
+}
+
+function loadTrashList() {
+  var list = document.getElementById('admin-trash-list');
+  if (!list) return;
+  list.innerHTML = '<p style="color:#94a3b8;font-size:13px;text-align:center;padding:20px;">⏳ Hleð...</p>';
+
+  onFirebaseReady(function() {
+    var fb = window._fb;
+    fb.getDocs(fb.query(
+      fb.collection(fb.db, 'tasks'),
+      fb.where('status', '==', 'deleted')
+    )).then(function(snap) {
+      if (snap.empty) {
+        list.innerHTML = '<p style="color:#94a3b8;font-size:13px;text-align:center;padding:30px;">🗑 Ruslafatan er tóm</p>';
+        return;
+      }
+      var items = [];
+      snap.forEach(function(doc) {
+        var d = doc.data();
+        d.fbId = doc.id;
+        items.push(d);
+      });
+      // Sort newest deleted first
+      items.sort(function(a, b) {
+        var ta = a.deletedAt && a.deletedAt.toDate ? a.deletedAt.toDate().getTime() : 0;
+        var tb = b.deletedAt && b.deletedAt.toDate ? b.deletedAt.toDate().getTime() : 0;
+        return tb - ta;
+      });
+
+      list.innerHTML = '';
+      items.forEach(function(d) {
+        var tm = typeMap[d.type || 'ut'] || typeMap.ut;
+        var deletedDate = d.deletedAt && d.deletedAt.toDate ? d.deletedAt.toDate().toLocaleDateString('is-IS') : '—';
+        var deletedTime = d.deletedAt && d.deletedAt.toDate ? d.deletedAt.toDate().toLocaleTimeString('is-IS', {hour:'2-digit',minute:'2-digit'}) : '';
+
+        var card = document.createElement('div');
+        card.style.cssText = 'background:#fff5f5;border:1px solid #fecaca;border-radius:12px;padding:14px;margin-bottom:10px;';
+        card.innerHTML = '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;">'
+          + '<div style="flex:1;">'
+          +   '<div style="font-size:13px;font-weight:700;color:#0f172a;">' + (d.title||'Beiðni') + '</div>'
+          +   '<div style="font-size:12px;color:#64748b;margin-top:2px;">' + (d.address||'—') + (d.date ? ' · 📅 ' + d.date : '') + '</div>'
+          +   '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;">'
+          +     '<span style="background:#f1f5f9;border-radius:6px;padding:2px 8px;font-size:11px;color:#475569;">🚛 ' + (d.driverName||'—') + '</span>'
+          +     (d.company && d.company !== '—' ? '<span style="background:#f1f5f9;border-radius:6px;padding:2px 8px;font-size:11px;color:#475569;">🏢 ' + d.company + '</span>' : '')
+          +     (d.ref ? '<span style="background:#f1f5f9;border-radius:6px;padding:2px 8px;font-size:11px;color:#94a3b8;">' + d.ref + '</span>' : '')
+          +   '</div>'
+          +   '<div style="font-size:10px;color:#f87171;margin-top:6px;">🗑 Eytt: ' + deletedDate + ' ' + deletedTime + (d.deletedBy ? ' af ' + d.deletedBy : '') + '</div>'
+          + '</div>'
+          + '<span style="background:#fee2e2;color:#dc2626;border-radius:6px;padding:3px 8px;font-size:11px;font-weight:700;flex-shrink:0;">' + tm.name + '</span>'
+          + '</div>'
+          + '<div style="display:flex;gap:8px;margin-top:12px;">'
+          +   '<button onclick="restoreTask(\'' + d.fbId + '\')" style="flex:1;padding:8px;background:#16a34a;border:none;border-radius:8px;color:#fff;font-size:12px;font-weight:700;cursor:pointer;">♻ Endurheimta</button>'
+          +   '<button onclick="permanentDeleteTask(\'' + d.fbId + '\',\'' + escHtml(d.ref||'') + '\')" style="padding:8px 14px;background:#dc2626;border:none;border-radius:8px;color:#fff;font-size:12px;font-weight:700;cursor:pointer;">🗑 Eyða alveg</button>'
+          + '</div>';
+        list.appendChild(card);
+      });
+      list.insertAdjacentHTML('afterbegin', '<p style="font-size:12px;color:#94a3b8;margin-bottom:10px;">' + items.length + ' beiðnir í ruslafötunni</p>');
+    }).catch(function(e) {
+      list.innerHTML = '<p style="color:#dc2626;font-size:13px;padding:20px;">⚠ Villa: ' + (e.code||e.message) + '</p>';
+    });
+  });
+}
+
+function restoreTask(fbId) {
+  onFirebaseReady(function() {
+    var fb = window._fb;
+    fb.updateDoc(fb.doc(fb.db, 'tasks', fbId), {
+      status: 'completed',
+      deletedAt: null,
+      deletedBy: null
+    }).then(function() {
+      showToast('✓ Beiðni endurheimtað í Lokið lista');
+      loadTrashList();
+      // Reload done list if visible
+      if (document.getElementById('asec-done').classList.contains('active')) {
+        refreshAdminTasks();
+      }
+    }).catch(function(e) {
+      showToast('⚠ Villa: ' + (e.code || e.message));
+    });
+  });
+}
+
+function permanentDeleteTask(fbId, ref) {
+  if (!confirm('Eyða þessari beiðni ALVEG og endanlega?\n\nÞetta er óafturkræft — beiðnin hverfur úr Firebase og Google Sheets.')) return;
+
+  onFirebaseReady(function() {
+    var fb = window._fb;
+    fb.deleteDoc(fb.doc(fb.db, 'tasks', fbId)).then(function() {
+      // Also delete from Google Sheets if REF exists
+      if (ref && SHEETDB_URL) {
+        var delUrl = SHEETDB_URL + '/Tilvísun/' + encodeURIComponent(ref);
+        fetch(delUrl, {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' }
+        }).then(function(r) {
+          if (r.ok) showToast('✓ Beiðni eytt úr Firebase og Google Sheets');
+          else showToast('✓ Firebase eytt · ⚠ Sheets villa ' + r.status);
+        }).catch(function() {
+          showToast('✓ Firebase eytt · ⚠ Sheets náðist ekki');
+        });
+      } else {
+        showToast('✓ Beiðni eytt alveg');
+      }
+      loadTrashList();
+    }).catch(function(e) {
+      showToast('⚠ Villa: ' + (e.code || e.message));
+    });
+  });
+}
+
+
 function openDoneEditModal(fbId) {
   var modal = document.getElementById('done-edit-modal');
   if (!modal) return;
@@ -5595,6 +5745,7 @@ function openDoneEditModal(fbId) {
       fb.getDoc(fb.doc(fb.db, 'tasks', fbId)).then(function(snap) {
         if (!snap.exists()) return;
         var d = snap.data();
+        document.getElementById('dem-ref').value = d.ref || '';
         if (d.date)        document.getElementById('dem-date').value = d.date;
         if (d.timeStr)     document.getElementById('dem-time').value = d.timeStr;
         if (d.address)     document.getElementById('dem-addr').value = d.address;
@@ -5616,6 +5767,7 @@ function closeDoneEditModal() {
 
 function saveDoneEditModal() {
   var fbId = document.getElementById('dem-fbid').value;
+  var ref  = document.getElementById('dem-ref').value;
   if (!fbId) return;
 
   var updates = {
@@ -5647,7 +5799,41 @@ function saveDoneEditModal() {
             greenTag.textContent = '✓ ' + (updates.date ? '📅 ' + updates.date + ' · ' : '') + (updates.timeStr ? 'Lokið ' + updates.timeStr : 'Lokið');
           }
         }
-        showToast('✓ Beiðni uppfærð');
+
+        // Update Google Sheets via SheetDB PATCH if REF exists
+        if (ref && SHEETDB_URL) {
+          var sheetUpdates = {};
+          if (updates.date)         sheetUpdates['Dagsetning']    = updates.date;
+          if (updates.timeStr)      sheetUpdates['Timi']          = "'" + updates.timeStr;
+          if (updates.address)      sheetUpdates['Heimilisfang']  = updates.address;
+          if (updates.kg)           sheetUpdates['Þyngd_kg']      = updates.kg;
+          if (updates.containerNum) sheetUpdates['Gamanumer']     = updates.containerNum;
+          if (updates.category)     sheetUpdates['Efnisflokkur']  = updates.category;
+          if (updates.disposal)     sheetUpdates['Losunarstaður'] = updates.disposal;
+          if (updates.note)         sheetUpdates['Athugasemd']    = updates.note;
+
+          if (Object.keys(sheetUpdates).length > 0) {
+            var patchUrl = SHEETDB_URL + '/Tilvísun/' + encodeURIComponent(ref);
+            fetch(patchUrl, {
+              method: 'PATCH',
+              headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+              body: JSON.stringify({ data: sheetUpdates })
+            }).then(function(r) {
+              if (r.ok) {
+                showToast('✓ Beiðni uppfærð — Firebase og Google Sheets');
+              } else {
+                showToast('✓ Firebase uppfært · ⚠ Sheets villa ' + r.status);
+              }
+            }).catch(function() {
+              showToast('✓ Firebase uppfært · ⚠ Sheets náðist ekki');
+            });
+          } else {
+            showToast('✓ Beiðni uppfærð');
+          }
+        } else {
+          showToast('✓ Beiðni uppfærð' + (ref ? '' : ' (ekkert REF — Sheets ekki uppfært)'));
+        }
+
         closeDoneEditModal();
       }).catch(function(e) {
         showToast('⚠ Villa: ' + (e.code || e.message));
@@ -6293,6 +6479,7 @@ function refreshAdminTasks() {
       snap.forEach(function(doc) {
         var data = doc.data();
         data.fbId = doc.id;
+        if (data.status === 'deleted') return; // skip trash
         if (data.status === 'open') {
           fbAddToOpenList(data);
         } else if (data.status === 'completed') {
@@ -7287,6 +7474,7 @@ function showToast(msg){
     </div>
     <div style="padding:20px;display:flex;flex-direction:column;gap:12px;">
       <input type="hidden" id="dem-fbid"/>
+      <input type="hidden" id="dem-ref"/>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
         <div>
           <label style="font-size:11px;font-weight:700;color:#64748b;display:block;margin-bottom:4px;">DAGSETNING</label>

@@ -2744,7 +2744,34 @@ function loadTimelog() {
   });
 }
 
-var _IS_DAYS = ['Sun', 'Mán', 'Þri', 'Mið', 'Fim', 'Fös', 'Lau'];
+function parseDateStrBestGuess(dateStr) {
+  // Returns a JS Date, using the Firebase timestamp's actual day if possible
+  return parseDateStr(dateStr); // fallback to existing logic
+}
+
+function dateToWeekday(d) {
+  if (!d) return '';
+  return _IS_DAYS[d.getDay()];
+}
+
+function dateIsWeekend(d) {
+  if (!d) return false;
+  var day = d.getDay();
+  return day === 0 || day === 6;
+}
+
+// Keep string-based versions for backwards compat
+function getDayOfWeek(dateStrOrDate) {
+  if (dateStrOrDate instanceof Date) return dateToWeekday(dateStrOrDate);
+  var d = parseDateStr(dateStrOrDate);
+  return d ? dateToWeekday(d) : '';
+}
+
+function isWeekend(dateStrOrDate) {
+  if (dateStrOrDate instanceof Date) return dateIsWeekend(dateStrOrDate);
+  var d = parseDateStr(dateStrOrDate);
+  return d ? dateIsWeekend(d) : false;
+}
 var _IS_DAYS_FULL = ['Sunnudagur', 'Mánudagur', 'Þriðjudagur', 'Miðvikudagur', 'Fimmtudagur', 'Föstudagur', 'Laugardagur'];
 
 function parseDateStr(dateStr) {
@@ -2821,22 +2848,32 @@ function buildTimelogPairs(logs) {
       var outLog = g.outs[i] || null;
       var minutes = null;
       if (inLog && outLog) {
-        // Always use timeStr for duration — it's what admin sees and can correct
-        // Firebase timestamp may be wrong (e.g. punched out next day and timeStr corrected)
         var inMin  = inLog.timeStr  ? parseTimeStr(inLog.timeStr)  / 60000 : null;
         var outMin = outLog.timeStr ? parseTimeStr(outLog.timeStr) / 60000 : null;
         if (inMin !== null && outMin !== null) {
           var diff = outMin - inMin;
-          // Handle midnight crossover (e.g. 22:00 → 02:00 = 4 hours)
           if (diff < 0) diff += 24 * 60;
           minutes = Math.round(diff);
         }
         if (minutes !== null && minutes < 0) minutes = 0;
       }
+      // Get actual date from Firebase timestamp (most reliable for weekday detection)
+      var actualDate = null;
+      var refLog = inLog || outLog;
+      if (refLog) {
+        var ts = toJsDate(refLog.timestamp);
+        if (ts) {
+          actualDate = ts;
+        } else {
+          // Fallback: try parsing dateStr, but also try reversed format
+          actualDate = parseDateStrBestGuess(refLog.dateStr);
+        }
+      }
       pairs.push({
         name: g.name, initials: g.initials, color: g.color, username: g.username,
         dateStr: g.dateStr, inLog: inLog, outLog: outLog,
-        minutes: minutes, sessionNum: i + 1, totalSessions: numSessions
+        minutes: minutes, sessionNum: i + 1, totalSessions: numSessions,
+        actualDate: actualDate
       });
     }
   });
@@ -2870,7 +2907,7 @@ function renderTimelogSummary(pairs) {
   pairs.forEach(function(p) {
     if (p.minutes === null) return;
     var dk = (p.username || p.name) + '|' + p.dateStr;
-    if (!dailyByDriver[dk]) dailyByDriver[dk] = { username: p.username||p.name, name: p.name, initials: p.initials, color: p.color, totalMin: 0 };
+    if (!dailyByDriver[dk]) dailyByDriver[dk] = { username: p.username||p.name, name: p.name, initials: p.initials, color: p.color, totalMin: 0, dateStr: p.dateStr, actualDate: p.actualDate };
     dailyByDriver[dk].totalMin += p.minutes;
   });
 
@@ -2880,7 +2917,7 @@ function renderTimelogSummary(pairs) {
     var k = day.username;
     if (!byDriver[k]) byDriver[k] = { name: day.name, initials: day.initials, color: day.color, totalMin: 0, dagvinnaMin: 0, yfirvinnuMin: 0, daysWorked: 0 };
     var d = byDriver[k];
-    var wknd = isWeekend(day.dateStr);
+    var wknd = day.actualDate ? dateIsWeekend(day.actualDate) : isWeekend(day.dateStr);
     d.totalMin    += day.totalMin;
     if (wknd) {
       // Weekend: all hours are overtime
@@ -2965,7 +3002,10 @@ function renderTimelog(logs, pairs) {
   dateOrder.forEach(function(dateStr) {
     var dayPairs = byDate[dateStr] || [];
     var dayName = getDayOfWeek(dateStr);
-    var wknd = isWeekend(dateStr);
+    // Use actualDate from first pair of this date for reliable weekday
+    var firstPair = dayPairs[0];
+    var wknd = firstPair && firstPair.actualDate ? dateIsWeekend(firstPair.actualDate) : isWeekend(dateStr);
+    var dayName = firstPair && firstPair.actualDate ? dateToWeekday(firstPair.actualDate) : getDayOfWeek(dateStr);
 
     // Group by driver within this date
     var byDriver = {};
@@ -2984,7 +3024,8 @@ function renderTimelog(logs, pairs) {
     Object.values(byDriver).forEach(function(drv) {
       var totalMin = drv.pairs.reduce(function(s,p){ return s + (p.minutes||0); }, 0);
       var hasMulti = drv.pairs.length > 1;
-      var dagvinnaDay = wknd ? 0 : Math.min(totalMin, 480);
+      var dayWknd = (drv.pairs[0] && drv.pairs[0].actualDate) ? dateIsWeekend(drv.pairs[0].actualDate) : wknd;
+      var dagvinnaDay = dayWknd ? 0 : Math.min(totalMin, 480);
       var yfirvinnuDay = wknd ? totalMin : Math.max(0, totalMin - 480);
 
       html += '<div style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;margin-bottom:8px;overflow:hidden;">';
@@ -6035,7 +6076,7 @@ function buildExportRows(logs, pairs) {
   pairs.forEach(function(p) {
     if (p.minutes === null) return;
     var dk = (p.username||p.name) + '|' + p.dateStr;
-    if (!dailyByDriver[dk]) dailyByDriver[dk] = { name: p.name, username: p.username||p.name, dateStr: p.dateStr, totalMin: 0 };
+    if (!dailyByDriver[dk]) dailyByDriver[dk] = { name: p.name, username: p.username||p.name, dateStr: p.dateStr, totalMin: 0, actualDate: p.actualDate };
     dailyByDriver[dk].totalMin += p.minutes;
   });
 

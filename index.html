@@ -834,13 +834,14 @@ body.admin-active #admin-sections .admin-section.active{display:block !important
         </div>
         <div class="form-title">Skjölun</div>
         <div class="form-group">
-          <div class="photo-zone" id="pz">
-            <svg viewBox="0 0 24 24"><path d="M12 15.2c-1.77 0-3.2-1.43-3.2-3.2 0-1.77 1.43-3.2 3.2-3.2 1.77 0 3.2 1.43 3.2 3.2 0 1.77-1.43 3.2-3.2 3.2zM9 2L7.17 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2h-3.17L15 2H9z"/></svg>
-            <span id="ptxt">Mynd</span>
+          <div id="pz" class="photo-zone">
+            <svg viewBox="0 0 24 24" style="width:28px;height:28px;fill:#94a3b8;margin-bottom:4px;"><path d="M12 15.2c-1.77 0-3.2-1.43-3.2-3.2 0-1.77 1.43-3.2 3.2-3.2 1.77 0 3.2 1.43 3.2 3.2 0 1.77-1.43 3.2-3.2 3.2zM9 2L7.17 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2h-3.17L15 2H9z"/></svg>
+            <span id="ptxt">Myndir (0/5)</span>
             <div id="photo-btns" style="display:flex;gap:8px;margin-top:6px;">
               <button type="button" onclick="takePhotoCamera(event)" style="background:#e8620a;border:none;border-radius:8px;padding:7px 14px;color:#fff;font-size:12px;font-weight:700;cursor:pointer;">📷 Myndavél</button>
               <button type="button" onclick="uploadPhotoGallery(event)" style="background:#f1f5f9;border:1px solid #e2e8f0;border-radius:8px;padding:7px 14px;color:#0f172a;font-size:12px;font-weight:700;cursor:pointer;">📁 Hlaða upp</button>
             </div>
+            <div id="photo-grid" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;justify-content:center;"></div>
           </div>
         </div>
         <div class="form-group" id="d-note-group">
@@ -1304,7 +1305,10 @@ body.admin-active #admin-sections .admin-section.active{display:block !important
 
       <!-- STIGA LOG -->
       <div style="margin-top:16px;">
-        <h4 style="font-size:13px;font-weight:700;color:#0f172a;margin-bottom:10px;">🕐 Innstimplun / Útstimplun</h4>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+          <h4 style="font-size:13px;font-weight:700;color:#0f172a;">🕐 Innstimplun / Útstimplun</h4>
+          <button onclick="openAddTimelogModal()" style="background:#e8620a;border:none;border-radius:8px;padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer;color:#fff;">＋ Bæta við skráningu</button>
+        </div>
         <div id="timelog-list">
           <p style="color:#94a3b8;font-size:13px;text-align:center;padding:20px;">Smelltu á Uppfæra til að sjá skráningar.</p>
         </div>
@@ -2765,6 +2769,19 @@ function isWeekend(dateStr) {
 
 
 function tsOf(l) {
+  // Prefer timeStr + dateStr — what's displayed is what gets calculated
+  // This avoids bugs when Firebase timestamp doesn't match an edited timeStr
+  if (l.timeStr && l.dateStr) {
+    var d = parseDateStr(l.dateStr);
+    if (d) {
+      var tp = l.timeStr.split(':');
+      if (tp.length === 2) {
+        d.setHours(parseInt(tp[0]), parseInt(tp[1]), 0, 0);
+        return d.getTime();
+      }
+    }
+  }
+  // Fallback to Firebase timestamp or timeStr alone
   var t = toJsDate(l.timestamp);
   return t ? t.getTime() : parseTimeStr(l.timeStr);
 }
@@ -4294,7 +4311,19 @@ function fbAddToOpenList(data) {
 function fbAddToDoneList(data) {
   var list = document.getElementById('admin-done-list');
   if (!list) return;
-  if (document.querySelector('[data-fbid="' + data.fbId + '"]')) return;
+
+  // If card already exists, just update the photo links if we now have them
+  var existing = document.querySelector('[data-fbid="' + data.fbId + '"]');
+  if (existing) {
+    var hasPhoto = (data.photoUrls && data.photoUrls.length) || data.photoUrl;
+    if (hasPhoto) {
+      var photoContainer = existing.querySelector('.photo-tags');
+      if (photoContainer) {
+        photoContainer.innerHTML = buildPhotoTagsHtml(data);
+      }
+    }
+    return;
+  }
 
   var type = data.type || 'ut';
   var tm = typeMap[type] || typeMap.ut;
@@ -4318,7 +4347,7 @@ function fbAddToDoneList(data) {
     + (data.disposal && data.disposal!=='—' ? '<span class="atask-tag blue">→ ' + data.disposal + '</span>' : '')
     + (data.company && data.company!=='—' ? '<span class="atask-tag">🏢 ' + data.company + '</span>' : '')
     + (data.containerNum && data.containerNum!=='—' ? '<span class="atask-tag">📦 ' + data.containerNum + '</span>' : '')
-    + (data.photoUrl ? '<span class="atask-tag green">📷 <a href="' + data.photoUrl + '" target="_blank" style="color:#16a34a;text-decoration:none;">Skoða mynd</a></span>' : '')
+    + '<span class="photo-tags">' + buildPhotoTagsHtml(data) + '</span>'
     + '</div>'
     + (data.ref ? '<div style="font-size:10px;color:#94a3b8;margin:4px 0 6px;">' + data.ref + '</div>' : '')
     + '<div class="atask-foot"><div class="atask-driver-wrap"><div class="driver-dot" style="background:#64748b">' + (data.driverInitials||'—') + '</div><span class="driver-name">' + (data.driverName||'—') + '</span></div>'
@@ -4463,14 +4492,8 @@ function fbAddDriverTask(data) {
     pill.textContent = tm.name;
     pill.className = 'badge ' + (badgeColors[type]||'b-ut');
     document.getElementById('pz').className = 'photo-zone';
-    document.getElementById('pz').dataset.photoData = '';
-    document.getElementById('ptxt').textContent = currentLang==='en'?'Photo':'Mynd';
-    var photoBtns = document.getElementById('photo-btns');
-    if (photoBtns) photoBtns.style.display = 'flex';
-    var prevImg = document.getElementById('pz').querySelector('img.photo-preview');
-    if (prevImg) prevImg.src = '';
-    var changeBtn = document.getElementById('pz').querySelector('.change-photo-btn');
-    if (changeBtn) changeBtn.remove();
+    _photoList = [];
+    updatePhotoZone();
     document.getElementById('d-kg').value = '';
     document.getElementById('d-note').value = '';
     document.getElementById('d-container').value = '';
@@ -4499,107 +4522,117 @@ function fbAddDriverTask(data) {
   showToast('📦 Ný beiðni komin inn!');
 }
 
-function fbCompleteTask(fbId, completionData, photoDataUrl) {
+function fbCompleteTask(fbId, completionData, photoDataList) {
   onFirebaseReady(function() {
     var fb = window._fb;
-    if (!fbId) {
-      console.warn('fbCompleteTask: engin fbId - Firestore uppfærsla sleppt');
-      return;
-    }
-    function doUpdate(photoUrl) {
-      // Sanitize - convert booleans/undefined to strings for Firestore
+    if (!fbId) { console.warn('fbCompleteTask: engin fbId'); return; }
+
+    function doUpdate(photoUrls) {
       var safe = {};
       Object.keys(completionData).forEach(function(k) {
         var v = completionData[k];
-        if (v === undefined) return; // skip undefined
+        if (v === undefined) return;
         safe[k] = v;
       });
       safe.status = 'completed';
-      safe.photoUrl = photoUrl || null;
+      safe.photoUrls = photoUrls || [];
+      safe.photoUrl  = photoUrls && photoUrls.length ? photoUrls[0] : null; // backwards compat
       safe.completedAt = fb.serverTimestamp();
-      
-      var taskDoc = fb.doc(fb.db, 'tasks', fbId);
-      fb.updateDoc(taskDoc, safe)
-        .then(function() {
-          console.log('✓ Firestore uppfærsla tókst:', fbId);
-        })
-        .catch(function(e) {
-          console.error('✗ Firestore uppfærsla mistókst:', e.message);
-          showToast('⚠ Villa við vistun í Firebase: ' + e.message);
-        });
+      fb.updateDoc(fb.doc(fb.db, 'tasks', fbId), safe)
+        .then(function(){ console.log('✓ Firestore uppfærsla tókst'); })
+        .catch(function(e){ showToast('⚠ Firebase villa: ' + e.message); });
     }
-    if (photoDataUrl && photoDataUrl.startsWith('data:')) {
-      var storageRef = fb.ref(fb.storage, 'photos/' + fbId + '_' + Date.now() + '.jpg');
-      fb.uploadString(storageRef, photoDataUrl, 'data_url')
-        .then(function(){ return fb.getDownloadURL(storageRef); })
-        .then(function(url){ doUpdate(url); })
-        .catch(function(e){ 
-          console.warn('Storage upload mistókst, heldur áfram án myndar:', e.message);
-          doUpdate(null); 
-        });
-    } else { doUpdate(null); }
+
+    // Upload all photos in parallel
+    var photos = Array.isArray(photoDataList) ? photoDataList.filter(function(d){ return d && d.startsWith('data:'); }) : [];
+    if (!photos.length) { doUpdate([]); return; }
+
+    var uploadPromises = photos.map(function(dataUrl, idx) {
+      var storageRef = fb.ref(fb.storage, 'photos/' + fbId + '_' + Date.now() + '_' + idx + '.jpg');
+      return fb.uploadString(storageRef, dataUrl, 'data_url')
+        .then(function(){ return fb.getDownloadURL(storageRef); });
+    });
+
+    Promise.all(uploadPromises)
+      .then(function(urls){ doUpdate(urls); })
+      .catch(function(e){
+        console.warn('Storage upload villa:', e.message);
+        doUpdate([]);
+      });
   });
+}
+
+var _photoList = []; // array of {dataUrl, name}
+var MAX_PHOTOS = 5;
+
+function updatePhotoZone() {
+  var pz = document.getElementById('pz');
+  var ptxt = document.getElementById('ptxt');
+  var grid = document.getElementById('photo-grid');
+  var btns = document.getElementById('photo-btns');
+  if (!pz || !grid) return;
+
+  var count = _photoList.length;
+  if (ptxt) ptxt.textContent = 'Myndir (' + count + '/' + MAX_PHOTOS + ')';
+
+  // Rebuild grid
+  grid.innerHTML = '';
+  _photoList.forEach(function(photo, idx) {
+    var wrap = document.createElement('div');
+    wrap.style.cssText = 'position:relative;width:72px;height:72px;';
+    var img = document.createElement('img');
+    img.src = photo.dataUrl;
+    img.style.cssText = 'width:72px;height:72px;object-fit:cover;border-radius:10px;border:2px solid #e2e8f0;';
+    var del = document.createElement('button');
+    del.type = 'button';
+    del.textContent = '✕';
+    del.style.cssText = 'position:absolute;top:-6px;right:-6px;width:20px;height:20px;background:#dc2626;color:#fff;border:none;border-radius:50%;font-size:11px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;padding:0;';
+    del.onclick = function() { _photoList.splice(idx, 1); updatePhotoZone(); };
+    wrap.appendChild(img);
+    wrap.appendChild(del);
+    grid.appendChild(wrap);
+  });
+
+  // Show/hide add buttons based on count
+  if (btns) btns.style.display = count >= MAX_PHOTOS ? 'none' : 'flex';
+  pz.classList.toggle('done', count > 0);
 }
 
 function handlePhotoFile(file) {
   if (!file) return;
+  if (_photoList.length >= MAX_PHOTOS) { showToast('⚠ Hámark ' + MAX_PHOTOS + ' myndir'); return; }
   var reader = new FileReader();
   reader.onload = function(ev) {
-    var dataUrl = ev.target.result;
-    var pz = document.getElementById('pz');
-    pz.classList.add('done');
-    pz.dataset.photoData = dataUrl;
-    document.getElementById('ptxt').textContent = file.name + (currentLang==='en'?' · Tekin':' · Tekin');
-    // Hide buttons, show preview + change button
-    var btns = document.getElementById('photo-btns');
-    if (btns) btns.style.display = 'none';
-    var img = pz.querySelector('img.photo-preview');
-    if(!img){img=document.createElement('img');img.className='photo-preview';img.style.cssText='width:80px;height:80px;object-fit:cover;border-radius:10px;margin-top:8px;';pz.appendChild(img);}
-    img.src = dataUrl;
-    // Add "Skipta um mynd" button
-    var existing = pz.querySelector('.change-photo-btn');
-    if (!existing) {
-      var changeBtn = document.createElement('button');
-      changeBtn.type = 'button';
-      changeBtn.className = 'change-photo-btn';
-      changeBtn.textContent = '🔄 Skipta um mynd';
-      changeBtn.style.cssText = 'margin-top:8px;background:#f1f5f9;border:1px solid #e2e8f0;border-radius:8px;padding:6px 12px;font-size:11px;font-weight:600;cursor:pointer;color:#475569;';
-      changeBtn.onclick = function(e) {
-        e.stopPropagation();
-        pz.classList.remove('done');
-        pz.dataset.photoData = '';
-        document.getElementById('ptxt').textContent = currentLang==='en'?'Photo':'Mynd';
-        if(btns) btns.style.display = 'flex';
-        if(img) img.src = '';
-        changeBtn.remove();
-      };
-      pz.appendChild(changeBtn);
-    }
+    _photoList.push({ dataUrl: ev.target.result, name: file.name });
+    updatePhotoZone();
   };
   reader.readAsDataURL(file);
 }
 
 function takePhotoCamera(e) {
   e && e.stopPropagation();
+  if (_photoList.length >= MAX_PHOTOS) { showToast('⚠ Hámark ' + MAX_PHOTOS + ' myndir'); return; }
   var input = document.createElement('input');
-  input.type = 'file';
-  input.accept = 'image/*';
-  input.capture = 'environment'; // forces camera on mobile
+  input.type = 'file'; input.accept = 'image/*'; input.capture = 'environment';
   input.onchange = function(ev) { handlePhotoFile(ev.target.files[0]); };
   input.click();
 }
 
 function uploadPhotoGallery(e) {
   e && e.stopPropagation();
+  if (_photoList.length >= MAX_PHOTOS) { showToast('⚠ Hámark ' + MAX_PHOTOS + ' myndir'); return; }
   var input = document.createElement('input');
-  input.type = 'file';
-  input.accept = 'image/*';
-  // NO capture attribute — opens gallery/file picker
-  input.onchange = function(ev) { handlePhotoFile(ev.target.files[0]); };
+  input.type = 'file'; input.accept = 'image/*'; input.multiple = true;
+  input.onchange = function(ev) {
+    var files = Array.from(ev.target.files);
+    var remaining = MAX_PHOTOS - _photoList.length;
+    files.slice(0, remaining).forEach(function(f) { handlePhotoFile(f); });
+    if (files.length > remaining) showToast('⚠ Aðeins fyrstu ' + remaining + ' myndir bætt við');
+  };
   input.click();
 }
 
-function fakePhoto(){ takePhotoCamera(); } // backwards compatibility
+function fakePhoto(){ takePhotoCamera(); }
 
 // ── State ──
 let role = 'admin';
@@ -4930,7 +4963,8 @@ function completeTask(){
   const category=document.getElementById('d-cat').value;
   const company=(document.getElementById('d-company')||{value:''}).value.trim() || (curTask&&curTask.company) || '—';
   const note=document.getElementById('d-note').value;
-  const photoTaken=document.getElementById('pz').classList.contains('done');
+  const photoTaken = _photoList.length > 0;
+  const photoDataList = _photoList.map(function(p){ return p.dataUrl; });
   const ref='REF-'+n.getFullYear()+(n.getMonth()+1).toString().padStart(2,'0')+n.getDate().toString().padStart(2,'0')+'-'+Math.floor(Math.random()*9000+1000);
 
   document.getElementById('suc-sub').textContent=(curTask?curTask.sub:'—')+' · skráð '+timeStr;
@@ -5030,7 +5064,7 @@ function completeTask(){
       timaStart:timaStart, timaEnd:timaEnd, timaHours:timaHours, timaKmStart:timaKmStart, timaKmEnd:timaKmEnd,
       skiptTekinn:skiptTekinn, skiptAfhentur:skiptAfhentur,
       title:curTask?curTask.title:'—', address:curTask?curTask.sub:'—', type:curTask?curTask.type:'ut'
-    }, photoData);
+    }, photoDataList);
   }
   sendToSheets({
     dagsetning:n.toLocaleDateString('is-IS'),
@@ -5073,6 +5107,7 @@ function completeTask(){
 
 function addToAdminDone(task,data){
   const list=document.getElementById('admin-done-list');
+  if(!list) return; // Not on admin page (called from driver side)
   const type=task?task.type:'ut';
   const tm=typeMap[type]||typeMap.ut;
   const div=document.createElement('div');
@@ -5084,49 +5119,21 @@ function addToAdminDone(task,data){
       <span class="admin-badge-pill ${tm.adminBadge}">${tm.name}</span>
     </div>
     <div class="atask-tags">
-      <span class="atask-tag green">✓ Lokið ${data.timeStr}</span>
+      <span class="atask-tag green">✓ ${data.date?'📅 '+data.date+' · ':''} Lokið ${data.timeStr}</span>
       ${data.containerNum && data.containerNum!=='—' ? '<span class="atask-tag">📦 '+data.containerNum+'</span>' : ''}
-      <span class="atask-tag">${data.kg} kg</span>
-      <span class="atask-tag">${data.category}</span>
-      <span class="atask-tag blue">→ ${data.disposal}</span>
+      ${data.kg ? '<span class="atask-tag">'+data.kg+' kg</span>' : ''}
+      ${data.category ? '<span class="atask-tag">'+data.category+'</span>' : ''}
+      ${data.disposal && data.disposal!=='—' ? '<span class="atask-tag blue">→ '+data.disposal+'</span>' : ''}
       ${data.company && data.company!=='—' ? '<span class="atask-tag">🏢 '+data.company+'</span>' : ''}
-      ${data.photoTaken?'<span class="atask-tag green">📷 Mynd</span>':''}
+      <span class="photo-tags">${data.photoTaken?'<span class="atask-tag green">📷 Mynd í hleðslu...</span>':''}</span>
     </div>
-    ${data.note?`<div class="completed-info">💬 "${data.note}"</div>`:'<div class="completed-info">📷 '+(data.photoTaken?'Mynd tekin':'Engin mynd')+' · Engin athugasemd</div>'}
-    <div style="font-size:10px;color:#94a3b8;margin:4px 0 6px;">${data.ref}</div>
+    ${data.ref?`<div style="font-size:10px;color:#94a3b8;margin:4px 0 6px;">${data.ref}</div>`:''}
     <div class="atask-foot">
-      <div class="atask-driver-wrap"><div class="driver-dot" style="background:${(window._currentUser||{color:'#e8620a'}).color}">${(window._currentUser||{initials:'JS'}).initials}</div><span class="driver-name">${(window._currentUser||{name:'Jón Sigurðsson'}).name}</span></div>
-      <div class="atask-actions">
-        <button class="atask-btn" onclick="toggleEdit(this)">✏ Breyta</button>
-        <button class="atask-btn del" onclick="this.closest('.atask').remove()">✕</button>
-      </div>
-    </div>
-    <div class="edit-form">
-      ${buildEditFormFields(data)}
-      <label>Efnisflokkur</label>
-      <select data-done="category" translate="no">
-        <optgroup label="— Garðaúrgangur —"><option value="Gras og hey">Gras og hey</option><option value="Trjágreinar">Trjágreinar</option><option value="Garðaúrgangur">Garðaúrgangur</option></optgroup>
-        <optgroup label="— Almennur heimilisúrg. —"><option value="Pressanlegur úrgangur frá framkvæmdum">Pressanlegur úrgangur frá framkvæmdum</option><option value="Blandaður úrgangur til brennslu">Blandaður úrgangur til brennslu</option></optgroup>
-        <optgroup label="— Sérstakur úrgangur —"><option value="Gúmmíúrgangur">Gúmmíúrgangur</option><option value="Fiskikör">Fiskikör</option></optgroup>
-        <optgroup label="— Plast —"><option value="Filmuplast ólitað">Filmuplast ólitað</option><option value="Hart plast">Hart plast</option><option value="Frauðplast (EPS)">Frauðplast (EPS)</option></optgroup>
-        <optgroup label="— Pappír og pappi —"><option value="Bylgjupappi">Bylgjupappi</option><option value="Skrifstofupappír">Skrifstofupappír</option></optgroup>
-        <optgroup label="— Timbur —"><option value="Málað timbur">Málað timbur</option><option value="Ómálað timbur">Ómálað timbur</option></optgroup>
-        <optgroup label="— Annað —"><option value="Mold">Mold</option><option value="Múrbrot">Múrbrot</option><option value="Asbest">Asbest</option></optgroup>
-      </select>
-      <label>Losunarstaður</label>
-      <select data-done="disposal" translate="no">
-        <option value="Sorpstöð Álfsnes">Sorpstöð Álfsnes</option><option value="Sorpustöð Gufunes">Sorpustöð Gufunes</option>
-        <option value="GAJA gas- og jarðg.stöð">GAJA gas- og jarðg.stöð</option><option value="Terra umhverfisþjónusta">Terra umhverfisþjónusta</option>
-        <option value="Íslenska Gámafélagið">Íslenska Gámafélagið</option><option value="Bolalda">Bolalda</option>
-        <option value="Vatnsskarð">Vatnsskarð</option><option value="Höfuðstöð fyrirtækis">Höfuðstöð fyrirtækis</option>
-        <option value="Annað (sjá athugasemd)">Annað (sjá athugasemd)</option>
-      </select>
-      <label>Athugasemd</label>
-      <textarea data-done="note" rows="2">${data.note}</textarea>
-      <button class="edit-save" onclick="saveDoneEdit(this)">✓ Vista breytingar</button>
+      <div class="atask-driver-wrap"><div class="driver-dot" style="background:${(window._currentUser||{color:'#e8620a'}).color}">${(window._currentUser||{initials:'?'}).initials}</div><span class="driver-name">${(window._currentUser||{name:'—'}).name}</span></div>
     </div>`;
   list.insertBefore(div,list.firstChild);
-  showToast('Admin: Ný kláruð beiðni komin inn!');
+  storeTask(Object.assign({},data,{done:true,title:task?task.title:'—',address:task?task.sub:'—',type:type}));
+  renderCustOverview();
 }
 
 function sendDriverNote(){
@@ -5726,6 +5733,93 @@ function permanentDeleteTask(fbId, ref) {
   });
 }
 
+
+function buildPhotoTagsHtml(data) {
+  if (data.photoUrls && data.photoUrls.length) {
+    return data.photoUrls.map(function(url, i) {
+      return '<span class="atask-tag green">📷 <a href="' + url + '" target="_blank" style="color:#16a34a;text-decoration:none;">Mynd ' + (i+1) + '</a></span>';
+    }).join('');
+  }
+  if (data.photoUrl) {
+    return '<span class="atask-tag green">📷 <a href="' + data.photoUrl + '" target="_blank" style="color:#16a34a;text-decoration:none;">Skoða mynd</a></span>';
+  }
+  return '';
+}
+function openAddTimelogModal() {
+  var sel = document.getElementById('atl-driver');
+  sel.innerHTML = '';
+  getUsers().filter(function(u){ return u.role === 'driver'; }).forEach(function(u) {
+    var opt = document.createElement('option');
+    opt.value = u.username;
+    opt.textContent = u.name;
+    opt.setAttribute('data-name', u.name);
+    opt.setAttribute('data-initials', u.initials || u.name.substring(0,2).toUpperCase());
+    opt.setAttribute('data-color', u.color || '#64748b');
+    sel.appendChild(opt);
+  });
+  document.getElementById('atl-date').value = new Date().toISOString().split('T')[0];
+  document.getElementById('atl-time').value = '';
+  document.getElementById('atl-vehicle').value = '';
+  document.getElementById('atl-action').value = 'in';
+  selectTimelogAction('in');
+  document.getElementById('add-timelog-modal').style.display = 'flex';
+}
+
+function closeAddTimelogModal() {
+  document.getElementById('add-timelog-modal').style.display = 'none';
+}
+
+function selectTimelogAction(action) {
+  document.getElementById('atl-action').value = action;
+  var btnIn = document.getElementById('atl-btn-in');
+  var btnOut = document.getElementById('atl-btn-out');
+  if (action === 'in') {
+    btnIn.style.cssText  = 'padding:10px;border:2px solid #16a34a;border-radius:10px;background:#f0fdf4;color:#16a34a;font-size:13px;font-weight:700;cursor:pointer;';
+    btnOut.style.cssText = 'padding:10px;border:2px solid #e2e8f0;border-radius:10px;background:#f8fafc;color:#64748b;font-size:13px;font-weight:600;cursor:pointer;';
+  } else {
+    btnOut.style.cssText = 'padding:10px;border:2px solid #dc2626;border-radius:10px;background:#fef2f2;color:#dc2626;font-size:13px;font-weight:700;cursor:pointer;';
+    btnIn.style.cssText  = 'padding:10px;border:2px solid #e2e8f0;border-radius:10px;background:#f8fafc;color:#64748b;font-size:13px;font-weight:600;cursor:pointer;';
+  }
+}
+
+function saveManualTimelog() {
+  var driverSel = document.getElementById('atl-driver');
+  var driverOpt = driverSel.options[driverSel.selectedIndex];
+  var username  = driverSel.value;
+  var name      = driverOpt ? driverOpt.getAttribute('data-name') : username;
+  var initials  = driverOpt ? driverOpt.getAttribute('data-initials') : '?';
+  var color     = driverOpt ? driverOpt.getAttribute('data-color') : '#64748b';
+  var action    = document.getElementById('atl-action').value;
+  var dateVal   = document.getElementById('atl-date').value;
+  var timeVal   = document.getElementById('atl-time').value;
+  var vehicle   = document.getElementById('atl-vehicle').value.trim() || '—';
+
+  if (!username) { showToast('⚠ Veldu ökumann'); return; }
+  if (!dateVal)  { showToast('⚠ Sláðu inn dagsetningu'); return; }
+  if (!timeVal)  { showToast('⚠ Sláðu inn tíma'); return; }
+
+  var dp = dateVal.split('-');
+  var dateStr = dp[2] + '.' + dp[1] + '.' + dp[0];
+  var entryDate = new Date(dateVal + 'T' + timeVal + ':00');
+
+  onFirebaseReady(function() {
+    var fb = window._fb;
+    fb.addDoc(fb.collection(fb.db, 'timelog'), {
+      username: username, name: name, initials: initials, color: color,
+      action: action, timeStr: timeVal, dateStr: dateStr,
+      vehicle: action === 'in' ? vehicle : '—',
+      timestamp: entryDate,
+      addedByAdmin: true, addedAt: fb.serverTimestamp()
+    }).then(function() {
+      var label = action === 'in' ? '🟢 Innstimplun' : '🔴 Útstimplun';
+      showToast('✓ ' + label + ' skráð fyrir ' + name + ' · ' + dateStr + ' · ' + timeVal);
+      closeAddTimelogModal();
+      loadTimelog();
+    }).catch(function(e) {
+      showToast('⚠ Villa: ' + (e.code || e.message));
+    });
+  });
+}
 
 function openDoneEditModal(fbId) {
   var modal = document.getElementById('done-edit-modal');
@@ -7437,9 +7531,14 @@ function showToast(msg){
         <div>
           <label style="font-size:11px;font-weight:700;color:#64748b;display:block;margin-bottom:4px;">STÆRÐ GÁMS</label>
           <select id="oem-size" style="width:100%;padding:9px 12px;border:1px solid #e2e8f0;border-radius:10px;font-size:13px;">
-            <option value="5 m³">5 m³</option><option value="10 m³">10 m³</option>
-            <option value="15 m³">15 m³</option><option value="20 m³">20 m³</option>
-            <option value="30 m³">30 m³</option><option value="40 m³">40 m³</option>
+            <option value="8 m³">8 m³</option><option value="10 m³">10 m³</option>
+            <option value="12 m³">12 m³</option><option value="14 m³">14 m³</option>
+            <option value="16 m³">16 m³</option><option value="18 m³">18 m³</option>
+            <option value="20 m³" selected>20 m³</option><option value="22 m³">22 m³</option>
+            <option value="24 m³">24 m³</option><option value="26 m³">26 m³</option>
+            <option value="28 m³">28 m³</option><option value="30 m³">30 m³</option>
+            <option value="32 m³">32 m³</option><option value="34 m³">34 m³</option>
+            <option value="36 m³">36 m³</option><option value="38 m³">38 m³</option>
           </select>
         </div>
         <div>
@@ -7465,7 +7564,51 @@ function showToast(msg){
       </div>
     </div>
   </div>
-</div><!-- Done task edit modal -->
+</div><!-- Manual timelog entry modal -->
+<div id="add-timelog-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9996;align-items:center;justify-content:center;padding:20px;">
+  <div style="background:#fff;border-radius:16px;width:100%;max-width:400px;box-shadow:0 20px 60px rgba(0,0,0,0.3);">
+    <div style="background:#0f172a;padding:16px 20px;border-radius:16px 16px 0 0;display:flex;align-items:center;justify-content:space-between;">
+      <h3 style="color:#fff;font-size:15px;font-weight:700;margin:0;">＋ Bæta við tímaskráningu</h3>
+      <button onclick="closeAddTimelogModal()" style="background:none;border:none;color:#94a3b8;font-size:20px;cursor:pointer;">✕</button>
+    </div>
+    <div style="padding:20px;display:flex;flex-direction:column;gap:14px;">
+      <div>
+        <label style="font-size:11px;font-weight:700;color:#64748b;display:block;margin-bottom:4px;">ÖKUMAÐUR</label>
+        <select id="atl-driver" style="width:100%;padding:10px 12px;border:1px solid #e2e8f0;border-radius:10px;font-size:13px;box-sizing:border-box;"></select>
+      </div>
+      <div>
+        <label style="font-size:11px;font-weight:700;color:#64748b;display:block;margin-bottom:4px;">TEGUND SKRÁNINGAR</label>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+          <button type="button" id="atl-btn-in" onclick="selectTimelogAction('in')" style="padding:10px;border:2px solid #16a34a;border-radius:10px;background:#f0fdf4;color:#16a34a;font-size:13px;font-weight:700;cursor:pointer;">🟢 Innstimplun</button>
+          <button type="button" id="atl-btn-out" onclick="selectTimelogAction('out')" style="padding:10px;border:2px solid #e2e8f0;border-radius:10px;background:#f8fafc;color:#64748b;font-size:13px;font-weight:600;cursor:pointer;">🔴 Útstimplun</button>
+        </div>
+        <input type="hidden" id="atl-action" value="in"/>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+        <div>
+          <label style="font-size:11px;font-weight:700;color:#64748b;display:block;margin-bottom:4px;">DAGSETNING</label>
+          <input type="date" id="atl-date" style="width:100%;padding:10px 12px;border:1px solid #e2e8f0;border-radius:10px;font-size:13px;box-sizing:border-box;"/>
+        </div>
+        <div>
+          <label style="font-size:11px;font-weight:700;color:#64748b;display:block;margin-bottom:4px;">TÍMI</label>
+          <input type="time" id="atl-time" style="width:100%;padding:10px 12px;border:1px solid #e2e8f0;border-radius:10px;font-size:13px;box-sizing:border-box;"/>
+        </div>
+      </div>
+      <div>
+        <label style="font-size:11px;font-weight:700;color:#64748b;display:block;margin-bottom:4px;">ÖKUTÆKI (valfrjálst)</label>
+        <input type="text" id="atl-vehicle" placeholder="#09 · MAN H06" style="width:100%;padding:10px 12px;border:1px solid #e2e8f0;border-radius:10px;font-size:13px;box-sizing:border-box;"/>
+      </div>
+      <div style="background:#fef9c3;border:1px solid #fde047;border-radius:10px;padding:10px 12px;font-size:12px;color:#854d0e;">
+        ⚠ Þessi skráning verður merkt sem handvirk af admin
+      </div>
+      <div style="display:flex;gap:8px;">
+        <button onclick="saveManualTimelog()" style="flex:1;padding:12px;background:#e8620a;border:none;border-radius:10px;color:#fff;font-size:13px;font-weight:700;cursor:pointer;">✓ Vista skráningu</button>
+        <button onclick="closeAddTimelogModal()" style="padding:12px 16px;background:#f1f5f9;border:none;border-radius:10px;color:#475569;font-size:13px;font-weight:600;cursor:pointer;">Hætta við</button>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
 <div id="done-edit-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9997;align-items:center;justify-content:center;padding:20px;">
   <div style="background:#fff;border-radius:16px;width:100%;max-width:520px;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,0.3);">
     <div style="background:#166534;padding:16px 20px;border-radius:16px 16px 0 0;display:flex;align-items:center;justify-content:space-between;">

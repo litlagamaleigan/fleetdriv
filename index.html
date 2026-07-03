@@ -2821,8 +2821,17 @@ function buildTimelogPairs(logs) {
       var outLog = g.outs[i] || null;
       var minutes = null;
       if (inLog && outLog) {
-        var diff = Math.round((tsOf(outLog) - tsOf(inLog)) / 60000);
-        minutes = diff > 0 ? diff : 0;
+        // Always use timeStr for duration — it's what admin sees and can correct
+        // Firebase timestamp may be wrong (e.g. punched out next day and timeStr corrected)
+        var inMin  = inLog.timeStr  ? parseTimeStr(inLog.timeStr)  / 60000 : null;
+        var outMin = outLog.timeStr ? parseTimeStr(outLog.timeStr) / 60000 : null;
+        if (inMin !== null && outMin !== null) {
+          var diff = outMin - inMin;
+          // Handle midnight crossover (e.g. 22:00 → 02:00 = 4 hours)
+          if (diff < 0) diff += 24 * 60;
+          minutes = Math.round(diff);
+        }
+        if (minutes !== null && minutes < 0) minutes = 0;
       }
       pairs.push({
         name: g.name, initials: g.initials, color: g.color, username: g.username,

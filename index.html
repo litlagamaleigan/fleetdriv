@@ -1068,6 +1068,7 @@ body.admin-active #admin-sections .admin-section.active{display:block !important
                 <option value="farsl">Færsla á gám</option>
                 <option value="farslin">Færsla á gám innan svæðis</option>
                 <option value="tima">Tímakaups beiðni</option>
+                <option value="koma">Koma með efni</option>
               </select>
             </div>
           </div>
@@ -1077,6 +1078,17 @@ body.admin-active #admin-sections .admin-section.active{display:block !important
               <select class="af-select" id="a-size">
                 <option value="8 m³">8 m³</option><option value="10 m³">10 m³</option><option value="12 m³">12 m³</option><option value="14 m³">14 m³</option><option value="16 m³">16 m³</option><option value="18 m³">18 m³</option><option selected>20 m³</option><option value="22 m³">22 m³</option><option value="24 m³">24 m³</option><option value="26 m³">26 m³</option><option value="28 m³">28 m³</option><option value="30 m³">30 m³</option><option value="32 m³">32 m³</option><option value="34 m³">34 m³</option><option value="36 m³">36 m³</option><option value="38 m³">38 m³</option>
               </select>
+            </div>
+          </div>
+          <!-- Koma með efni sérreitir -->
+          <div id="a-koma-wrap" style="display:none;" class="af-full">
+            <div style="margin-bottom:10px;">
+              <label class="af-label">Hvaða efni er komið með</label>
+              <input class="af-input" id="a-koma-efni" type="text" placeholder="t.d. Mold, grjót, sand..."/>
+            </div>
+            <div>
+              <label class="af-label">Hvar var efnið sótt</label>
+              <input class="af-input" id="a-koma-uppruni" type="text" placeholder="t.d. Sorpstöð Álfsnes, Leiruvogur..."/>
             </div>
           </div>
         </div>
@@ -4350,6 +4362,8 @@ function fbAddToOpenList(data) {
     + '<div class="atask-tags">'
     + (size ? '<span class="atask-tag" data-field="size">' + size + '</span>' : '')
     + (disposal && disposal !== '—' ? '<span class="atask-tag blue" data-field="disposal">→ ' + disposal + '</span>' : '')
+    + (data.komaEfni ? '<span class="atask-tag" style="background:#f0fdf4;color:#15803d;">📦 ' + data.komaEfni + '</span>' : '')
+    + (data.komaUppruni ? '<span class="atask-tag" style="background:#eff6ff;color:#1e40af;">📍 Sótt: ' + data.komaUppruni + '</span>' : '')
     + (data.company && data.company !== '—' ? '<span class="atask-tag">🏢 ' + data.company + '</span>' : '')
     + '</div>'
     + '<div class="atask-foot">'
@@ -4406,6 +4420,8 @@ function fbAddToDoneList(data) {
     + (data.kg ? '<span class="atask-tag">' + data.kg + ' kg</span>' : '')
     + (data.category ? '<span class="atask-tag">' + data.category + '</span>' : '')
     + (data.disposal && data.disposal!=='—' ? '<span class="atask-tag blue">→ ' + data.disposal + '</span>' : '')
+    + (data.komaEfni ? '<span class="atask-tag" style="background:#f0fdf4;color:#15803d;">📦 ' + data.komaEfni + '</span>' : '')
+    + (data.komaUppruni ? '<span class="atask-tag" style="background:#eff6ff;color:#1e40af;">📍 Sótt: ' + data.komaUppruni + '</span>' : '')
     + (data.company && data.company!=='—' ? '<span class="atask-tag">🏢 ' + data.company + '</span>' : '')
     + (data.containerNum && data.containerNum!=='—' ? '<span class="atask-tag">📦 ' + data.containerNum + '</span>' : '')
     + '<span class="photo-tags">' + buildPhotoTagsHtml(data) + '</span>'
@@ -4713,7 +4729,8 @@ const typeMap = {
   toma:   {name:'Fjarlægja gám',          badgeClass:'b-tm',   numClass:'num-toma',   adminBadge:'ap-tm'},
   farsl:  {name:'Færsla á gám',            badgeClass:'b-fa',   numClass:'num-farsl',  adminBadge:'ap-fa'},
   farslin:{name:'Færsla á gám innan svæðis',badgeClass:'b-fai',  numClass:'num-farslin',adminBadge:'ap-fai'},
-  tima: {name:'Tímakaups beiðni',  badgeClass:'b-ti',  numClass:'num-tima', adminBadge:'ap-ti'}
+  tima: {name:'Tímakaups beiðni',  badgeClass:'b-ti',  numClass:'num-tima', adminBadge:'ap-ti'},
+  koma: {name:'Koma með efni',      badgeClass:'b-ko',  numClass:'num-koma', adminBadge:'ap-ko'}
 };
 
 const driverMap = {
@@ -5124,6 +5141,7 @@ function completeTask(){
       date:todayDate,
       timaStart:timaStart, timaEnd:timaEnd, timaHours:timaHours, timaKmStart:timaKmStart, timaKmEnd:timaKmEnd,
       skiptTekinn:skiptTekinn, skiptAfhentur:skiptAfhentur,
+      komaEfni:curTask?curTask.komaEfni||'':'', komaUppruni:curTask?curTask.komaUppruni||'':'',
       title:curTask?curTask.title:'—', address:curTask?curTask.sub:'—', type:curTask?curTask.type:'ut'
     }, photoDataList);
   }
@@ -5150,6 +5168,8 @@ function completeTask(){
     fyrirtaeki:company,
     kennitala:curTask&&curTask.companyKt?curTask.companyKt:'',
     gamanumer:containerNum,
+    koma_efni:curTask?curTask.komaEfni||'':'',
+    koma_uppruni:curTask?curTask.komaUppruni||'':'',
     myndir:photoTaken?'Já':'Nei'
   });
 
@@ -5245,7 +5265,9 @@ function createTask(){
   window._selectedCompanyPhone=window._selectedCompanyPhone||'';
   const aSkiptTekinn=document.getElementById('a-skipt-tekinn').value.trim();
   const aSkiptAfhentur=document.getElementById('a-skipt-afhentur').value.trim();
-  if(!addr){showToast('Sláðu inn heimilisfang');return;}
+  const aKomaEfni    = (document.getElementById('a-koma-efni')    || {value:''}).value.trim();
+  const aKomaUppruni = (document.getElementById('a-koma-uppruni') || {value:''}).value.trim();
+  if(aType==='koma' && !aKomaEfni){ showToast('Sláðu inn hvaða efni er komið með'); return; }
   // Ban check — block task creation for banned customers
   if(aCompany) {
     var allCusts = getCustomers();
@@ -5340,7 +5362,8 @@ function createTask(){
     companyPhone: (document.getElementById('a-contact-phone')?document.getElementById('a-contact-phone').value.trim():'')||window._selectedCompanyPhone||'',
     containerNum: adminContainerNum, note: note,
     skiptTekinn: aSkiptTekinn, skiptAfhentur: aSkiptAfhentur,
-    disposal: (type==='ut'||type==='tima'||type==='farslin'||type==='farsl') ? '—' : document.getElementById('a-disposal').value,
+    komaEfni: aKomaEfni||'', komaUppruni: aKomaUppruni||'',
+    disposal: (type==='ut'||type==='tima'||type==='farslin'||type==='farsl'||type==='koma') ? '—' : document.getElementById('a-disposal').value,
     category: document.getElementById('a-category')?document.getElementById('a-category').value:''
   });
   showToast('✓ Ný beiðni búin til!');
@@ -5421,6 +5444,8 @@ function openOpenEditModal(fbId, card) {
         if (d.company) document.getElementById('oem-company').value = d.company;
         if (d.note) document.getElementById('oem-note').value = d.note;
         if (d.containerNum) document.getElementById('oem-container').value = d.containerNum;
+        if (d.category) document.getElementById('oem-category').value = d.category;
+        if (d.disposal && d.disposal !== '—') document.getElementById('oem-disposal').value = d.disposal;
         if (d.driverUsername) {
           var opt = Array.from(driverSel.options).find(function(o){ return o.value === d.driverUsername; });
           if (opt) driverSel.value = d.driverUsername;
@@ -5447,6 +5472,8 @@ function saveOpenEditModal() {
   var company = document.getElementById('oem-company').value.trim();
   var note = document.getElementById('oem-note').value.trim();
   var container = document.getElementById('oem-container').value.trim();
+  var category = document.getElementById('oem-category').value;
+  var disposal = document.getElementById('oem-disposal').value;
   var driverSel = document.getElementById('oem-driver');
   var driverUsername = driverSel.value;
   var driverOpt = driverSel.options[driverSel.selectedIndex];
@@ -5482,6 +5509,7 @@ function saveOpenEditModal() {
       fb.updateDoc(fb.doc(fb.db, 'tasks', fbId), {
         address: addr, time: time, date: date, type: type,
         size: size, company: company, note: note, containerNum: container,
+        category: category, disposal: disposal || '—',
         driverUsername: driverUsername, driverName: driverName,
         driverInitials: driverInitials
       }).then(function() {
@@ -5624,6 +5652,8 @@ function sendToSheets(data){
     Fyrirtaeki:data.fyrirtaeki||'',
     Kennitala:data.kennitala||'',
     Gamanumer:data.gamanumer||'',
+    Koma_efni:data.koma_efni||'',
+    Koma_uppruni:data.koma_uppruni||'',
     Myndir:data.myndir||''
   }]};
   fetch(SHEETDB_URL,{
@@ -7416,20 +7446,23 @@ document.addEventListener('click', function(e) {
 
 
 function toggleAdminByType(type) {
-  var noDisposal = type === 'ut' || type === 'tima' || type === 'farslin' || type === 'farsl';
+  var isKoma    = type === 'koma';
+  var noDisposal = type === 'ut' || type === 'tima' || type === 'farslin' || type === 'farsl' || isKoma;
   var isTima     = type === 'tima';
   var isSkapt    = type === 'skipt';
   var isUt       = type === 'ut';
   var row       = document.getElementById('a-disposal-row');
   var sizeWrap  = document.getElementById('a-size-wrap');
+  var komaWrap  = document.getElementById('a-koma-wrap');
   var catWrap   = document.getElementById('a-category-wrap');
   var skiptRow  = document.getElementById('a-skipt-row');
   var contRow   = document.getElementById('a-container-row');
   if (row)      row.style.display      = noDisposal ? 'none' : '';
-  if (sizeWrap) sizeWrap.style.display = isTima ? 'none' : '';
-  if (catWrap)  catWrap.style.display  = (isTima || isUt) ? 'none' : '';
+  if (sizeWrap) sizeWrap.style.display = (isTima || isKoma) ? 'none' : '';
+  if (komaWrap) komaWrap.style.display = isKoma ? '' : 'none';
+  if (catWrap)  catWrap.style.display  = (isTima || isUt || isKoma) ? 'none' : '';
   if (skiptRow) skiptRow.style.display = isSkapt ? '' : 'none';
-  if (contRow)  contRow.style.display  = isSkapt ? 'none' : '';
+  if (contRow)  contRow.style.display  = (isSkapt || isKoma) ? 'none' : '';
 }
 // keep old name as alias for any remaining calls
 function toggleAdminDisposal(type) { toggleAdminByType(type); }
@@ -7572,6 +7605,7 @@ function showToast(msg){
           <option value="toma">Tæma gám</option>
           <option value="tima">Tímaverkefni</option>
           <option value="farslin">Farsíl</option>
+          <option value="koma">Koma með efni</option>
         </select>
       </div>
       <div>
@@ -7616,11 +7650,34 @@ function showToast(msg){
         <select id="oem-driver" style="width:100%;padding:9px 12px;border:1px solid #e2e8f0;border-radius:10px;font-size:13px;"></select>
       </div>
       <div>
+        <label style="font-size:11px;font-weight:700;color:#64748b;display:block;margin-bottom:4px;">EFNISFLOKKUR</label>
+        <select id="oem-category" translate="no" style="width:100%;padding:9px 12px;border:1px solid #e2e8f0;border-radius:10px;font-size:13px;">
+          <option value="">— Veldu flokk —</option>
+          <optgroup label="— Garðaúrgangur —"><option value="Gras og hey">Gras og hey</option><option value="Trjágreinar">Trjágreinar</option><option value="Garðaúrgangur">Garðaúrgangur</option></optgroup>
+          <optgroup label="— Almennur heimilisúrgangur —"><option value="Pressanlegur úrgangur frá framkvæmdum">Pressanlegur úrgangur frá framkvæmdum</option><option value="Blandaður úrgangur til brennslu">Blandaður úrgangur til brennslu</option><option value="Grófur úrgangur frá framkvæmdum">Grófur úrgangur frá framkvæmdum</option><option value="Óflokkaður grófur úrgangur">Óflokkaður grófur úrgangur</option></optgroup>
+          <optgroup label="— Sérstakur úrgangur —"><option value="Gúmmíúrgangur">Gúmmíúrgangur</option><option value="Fiskikör">Fiskikör</option></optgroup>
+          <optgroup label="— Plast —"><option value="Filmuplast ólitað">Filmuplast ólitað</option><option value="Hart plast">Hart plast</option><option value="Frauðplast (EPS)">Frauðplast (EPS)</option></optgroup>
+          <optgroup label="— Pappír og pappi —"><option value="Bylgjupappi">Bylgjupappi</option><option value="Skrifstofupappír">Skrifstofupappír</option></optgroup>
+          <optgroup label="— Timbur —"><option value="Málað timbur">Málað timbur</option><option value="Ómálað timbur">Ómálað timbur</option><option value="Vörubrettir og kassar">Vörubrettir og kassar</option></optgroup>
+          <optgroup label="— Gler og steinefni —"><option value="Steinefni frá framkvæmdum">Steinefni frá framkvæmdum</option><option value="Mold">Mold</option><option value="Múrbrot">Múrbrot</option></optgroup>
+          <optgroup label="— Málmar —"><option value="Blandaðir málmar">Blandaðir málmar</option><option value="Járnúrgangur">Járnúrgangur</option></optgroup>
+          <optgroup label="— Annað —"><option value="Asbest">Asbest</option><option value="Annað (sjá athugasemd)">Annað (sjá athugasemd)</option></optgroup>
+        </select>
+      </div>
+      <div>
+        <label style="font-size:11px;font-weight:700;color:#64748b;display:block;margin-bottom:4px;">LOSUNARSTAÐUR</label>
+        <select id="oem-disposal" translate="no" style="width:100%;padding:9px 12px;border:1px solid #e2e8f0;border-radius:10px;font-size:13px;">
+          <option value="">— Veldu stað —</option>
+          <option value="Sorpstöð Álfsnes">Sorpstöð Álfsnes</option><option value="Sorpustöð Gufunes">Sorpustöð Gufunes</option>
+          <option value="Terra umhverfisþjónusta">Terra umhverfisþjónusta</option><option value="Íslenska Gámafélagið">Íslenska Gámafélagið</option>
+          <option value="Bolalda">Bolalda</option><option value="Vatnsskarð">Vatnsskarð</option>
+          <option value="Höfuðstöð fyrirtækis">Höfuðstöð fyrirtækis</option><option value="Annað (sjá athugasemd)">Annað (sjá athugasemd)</option>
+        </select>
+      </div>
+      <div>
         <label style="font-size:11px;font-weight:700;color:#64748b;display:block;margin-bottom:4px;">ATHUGASEMD</label>
         <textarea id="oem-note" rows="3" style="width:100%;padding:9px 12px;border:1px solid #e2e8f0;border-radius:10px;font-size:13px;box-sizing:border-box;resize:vertical;" placeholder="Sérstæðar upplýsingar..."></textarea>
       </div>
-      <div style="display:flex;gap:8px;margin-top:4px;">
-        <button onclick="saveOpenEditModal()" style="flex:1;padding:12px;background:#e8620a;border:none;border-radius:10px;color:#fff;font-size:13px;font-weight:700;cursor:pointer;">✓ Vista breytingar</button>
         <button onclick="closeOpenEditModal()" style="padding:12px 20px;background:#f1f5f9;border:none;border-radius:10px;color:#475569;font-size:13px;font-weight:600;cursor:pointer;">Hætta við</button>
       </div>
     </div>

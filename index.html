@@ -2983,14 +2983,24 @@ function renderTimelog(logs, pairs) {
   // Group pairs by dateStr (newest first)
   var byDate = {};
   var dateOrder = [];
+  var dateTimestamps = {}; // store actual timestamp per dateStr for proper sorting
   pairs.forEach(function(p) {
     var d = p.dateStr || '—';
     if (!byDate[d]) { byDate[d] = []; dateOrder.push(d); }
     byDate[d].push(p);
+    // Store the actual date from Firebase timestamp for sorting
+    if (!dateTimestamps[d] && p.actualDate) {
+      dateTimestamps[d] = p.actualDate.getTime();
+    }
   });
   dateOrder = dateOrder.filter(function(v,i,a){ return a.indexOf(v)===i; });
-  // Sort dates newest first
-  dateOrder.sort(function(a,b){ return b.localeCompare(a); });
+  // Sort dates newest first using actual timestamp when available
+  dateOrder.sort(function(a,b){
+    var ta = dateTimestamps[a] || 0;
+    var tb = dateTimestamps[b] || 0;
+    if (ta && tb) return tb - ta; // newest first by timestamp
+    return b.localeCompare(a); // fallback to string compare
+  });
 
   // Also catch unpaired logs (no matching in/out)
   var pairedIns  = {};

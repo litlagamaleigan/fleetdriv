@@ -2829,10 +2829,24 @@ function tsOf(l) {
 function buildTimelogPairs(logs) {
   var byKey = {};
   logs.forEach(function(log) {
-    var key = (log.username || log.name) + '|' + (log.dateStr || '');
+    // Use Firebase timestamp to determine the actual date (not dateStr which may be in wrong format)
+    var actualDate = toJsDate(log.timestamp);
+    var dateKey;
+    if (actualDate) {
+      // Normalize to ISO date string yyyy-mm-dd for reliable grouping
+      dateKey = actualDate.getFullYear() + '-'
+        + String(actualDate.getMonth()+1).padStart(2,'0') + '-'
+        + String(actualDate.getDate()).padStart(2,'0');
+    } else {
+      // Fallback: use dateStr as-is
+      dateKey = log.dateStr || '—';
+    }
+    var key = (log.username || log.name) + '|' + dateKey;
     if (!byKey[key]) byKey[key] = {
       name: log.name, initials: log.initials, color: log.color,
-      username: log.username, dateStr: log.dateStr, ins: [], outs: []
+      username: log.username, dateStr: log.dateStr,
+      dateKey: dateKey, actualDateObj: actualDate,
+      ins: [], outs: []
     };
     if (log.action === 'in')  byKey[key].ins.push(log);
     if (log.action === 'out') byKey[key].outs.push(log);
@@ -2859,23 +2873,12 @@ function buildTimelogPairs(logs) {
         }
         if (minutes !== null && minutes < 0) minutes = 0;
       }
-      // Get actual date from Firebase timestamp (most reliable for weekday detection)
-      var actualDate = null;
-      var refLog = inLog || outLog;
-      if (refLog) {
-        var ts = toJsDate(refLog.timestamp);
-        if (ts) {
-          actualDate = ts;
-        } else {
-          // Fallback: try parsing dateStr, but also try reversed format
-          actualDate = parseDateStrBestGuess(refLog.dateStr);
-        }
-      }
       pairs.push({
         name: g.name, initials: g.initials, color: g.color, username: g.username,
-        dateStr: g.dateStr, inLog: inLog, outLog: outLog,
+        dateStr: g.dateStr, dateKey: g.dateKey,
+        inLog: inLog, outLog: outLog,
         minutes: minutes, sessionNum: i + 1, totalSessions: numSessions,
-        actualDate: actualDate
+        actualDate: g.actualDateObj || (inLog ? toJsDate(inLog.timestamp) : null)
       });
     }
   });
@@ -2980,27 +2983,17 @@ function renderTimelog(logs, pairs) {
     return;
   }
 
-  // Group pairs by dateStr (newest first)
+  // Group pairs by dateKey (ISO yyyy-mm-dd) — reliable regardless of dateStr format
   var byDate = {};
   var dateOrder = [];
-  var dateTimestamps = {}; // store actual timestamp per dateStr for proper sorting
   pairs.forEach(function(p) {
-    var d = p.dateStr || '—';
-    if (!byDate[d]) { byDate[d] = []; dateOrder.push(d); }
-    byDate[d].push(p);
-    // Store the actual date from Firebase timestamp for sorting
-    if (!dateTimestamps[d] && p.actualDate) {
-      dateTimestamps[d] = p.actualDate.getTime();
-    }
+    var dk = p.dateKey || p.dateStr || '—';
+    if (!byDate[dk]) { byDate[dk] = []; dateOrder.push(dk); }
+    byDate[dk].push(p);
   });
   dateOrder = dateOrder.filter(function(v,i,a){ return a.indexOf(v)===i; });
-  // Sort dates newest first using actual timestamp when available
-  dateOrder.sort(function(a,b){
-    var ta = dateTimestamps[a] || 0;
-    var tb = dateTimestamps[b] || 0;
-    if (ta && tb) return tb - ta; // newest first by timestamp
-    return b.localeCompare(a); // fallback to string compare
-  });
+  // Sort newest first — ISO keys sort correctly with localeCompare
+  dateOrder.sort(function(a,b){ return b.localeCompare(a); });
 
   // Also catch unpaired logs (no matching in/out)
   var pairedIns  = {};
@@ -3011,13 +3004,19 @@ function renderTimelog(logs, pairs) {
   });
 
   var html = '';
-  dateOrder.forEach(function(dateStr) {
-    var dayPairs = byDate[dateStr] || [];
-    var dayName = getDayOfWeek(dateStr);
-    // Use actualDate from first pair of this date for reliable weekday
+  dateOrder.forEach(function(dateKey) {
+    var dayPairs = byDate[dateKey] || [];
     var firstPair = dayPairs[0];
-    var wknd = firstPair && firstPair.actualDate ? dateIsWeekend(firstPair.actualDate) : isWeekend(dateStr);
-    var dayName = firstPair && firstPair.actualDate ? dateToWeekday(firstPair.actualDate) : getDayOfWeek(dateStr);
+    var wknd = firstPair && firstPair.actualDate ? dateIsWeekend(firstPair.actualDate) : false;
+    var dayName = firstPair && firstPair.actualDate ? dateToWeekday(firstPair.actualDate) : '';
+    // Format display date from actual timestamp
+    var displayDate = dateKey;
+    if (firstPair && firstPair.actualDate) {
+      var d = firstPair.actualDate;
+      displayDate = d.getDate() + '.' + (d.getMonth()+1) + '.' + d.getFullYear();
+    } else if (firstPair && firstPair.dateStr) {
+      displayDate = firstPair.dateStr;
+    }
 
     // Group by driver within this date
     var byDriver = {};
@@ -3029,7 +3028,7 @@ function renderTimelog(logs, pairs) {
 
     // Date header with day name and weekend highlight
     html += '<div style="display:flex;align-items:center;gap:8px;margin:12px 0 6px;">'
-      + '<span style="font-size:11px;font-weight:700;color:' + (wknd ? '#dc2626' : '#94a3b8') + ';text-transform:uppercase;letter-spacing:0.5px;">' + dateStr + '</span>'
+      + '<span style="font-size:11px;font-weight:700;color:' + (wknd ? '#dc2626' : '#94a3b8') + ';text-transform:uppercase;letter-spacing:0.5px;">' + displayDate + '</span>'
       + (dayName ? '<span style="font-size:10px;font-weight:700;padding:1px 8px;border-radius:20px;background:' + (wknd ? '#fef2f2' : '#f1f5f9') + ';color:' + (wknd ? '#dc2626' : '#64748b') + ';">' + dayName + (wknd ? ' · Yfirvinnu' : '') + '</span>' : '')
       + '</div>';
 

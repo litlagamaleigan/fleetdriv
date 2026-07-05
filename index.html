@@ -6319,33 +6319,39 @@ function addMissingPunchOut(inDocId, username, dateStr) {
   var timeVal = prompt('Skrá vantar útstimplun fyrir ' + username + ' (' + dateStr + ').\nSláðu inn útskráningartíma (HH:MM):', '');
   if (!timeVal || !timeVal.match(/^\d{2}:\d{2}$/)) { showToast('⚠ Ógildur tímaformát'); return; }
 
-  // Get user info from users list
   var users = getUsers();
   var user = users.find(function(u){ return u.username === username; }) || { username: username, name: username, initials: '?', color: '#64748b' };
 
   onFirebaseReady(function() {
     var fb = window._fb;
-    // Build timestamp from dateStr + timeVal
-    var dp = dateStr.split('.');
-    var dateISO = (dp.length === 3) ? dp[2].trim() + '-' + dp[1].padStart(2,'0') + '-' + dp[0].padStart(2,'0') : new Date().toISOString().split('T')[0];
-    var newDate = new Date(dateISO + 'T' + timeVal + ':00');
+    // Get the actual date from the in-log's Firebase timestamp
+    fb.getDoc(fb.doc(fb.db, 'timelog', inDocId)).then(function(snap) {
+      var inData = snap.exists() ? snap.data() : {};
+      var dateISO = '';
+      var actualDate = toJsDate(inData.timestamp);
+      if (actualDate) {
+        dateISO = actualDate.getFullYear() + '-' + String(actualDate.getMonth()+1).padStart(2,'0') + '-' + String(actualDate.getDate()).padStart(2,'0');
+      } else {
+        // Fallback: parse dateStr with both formats
+        var d = parseDateStr(dateStr);
+        dateISO = d ? (d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0')) : new Date().toISOString().split('T')[0];
+      }
+      var newDate = new Date(dateISO + 'T' + timeVal + ':00');
 
-    fb.addDoc(fb.collection(fb.db, 'timelog'), {
-      username: user.username,
-      name: user.name,
-      initials: user.initials,
-      color: user.color,
-      action: 'out',
-      vehicle: '—',
-      timeStr: timeVal,
-      dateStr: dateStr,
-      timestamp: fb.serverTimestamp(),
-      addedByAdmin: true
-    }).then(function() {
-      showToast('✓ Útstimplun skráð: ' + timeVal);
-      loadTimelog();
-    }).catch(function(e) {
-      showToast('⚠ Villa: ' + (e.code || e.message));
+      fb.addDoc(fb.collection(fb.db, 'timelog'), {
+        username: user.username, name: user.name,
+        initials: user.initials, color: user.color,
+        action: 'out', vehicle: '—',
+        timeStr: timeVal, dateStr: dateStr,
+        timestamp: newDate, addedByAdmin: true
+      }).then(function() {
+        showToast('✓ Útstimplun skráð: ' + timeVal);
+        loadTimelog();
+      }).catch(function(e) {
+        showToast('⚠ Villa: ' + (e.code || e.message));
+      });
+    }).catch(function() {
+      showToast('⚠ Náðist ekki að sækja innstimplun');
     });
   });
 }

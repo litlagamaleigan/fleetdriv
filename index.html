@@ -2784,6 +2784,7 @@ function isWeekend(dateStrOrDate) {
   var d = parseDateStr(dateStrOrDate);
   return d ? dateIsWeekend(d) : false;
 }
+var _IS_DAYS = ['Sun', 'Mán', 'Þri', 'Mið', 'Fim', 'Fös', 'Lau'];
 var _IS_DAYS_FULL = ['Sunnudagur', 'Mánudagur', 'Þriðjudagur', 'Miðvikudagur', 'Fimmtudagur', 'Föstudagur', 'Laugardagur'];
 
 function parseDateStr(dateStr) {
@@ -2805,17 +2806,6 @@ function parseDateStr(dateStr) {
   return isNaN(d.getTime()) ? null : d;
 }
 
-function getDayOfWeek(dateStr) {
-  var d = parseDateStr(dateStr);
-  return d ? _IS_DAYS[d.getDay()] : '';
-}
-
-function isWeekend(dateStr) {
-  var d = parseDateStr(dateStr);
-  if (!d) return false;
-  var day = d.getDay();
-  return day === 0 || day === 6; // 0=Sun, 6=Sat
-}
 
 
 function tsOf(l) {

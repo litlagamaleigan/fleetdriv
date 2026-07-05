@@ -3065,9 +3065,13 @@ function renderTimelog(logs, pairs) {
         html += '<div style="display:flex;align-items:center;gap:10px;padding:8px 14px;' + (idx < drv.pairs.length-1 ? 'border-bottom:1px solid #f1f5f9;' : '') + '">'
           + (hasMulti ? '<div style="font-size:10px;font-weight:700;color:#94a3b8;min-width:16px;text-align:center;">' + (idx+1) + '</div>' : '<div style="min-width:16px;"></div>')
           + '<div style="flex:1;display:flex;align-items:center;gap:8px;flex-wrap:wrap;">'
-          +   '<span style="font-size:12px;color:#16a34a;font-weight:600;">' + inGps + '🟢 ' + inTime
-          +   (p.inLog && p.inLog.fbDocId ? ' <button onclick="editTimelogEntry(\'' + p.inLog.fbDocId + '\',\'in\')" style="background:#f1f5f9;border:1px solid #e2e8f0;border-radius:6px;font-size:11px;cursor:pointer;color:#475569;padding:2px 5px;margin-left:2px;">✏</button>' : '')
-          +   '</span>'
+          +   (p.inLog
+                ? '<span style="font-size:12px;color:#16a34a;font-weight:600;">' + inGps + '🟢 ' + inTime
+                  + (p.inLog.fbDocId ? ' <button onclick="editTimelogEntry(\'' + p.inLog.fbDocId + '\',\'in\')" style="background:#f1f5f9;border:1px solid #e2e8f0;border-radius:6px;font-size:11px;cursor:pointer;color:#475569;padding:2px 5px;margin-left:2px;">✏</button>' : '')
+                  + '</span>'
+                : '<span style="font-size:11px;color:#f59e0b;font-weight:600;">⏳ Vantar inn '
+                  + (p.outLog && p.outLog.fbDocId ? '<button onclick="addMissingPunchIn(\'' + p.outLog.fbDocId + '\',\'' + (p.outLog.username||'') + '\',\'' + (p.outLog.dateStr||'') + '\')" style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:6px;font-size:10px;cursor:pointer;color:#16a34a;padding:1px 6px;">+ Skrá inn</button>' : '')
+                  + '</span>')
           +   '<span style="color:#cbd5e1;font-size:11px;">→</span>'
           +   (p.outLog
                 ? '<span style="font-size:12px;color:#dc2626;font-weight:600;">' + outGps + '🔴 ' + outTime
@@ -3080,7 +3084,7 @@ function renderTimelog(logs, pairs) {
           + '</div>'
           + '<div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">'
           + (p.minutes !== null ? '<div style="font-size:13px;font-weight:700;color:#475569;">' + fmtMinutes(p.minutes) + '</div>' : '')
-          + (p.inLog && p.inLog.fbDocId ? '<button onclick="deleteTimelogEntry(\'' + p.inLog.fbDocId + '\'' + (p.outLog && p.outLog.fbDocId ? ',\'' + p.outLog.fbDocId + '\'' : '') + ')" style="background:none;border:none;font-size:12px;cursor:pointer;color:#fca5a5;padding:2px;">🗑</button>' : '')
+          + '<button onclick="deleteTimelogEntry(\'' + (p.inLog && p.inLog.fbDocId ? p.inLog.fbDocId : '') + '\'' + (p.outLog && p.outLog.fbDocId ? ',\'' + p.outLog.fbDocId + '\'' : '') + ')" style="background:none;border:none;font-size:12px;cursor:pointer;color:#fca5a5;padding:2px;">🗑</button>'
           + '</div>'
           + '</div>';
       });
@@ -6270,6 +6274,46 @@ function deleteTimelogEntry(inDocId, outDocId) {
     });
   });
 }
+
+function addMissingPunchIn(outDocId, username, dateStr) {
+  var timeVal = prompt('Skrá vantar innstimplun fyrir ' + username + ' (' + dateStr + ').\nSláðu inn innstimplunartíma (HH:MM):', '');
+  if (!timeVal || !timeVal.match(/^\d{2}:\d{2}$/)) { showToast('⚠ Ógildur tímaformát'); return; }
+  var users = getUsers();
+  var user = users.find(function(u){ return u.username === username; }) || { username: username, name: username, initials: '?', color: '#64748b' };
+
+  onFirebaseReady(function() {
+    var fb = window._fb;
+    // Get the out-log to find the date
+    fb.getDoc(fb.doc(fb.db, 'timelog', outDocId)).then(function(snap) {
+      var outData = snap.exists() ? snap.data() : {};
+      var dateISO = '';
+      if (outData.timestamp) {
+        var d = toJsDate(outData.timestamp);
+        if (d) dateISO = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+      }
+      if (!dateISO) {
+        var dp = (dateStr||'').split('.');
+        if (dp.length === 3) dateISO = dp[2].trim() + '-' + dp[1].padStart(2,'0') + '-' + dp[0].padStart(2,'0');
+        else dateISO = new Date().toISOString().split('T')[0];
+      }
+      var newDate = new Date(dateISO + 'T' + timeVal + ':00');
+
+      fb.addDoc(fb.collection(fb.db, 'timelog'), {
+        username: user.username, name: user.name,
+        initials: user.initials, color: user.color,
+        action: 'in', vehicle: '—',
+        timeStr: timeVal, dateStr: dateStr,
+        timestamp: newDate, addedByAdmin: true
+      }).then(function() {
+        showToast('✓ Innstimplun skráð: ' + timeVal);
+        loadTimelog();
+      }).catch(function(e) {
+        showToast('⚠ Villa: ' + (e.code || e.message));
+      });
+    });
+  });
+}
+
 
 function addMissingPunchOut(inDocId, username, dateStr) {
   var timeVal = prompt('Skrá vantar útstimplun fyrir ' + username + ' (' + dateStr + ').\nSláðu inn útskráningartíma (HH:MM):', '');

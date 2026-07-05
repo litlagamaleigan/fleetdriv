@@ -3084,7 +3084,7 @@ function renderTimelog(logs, pairs) {
           + '</div>'
           + '<div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">'
           + (p.minutes !== null ? '<div style="font-size:13px;font-weight:700;color:#475569;">' + fmtMinutes(p.minutes) + '</div>' : '')
-          + '<button onclick="deleteTimelogEntry(\'' + (p.inLog && p.inLog.fbDocId ? p.inLog.fbDocId : '') + '\'' + (p.outLog && p.outLog.fbDocId ? ',\'' + p.outLog.fbDocId + '\'' : '') + ')" style="background:none;border:none;font-size:12px;cursor:pointer;color:#fca5a5;padding:2px;">🗑</button>'
+          + '<button onclick="deleteTimelogEntry(\'' + (p.inLog && p.inLog.fbDocId ? p.inLog.fbDocId : '') + '\',\'' + (p.outLog && p.outLog.fbDocId ? p.outLog.fbDocId : '') + '\')" style="background:none;border:none;font-size:12px;cursor:pointer;color:#fca5a5;padding:2px;" title="Eyða">🗑</button>'
           + '</div>'
           + '</div>';
       });
@@ -6261,11 +6261,18 @@ function saveTimelogEdit() {
 }
 
 function deleteTimelogEntry(inDocId, outDocId) {
-  if (!confirm('Eyða þessari vaktaskráningu?')) return;
+  // Build list of valid (non-empty) IDs to delete
+  var idsToDelete = [];
+  if (inDocId && inDocId.length > 0) idsToDelete.push(inDocId);
+  if (outDocId && outDocId.length > 0 && outDocId !== inDocId) idsToDelete.push(outDocId);
+  if (!idsToDelete.length) { showToast('⚠ Engar gilda skráningar til að eyða'); return; }
+
+  if (!confirm('Eyða þessari vaktaskráningu? (' + idsToDelete.length + ' færslur)')) return;
   onFirebaseReady(function() {
     var fb = window._fb;
-    var dels = [fb.deleteDoc(fb.doc(fb.db, 'timelog', inDocId))];
-    if (outDocId) dels.push(fb.deleteDoc(fb.doc(fb.db, 'timelog', outDocId)));
+    var dels = idsToDelete.map(function(id) {
+      return fb.deleteDoc(fb.doc(fb.db, 'timelog', id));
+    });
     Promise.all(dels).then(function() {
       showToast('✓ Vaktaskráningu eytt');
       loadTimelog();

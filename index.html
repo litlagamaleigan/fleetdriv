@@ -5129,11 +5129,8 @@ function completeTask(){
   var todayDate = new Date().toLocaleDateString('is-IS');
   addToAdminDone(curTask,{kg,containerNum,disposal,category,company,note,photoTaken,timeStr,ref,date:todayDate});
 
-  // Send to Sheets
   // Firebase complete
   if (curTask && curTask.fbId) {
-    var pzEl = document.getElementById('pz');
-    var photoData = pzEl && pzEl.dataset.photoData ? pzEl.dataset.photoData : null;
     fbCompleteTask(curTask.fbId, {
       kg:kg, containerNum:containerNum, category:category, disposal:disposal,
       company:company, note:note,
@@ -5270,7 +5267,8 @@ function createTask(){
   const aSkiptAfhentur=document.getElementById('a-skipt-afhentur').value.trim();
   const aKomaEfni    = (document.getElementById('a-koma-efni')    || {value:''}).value.trim();
   const aKomaUppruni = (document.getElementById('a-koma-uppruni') || {value:''}).value.trim();
-  if(aType==='koma' && !aKomaEfni){ showToast('Sláðu inn hvaða efni er komið með'); return; }
+  const type=document.getElementById('a-type').value;
+  if(type==='koma' && !aKomaEfni){ showToast('Sláðu inn hvaða efni er komið með'); return; }
   // Ban check — block task creation for banned customers
   if(aCompany) {
     var allCusts = getCustomers();
@@ -5280,7 +5278,6 @@ function createTask(){
       return;
     }
   }
-  const type=document.getElementById('a-type').value;
   const aDate=document.getElementById('a-date')?document.getElementById('a-date').value:new Date().toISOString().split('T')[0];
   const size=document.getElementById('a-size').value;
   const time=document.getElementById('a-time').value;

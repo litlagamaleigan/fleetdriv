@@ -2629,7 +2629,7 @@ document.addEventListener('DOMContentLoaded', function() {
 function punchIn(user, vehicle) {
   var now = new Date();
   var timeStr = now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
-  var dateStr = now.toLocaleDateString('is-IS');
+  var dateStr = now.getDate() + '.' + (now.getMonth()+1) + '.' + now.getFullYear();
   function saveLog(lat, lng) {
     onFirebaseReady(function() {
       var fb = window._fb;
@@ -2663,7 +2663,7 @@ function punchIn(user, vehicle) {
 function punchOut(user) {
   var now = new Date();
   var timeStr = now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
-  var dateStr = now.toLocaleDateString('is-IS');
+  var dateStr = now.getDate() + '.' + (now.getMonth()+1) + '.' + now.getFullYear();
   function saveLog(lat, lng) {
     onFirebaseReady(function() {
       var fb = window._fb;
@@ -4330,6 +4330,7 @@ function fbListenAdminTasks() {
         var data = change.doc.data();
         data.fbId = change.doc.id;
 
+        if (data.status === 'deleted') return; // skip trashed tasks
         if (data.status === 'completed') {
           var openCard = document.querySelector('#admin-task-list [data-fbid="' + data.fbId + '"]');
           if (openCard) openCard.remove();
@@ -4379,8 +4380,8 @@ function fbAddToOpenList(data) {
     + '<div class="atask-tags">'
     + (size ? '<span class="atask-tag" data-field="size">' + size + '</span>' : '')
     + (disposal && disposal !== '—' ? '<span class="atask-tag blue" data-field="disposal">→ ' + disposal + '</span>' : '')
-    + (data.komaEfni ? '<span class="atask-tag" style="background:#f0fdf4;color:#15803d;">📦 ' + data.komaEfni + '</span>' : '')
-    + (data.komaUppruni ? '<span class="atask-tag" style="background:#eff6ff;color:#1e40af;">📍 Sótt: ' + data.komaUppruni + '</span>' : '')
+    + (data.type==='koma' && data.komaEfni ? '<span class="atask-tag" style="background:#f0fdf4;color:#15803d;">📦 ' + data.komaEfni + '</span>' : '')
+    + (data.type==='koma' && data.komaUppruni ? '<span class="atask-tag" style="background:#eff6ff;color:#1e40af;">📍 Sótt: ' + data.komaUppruni + '</span>' : '')
     + (data.company && data.company !== '—' ? '<span class="atask-tag">🏢 ' + data.company + '</span>' : '')
     + '</div>'
     + '<div class="atask-foot">'
@@ -4437,8 +4438,8 @@ function fbAddToDoneList(data) {
     + (data.kg ? '<span class="atask-tag">' + data.kg + ' kg</span>' : '')
     + (data.category ? '<span class="atask-tag">' + data.category + '</span>' : '')
     + (data.disposal && data.disposal!=='—' ? '<span class="atask-tag blue">→ ' + data.disposal + '</span>' : '')
-    + (data.komaEfni ? '<span class="atask-tag" style="background:#f0fdf4;color:#15803d;">📦 ' + data.komaEfni + '</span>' : '')
-    + (data.komaUppruni ? '<span class="atask-tag" style="background:#eff6ff;color:#1e40af;">📍 Sótt: ' + data.komaUppruni + '</span>' : '')
+    + (data.type==='koma' && data.komaEfni ? '<span class="atask-tag" style="background:#f0fdf4;color:#15803d;">📦 ' + data.komaEfni + '</span>' : '')
+    + (data.type==='koma' && data.komaUppruni ? '<span class="atask-tag" style="background:#eff6ff;color:#1e40af;">📍 Sótt: ' + data.komaUppruni + '</span>' : '')
     + (data.company && data.company!=='—' ? '<span class="atask-tag">🏢 ' + data.company + '</span>' : '')
     + (data.containerNum && data.containerNum!=='—' ? '<span class="atask-tag">📦 ' + data.containerNum + '</span>' : '')
     + '<span class="photo-tags">' + buildPhotoTagsHtml(data) + '</span>'
@@ -5005,7 +5006,7 @@ function openAdminTask(title,sub,type,mapsAddr,km){
   const dcd=document.getElementById('d-company-display');if(dcd)dcd.textContent='—';
   const dc3=document.getElementById('d-container');if(dc3)dc3.value='';
   var _type2 = curTask?curTask.type:'';
-  const dg2=document.getElementById('d-disposal-group');if(dg2)dg2.style.display=(_type2==='ut'||_type2==='tima'||_type2==='farslin'||_type2==='farsl')?'none':'block';
+  const dg2=document.getElementById('d-disposal-group');if(dg2)dg2.style.display=(_type2==='ut'||_type2==='tima'||_type2==='farslin'||_type2==='farsl'||_type2==='koma')?'none':'block';
   var kgr=document.getElementById('d-kg-row');if(kgr)kgr.style.display=_type2==='ut'?'none':'flex';
   var cgd=document.getElementById('d-category-group');if(cgd)cgd.style.display=_type2==='ut'?'none':'block';
   var dcg=document.getElementById('d-company-group');if(dcg)dcg.style.display=_type2==='ut'?'none':'block';
@@ -5167,8 +5168,10 @@ function completeTask(){
       title:curTask?curTask.title:'—', address:curTask?curTask.sub:'—', type:curTask?curTask.type:'ut'
     }, photoDataList);
   }
+    var _now = new Date();
+    var _dateStr = _now.getDate() + '.' + (_now.getMonth()+1) + '.' + _now.getFullYear();
   sendToSheets({
-    dagsetning: "'" + n.toLocaleDateString('is-IS'),
+    dagsetning: _dateStr,
     timi: "'" + timeStr,
     tilvísun:ref,
     heimilisfang:curTask?curTask.sub:'—',
@@ -5355,6 +5358,8 @@ function createTask(){
   var acp=document.getElementById('a-contact-phone');if(acp)acp.value='';
   var phoneHint=document.getElementById('a-phone-hint');if(phoneHint)phoneHint.style.display='none';
   var phoneSaveBtn=document.getElementById('a-phone-save-btn');if(phoneSaveBtn)phoneSaveBtn.style.display='none';
+  var komaEfniEl=document.getElementById('a-koma-efni');if(komaEfniEl)komaEfniEl.value='';
+  var komaUpprEl=document.getElementById('a-koma-uppruni');if(komaUpprEl)komaUpprEl.value='';
   window._selectedCompanyId='';
   var adate=document.getElementById('a-date');if(adate)adate.value=new Date().toISOString().split('T')[0];
   placesAutocomplete=null; initAddressAutocomplete();
@@ -5384,7 +5389,8 @@ function createTask(){
     companyPhone: (document.getElementById('a-contact-phone')?document.getElementById('a-contact-phone').value.trim():'')||window._selectedCompanyPhone||'',
     containerNum: adminContainerNum, note: note,
     skiptTekinn: aSkiptTekinn, skiptAfhentur: aSkiptAfhentur,
-    komaEfni: aKomaEfni||'', komaUppruni: aKomaUppruni||'',
+    komaEfni: type==='koma' ? (aKomaEfni||'') : '',
+    komaUppruni: type==='koma' ? (aKomaUppruni||'') : '',
     disposal: (type==='ut'||type==='tima'||type==='farslin'||type==='farsl'||type==='koma') ? '—' : document.getElementById('a-disposal').value,
     category: document.getElementById('a-category')?document.getElementById('a-category').value:''
   });

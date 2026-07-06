@@ -765,6 +765,20 @@ body.admin-active #admin-sections .admin-section.active{display:block !important
             </select>
           </div>
         </div>
+        <!-- Koma með efni fields -->
+        <div class="form-group" id="d-koma-group" style="display:none;">
+          <div style="background:#f0fdf4;border-radius:12px;padding:13px 14px;border:1px solid #bbf7d0;">
+            <div style="font-size:11px;font-weight:700;color:#166534;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:10px;">📦 Koma með efni</div>
+            <div style="margin-bottom:10px;">
+              <label class="f-label">Hvaða efni</label>
+              <input class="f-input" type="text" id="d-koma-efni" placeholder="t.d. Mold, grjót, sand..."/>
+            </div>
+            <div>
+              <label class="f-label">Hvar var efnið sótt</label>
+              <input class="f-input" type="text" id="d-koma-uppruni" placeholder="t.d. Sorpstöð Álfsnes..."/>
+            </div>
+          </div>
+        </div>
         <!-- Contact phone - always visible -->
         <div class="form-group" id="d-contact-phone-group">
           <div style="display:flex;align-items:center;gap:8px;padding:10px 14px;background:#f8fafc;border-radius:10px;border:1px solid #e2e8f0;">
@@ -4581,9 +4595,14 @@ function fbAddDriverTask(data) {
     var dc=document.getElementById('d-company');if(dc)dc.value=curTask.company||'';
     var dcd=document.getElementById('d-company-display');if(dcd)dcd.textContent=curTask.company||'—';
     var _t=type;
-    var dg=document.getElementById('d-disposal-group');if(dg)dg.style.display=(_t==='ut'||_t==='tima'||_t==='farslin'||_t==='farsl')?'none':'block';
-    var kgrf=document.getElementById('d-kg-row');if(kgrf)kgrf.style.display=_t==='ut'?'none':'flex';
-    var cgdf=document.getElementById('d-category-group');if(cgdf)cgdf.style.display=_t==='ut'?'none':'block';
+    var dg=document.getElementById('d-disposal-group');if(dg)dg.style.display=(_t==='ut'||_t==='tima'||_t==='farslin'||_t==='farsl'||_t==='koma')?'none':'block';
+    var kgrf=document.getElementById('d-kg-row');if(kgrf)kgrf.style.display=(_t==='ut'||_t==='koma')?'none':'flex';
+    var cgdf=document.getElementById('d-category-group');if(cgdf)cgdf.style.display=(_t==='ut'||_t==='koma')?'none':'block';
+    var komagf=document.getElementById('d-koma-group');if(komagf)komagf.style.display=_t==='koma'?'block':'none';
+    if(_t==='koma'){
+      var dke=document.getElementById('d-koma-efni');if(dke)dke.value=curTask.komaEfni||'';
+      var dku=document.getElementById('d-koma-uppruni');if(dku)dku.value=curTask.komaUppruni||'';
+    }
     var dcgf=document.getElementById('d-company-group');if(dcgf)dcgf.style.display=_t==='ut'?'none':'block';
     var dngf=document.getElementById('d-note-group');if(dngf)dngf.style.display=_t==='ut'?'none':'block';
     var afgf=document.getElementById('d-afhending-group');if(afgf)afgf.style.display=_t==='ut'?'block':'none';
@@ -4954,9 +4973,10 @@ function openTask(taskKey){
   const dcd=document.getElementById('d-company-display');if(dcd)dcd.textContent='—';
   const dc2=document.getElementById('d-container');if(dc2)dc2.value='';
   var _type = curTask?curTask.type:'';
-  const dg=document.getElementById('d-disposal-group');if(dg)dg.style.display=(_type==='ut'||_type==='tima'||_type==='farslin'||_type==='farsl')?'none':'block';
-  var kgr=document.getElementById('d-kg-row');if(kgr)kgr.style.display=_type==='ut'?'none':'flex';
-  var cgd=document.getElementById('d-category-group');if(cgd)cgd.style.display=_type==='ut'?'none':'block';
+  const dg=document.getElementById('d-disposal-group');if(dg)dg.style.display=(_type==='ut'||_type==='tima'||_type==='farslin'||_type==='farsl'||_type==='koma')?'none':'block';
+  var kgr=document.getElementById('d-kg-row');if(kgr)kgr.style.display=(_type==='ut'||_type==='koma')?'none':'flex';
+  var cgd=document.getElementById('d-category-group');if(cgd)cgd.style.display=(_type==='ut'||_type==='koma')?'none':'block';
+  var komagr=document.getElementById('d-koma-group');if(komagr)komagr.style.display=_type==='koma'?'block':'none';
   var dcg=document.getElementById('d-company-group');if(dcg)dcg.style.display=_type==='ut'?'none':'block';
   var dng=document.getElementById('d-note-group');if(dng)dng.style.display=_type==='ut'?'none':'block';
   var afg=document.getElementById('d-afhending-group');if(afg)afg.style.display=_type==='ut'?'block':'none';
@@ -5017,6 +5037,8 @@ function completeTask(){
   const isTima=curTask&&curTask.type==='tima';
   const isUtkeysla=curTask&&curTask.type==='ut';
   const disposal=(isUtkeysla||isTima)?'—':document.getElementById('d-disposal').value;
+  const dKomaEfni    = (document.getElementById('d-koma-efni')    ||{value:''}).value.trim() || (curTask&&curTask.komaEfni   ||'');
+  const dKomaUppruni = (document.getElementById('d-koma-uppruni') ||{value:''}).value.trim() || (curTask&&curTask.komaUppruni||'');
   const isSkapt=curTask&&curTask.type==='skipt';
   const skiptTekinn=isSkapt?(document.getElementById('d-skipt-tekinn').value.trim()||'—'):'—';
   const skiptAfhentur=isSkapt?(document.getElementById('d-skipt-afhentur').value.trim()||'—'):'—';
@@ -5141,12 +5163,12 @@ function completeTask(){
       date:todayDate,
       timaStart:timaStart, timaEnd:timaEnd, timaHours:timaHours, timaKmStart:timaKmStart, timaKmEnd:timaKmEnd,
       skiptTekinn:skiptTekinn, skiptAfhentur:skiptAfhentur,
-      komaEfni:curTask?curTask.komaEfni||'':'', komaUppruni:curTask?curTask.komaUppruni||'':'',
+      komaEfni:dKomaEfni||curTask.komaEfni||'', komaUppruni:dKomaUppruni||curTask.komaUppruni||'',
       title:curTask?curTask.title:'—', address:curTask?curTask.sub:'—', type:curTask?curTask.type:'ut'
     }, photoDataList);
   }
   sendToSheets({
-    dagsetning:n.toLocaleDateString('is-IS'),
+    dagsetning: "'" + n.toLocaleDateString('is-IS'),
     timi: "'" + timeStr,
     tilvísun:ref,
     heimilisfang:curTask?curTask.sub:'—',
@@ -5168,8 +5190,8 @@ function completeTask(){
     fyrirtaeki:company,
     kennitala:curTask&&curTask.companyKt?curTask.companyKt:'',
     gamanumer:containerNum,
-    koma_efni:curTask?curTask.komaEfni||'':'',
-    koma_uppruni:curTask?curTask.komaUppruni||'':'',
+    koma_efni:dKomaEfni||'',
+    koma_uppruni:dKomaUppruni||'',
     myndir:photoTaken?'Já':'Nei'
   });
 

@@ -1285,9 +1285,10 @@ body.admin-active #admin-sections .admin-section.active{display:block !important
 
     <!-- OPEN TASKS -->
     <div class="admin-section" id="asec-tasks">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
-        <h4 style="font-size:13px;font-weight:700;color:#0f172a;">Opnar beiðnir</h4>
-        <button onclick="refreshAdminTasks()" style="background:#f1f5f9;border:none;border-radius:8px;padding:5px 12px;font-size:11px;font-weight:600;cursor:pointer;">↻ Sækja</button>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;gap:10px;">
+        <h4 style="font-size:13px;font-weight:700;color:#0f172a;white-space:nowrap;">Opnar beiðnir</h4>
+        <input type="search" id="search-open" oninput="filterTasks('open',this.value)" placeholder="🔍 Leita — REF, heimilisfang, viðskiptavinur..." style="flex:1;padding:7px 12px;border:1px solid #e2e8f0;border-radius:8px;font-size:12px;outline:none;max-width:420px;"/>
+        <button onclick="refreshAdminTasks()" style="background:#f1f5f9;border:none;border-radius:8px;padding:5px 12px;font-size:11px;font-weight:600;cursor:pointer;white-space:nowrap;">↻ Sækja</button>
       </div>
       <div class="tasks-list" id="admin-task-list">
       </div>
@@ -1309,6 +1310,10 @@ body.admin-active #admin-sections .admin-section.active{display:block !important
     </div>
 
     <div class="admin-section" id="asec-done">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;gap:10px;">
+        <h4 style="font-size:13px;font-weight:700;color:#0f172a;white-space:nowrap;">Loknar beiðnir</h4>
+        <input type="search" id="search-done" oninput="filterTasks('done',this.value)" placeholder="🔍 Leita — REF, heimilisfang, viðskiptavinur..." style="flex:1;padding:7px 12px;border:1px solid #e2e8f0;border-radius:8px;font-size:12px;outline:none;max-width:420px;"/>
+      </div>
       <div class="tasks-list" id="admin-done-list">
       </div>
     </div>
@@ -5300,7 +5305,8 @@ function adminTab(tab,el){
   document.getElementById('asec-'+tab).classList.add('active');
   if(tab==='custoverview') renderCustOverview();
   if(tab==='drivers') { renderDriverCards(); buildMonthOptions(); loadTimelog(); }
-  if(tab==='tasks') { refreshAdminTasks(); }
+  if(tab==='tasks') { refreshAdminTasks(); var s=document.getElementById('search-open'); if(s)s.value=''; filterTasks('open',''); }
+  if(tab==='done')  { var s=document.getElementById('search-done');  if(s)s.value=''; filterTasks('done',''); }
   if(tab==='notes') { loadDriverNotes(); }
   if(tab==='trash') { loadTrashList(); }
   if(tab==='chat') { loadChatUnreadCounts(); }
@@ -5771,7 +5777,44 @@ function openPhotoViewer(key, evt) {
 
 
 
-// ── Driver Notes from Completed Tasks ──
+// ── Task Search / Filter ──
+function filterTasks(listType, query) {
+  var listId = listType === 'open' ? 'admin-task-list' : 'admin-done-list';
+  var list = document.getElementById(listId);
+  if (!list) return;
+  var q = (query || '').toLowerCase().trim();
+  var cards = list.querySelectorAll('.atask');
+  var shown = 0;
+
+  cards.forEach(function(card) {
+    if (!q) { card.style.display = ''; shown++; return; }
+    // Search in: name, address, company, REF, driver name, container
+    var text = (card.textContent || '').toLowerCase();
+    var matches = text.includes(q);
+    card.style.display = matches ? '' : 'none';
+    if (matches) shown++;
+  });
+
+  // Show/hide no-results message
+  var msgId = listType === 'open' ? 'search-open-msg' : 'search-done-msg';
+  var existing = document.getElementById(msgId);
+  if (q && shown === 0) {
+    if (!existing) {
+      var msg = document.createElement('p');
+      msg.id = msgId;
+      msg.style.cssText = 'color:#94a3b8;font-size:13px;text-align:center;padding:20px;';
+      msg.textContent = 'Engar beiðnir fundust fyrir "' + query + '"';
+      list.appendChild(msg);
+    } else {
+      existing.textContent = 'Engar beiðnir fundust fyrir "' + query + '"';
+      existing.style.display = '';
+    }
+  } else if (existing) {
+    existing.style.display = 'none';
+  }
+}
+
+
 function loadDriverNotes() {
   var list = document.getElementById('admin-notes-list');
   if (!list) return;

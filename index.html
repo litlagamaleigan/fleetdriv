@@ -1271,6 +1271,17 @@ body.admin-active #admin-sections .admin-section.active{display:block !important
             <button type="button" id="a-phone-save-btn" onclick="savePhoneToCustomer()" style="display:none;padding:8px 12px;background:#e8620a;border:none;border-radius:8px;color:#fff;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;">💾 Vista á viðskiptavin</button>
           </div>
         </div>
+        <!-- Kennitala og email — sjást alltaf, fylla sig ef þekktur viðskiptavinur -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+          <div>
+            <label class="af-label">Kennitala viðskiptavinar</label>
+            <input class="af-input" id="a-company-kt" type="text" placeholder="0000000000" maxlength="11"/>
+          </div>
+          <div>
+            <label class="af-label">Email viðskiptavinar</label>
+            <input class="af-input" id="a-company-email" type="email" placeholder="netfang@fyrirtaeki.is"/>
+          </div>
+        </div>
         <div class="af-full">
           <label class="af-label">Athugasemd til ökumanns</label>
           <textarea class="af-ta" id="a-note" rows="2" placeholder="Sérstæðar leiðbeiningar..."></textarea>
@@ -5225,7 +5236,8 @@ function completeTask(){
     okutaeki:(window._currentUser&&window._currentUser.vehicle)||'—',
     tegund:curTask?(typeMap[curTask.type]||{name:'—'}).name:'—',
     fyrirtaeki:company,
-    kennitala:curTask&&curTask.companyKt?curTask.companyKt:'',
+    kennitala:(curTask&&curTask.companyKt)||window._selectedCompanyKt||'',
+    email:(curTask&&curTask.companyEmail)||window._selectedCompanyEmail||'',
     gamanumer:containerNum,
     koma_efni:dKomaEfni||'',
     koma_uppruni:dKomaUppruni||'',
@@ -5321,6 +5333,12 @@ function adminTab(tab,el){
 function createTask(){
   const addr=document.getElementById('a-addr').value.trim();
   const aCompany=document.getElementById('a-company').value.trim();
+
+  // Read kt and email from form fields (may be typed manually for unknown customers)
+  var formKt    = (document.getElementById('a-company-kt')    ||{value:''}).value.trim();
+  var formEmail = (document.getElementById('a-company-email') ||{value:''}).value.trim();
+  window._selectedCompanyKt    = window._selectedCompanyKt    || formKt;
+  window._selectedCompanyEmail = window._selectedCompanyEmail || formEmail;
   const adminContainerNum=document.getElementById('a-container-num')?document.getElementById('a-container-num').value.trim():'';
   window._selectedCompanyKt=window._selectedCompanyKt||'';
   window._selectedCompanyPhone=window._selectedCompanyPhone||'';
@@ -5389,13 +5407,15 @@ function createTask(){
   document.getElementById('a-company').value='';
   document.getElementById('a-skipt-tekinn').value='';
   document.getElementById('a-skipt-afhentur').value='';
-  window._selectedCompanyKt=''; window._selectedCompanyPhone='';
+  window._selectedCompanyKt=''; window._selectedCompanyPhone=''; window._selectedCompanyEmail='';
   var acn=document.getElementById('a-container-num');if(acn)acn.value='';
   var acp=document.getElementById('a-contact-phone');if(acp)acp.value='';
   var phoneHint=document.getElementById('a-phone-hint');if(phoneHint)phoneHint.style.display='none';
   var phoneSaveBtn=document.getElementById('a-phone-save-btn');if(phoneSaveBtn)phoneSaveBtn.style.display='none';
   var komaEfniEl=document.getElementById('a-koma-efni');if(komaEfniEl)komaEfniEl.value='';
   var komaUpprEl=document.getElementById('a-koma-uppruni');if(komaUpprEl)komaUpprEl.value='';
+  var ktEl=document.getElementById('a-company-kt');if(ktEl)ktEl.value='';
+  var emailEl=document.getElementById('a-company-email');if(emailEl)emailEl.value='';
   window._selectedCompanyId='';
   var adate=document.getElementById('a-date');if(adate)adate.value=new Date().toISOString().split('T')[0];
   placesAutocomplete=null; initAddressAutocomplete();
@@ -5415,6 +5435,28 @@ function createTask(){
 
   // Save to Firebase
   var driverUname = (function(){ var sel=document.getElementById('a-driver'); var uid=sel?sel.value:''; var u=getUsers().find(function(x){return x.id===uid;}); return u?u.username:uid; })();
+  // Auto-save new customer if not already in list
+  if (aCompany && window._selectedCompanyKt) {
+    var customers = getCustomers();
+    var exists = customers.find(function(c) {
+      return c.name.toLowerCase() === aCompany.toLowerCase();
+    });
+    if (!exists) {
+      var newCust = {
+        id: 'C' + Date.now(),
+        name: aCompany,
+        kt: window._selectedCompanyKt,
+        email: window._selectedCompanyEmail || '',
+        phone: (document.getElementById('a-contact-phone')||{value:''}).value.trim() || '',
+        type: 'nosub',
+        note: '', containers: []
+      };
+      customers.push(newCust);
+      saveCustomers(customers);
+      showToast('✓ ' + aCompany + ' vistaður í viðskiptavinalista');
+    }
+  }
+
   fbSaveTask({
     title: taskTitle, type: type, size: size,
     address: addr, mapsAddr: maps, time: time,
@@ -5422,6 +5464,7 @@ function createTask(){
     driverName: driver.name, driverInitials: driver.initials,
     company: aCompany,
     companyKt: window._selectedCompanyKt||'',
+    companyEmail: window._selectedCompanyEmail||'',
     companyPhone: (document.getElementById('a-contact-phone')?document.getElementById('a-contact-phone').value.trim():'')||window._selectedCompanyPhone||'',
     containerNum: adminContainerNum, note: note,
     skiptTekinn: aSkiptTekinn, skiptAfhentur: aSkiptAfhentur,
@@ -5715,6 +5758,7 @@ function sendToSheets(data){
     Tima_km_total:data.tima_km_total||'',
     Fyrirtaeki:data.fyrirtaeki||'',
     Kennitala:data.kennitala||'',
+    Email:data.email||'',
     Gamanumer:data.gamanumer||'',
     Koma_efni:data.koma_efni||'',
     Koma_uppruni:data.koma_uppruni||'',
@@ -7153,14 +7197,22 @@ function pickCompanyObj(c) {
     document.getElementById('company-dd').style.display = 'none';
     window._selectedCompanyKt = '';
     window._selectedCompanyPhone = '';
+    window._selectedCompanyEmail = '';
     return;
   }
   document.getElementById('a-company').value = c.name;
   document.getElementById('company-dd').style.display = 'none';
   companyDDIndex = -1;
-  window._selectedCompanyKt = c.kt || '';
+  window._selectedCompanyKt    = c.kt    || '';
   window._selectedCompanyPhone = c.phone || '';
-  window._selectedCompanyId = c.id || '';
+  window._selectedCompanyEmail = c.email || '';
+  window._selectedCompanyId    = c.id    || '';
+
+  // Fill kt and email fields
+  var ktInput = document.getElementById('a-company-kt');
+  var emailInput = document.getElementById('a-company-email');
+  if (ktInput) ktInput.value = c.kt || '';
+  if (emailInput) emailInput.value = c.email || '';
 
   var phoneInput = document.getElementById('a-contact-phone');
   var phoneHint = document.getElementById('a-phone-hint');

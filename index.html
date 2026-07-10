@@ -5406,6 +5406,11 @@ function createTask(){
     </div>`;
   list.insertBefore(div,list.firstChild);
 
+  // Save kt/email/phone to locals BEFORE form reset clears _selectedCompany* vars
+  var _ktToSave    = window._selectedCompanyKt    || formKt;
+  var _emailToSave = window._selectedCompanyEmail || formEmail;
+  var _phoneToSave = (document.getElementById('a-contact-phone')||{value:''}).value.trim() || window._selectedCompanyPhone || '';
+
   // Clear form
   document.getElementById('a-addr').value='';
   document.getElementById('a-company').value='';
@@ -5440,7 +5445,7 @@ function createTask(){
   // Save to Firebase
   var driverUname = (function(){ var sel=document.getElementById('a-driver'); var uid=sel?sel.value:''; var u=getUsers().find(function(x){return x.id===uid;}); return u?u.username:uid; })();
   // Auto-save new customer if not already in list
-  if (aCompany && window._selectedCompanyKt) {
+  if (aCompany && _ktToSave) {
     var customers = getCustomers();
     var exists = customers.find(function(c) {
       return c.name.toLowerCase() === aCompany.toLowerCase();
@@ -5449,9 +5454,9 @@ function createTask(){
       var newCust = {
         id: 'C' + Date.now(),
         name: aCompany,
-        kt: window._selectedCompanyKt,
-        email: window._selectedCompanyEmail || '',
-        phone: (document.getElementById('a-contact-phone')||{value:''}).value.trim() || '',
+        kt: _ktToSave,
+        email: _emailToSave || '',
+        phone: _phoneToSave || '',
         type: 'nosub',
         note: '', containers: []
       };
@@ -5761,9 +5766,8 @@ function sendToSheets(data){
     Tima_km_endi:data.tima_km_endi||'',
     Tima_km_total:data.tima_km_total||'',
     Fyrirtaeki:data.fyrirtaeki||'',
-    Kennitala:data.kennitala||'',
+    kennitala:data.kennitala||'',
     Email:data.email||'',
-    Gamanumer:data.gamanumer||'',
     Koma_efni:data.koma_efni||'',
     Koma_uppruni:data.koma_uppruni||'',
     Myndir:data.myndir||''

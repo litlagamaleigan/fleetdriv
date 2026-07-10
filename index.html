@@ -4609,7 +4609,10 @@ function fbAddDriverTask(data) {
       type: type, mapsAddr: data.mapsAddr || data.address || '',
       km: '—', taskKey: null, cardEl: card,
       company: data.company || '', fbId: data.fbId,
-      skiptTekinn: data.skiptTekinn || '', skiptAfhentur: data.skiptAfhentur || ''
+      companyKt: data.companyKt || '',
+      companyEmail: data.companyEmail || '',
+      skiptTekinn: data.skiptTekinn || '', skiptAfhentur: data.skiptAfhentur || '',
+      komaEfni: data.komaEfni || '', komaUppruni: data.komaUppruni || ''
     };
     document.getElementById('t-title').textContent = curTask.title;
     document.getElementById('t-sub').textContent = curTask.sub;

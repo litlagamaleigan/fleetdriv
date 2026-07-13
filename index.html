@@ -1085,6 +1085,7 @@ body.admin-active #admin-sections .admin-section.active{display:block !important
                 <option value="farslin">Færsla á gám innan svæðis</option>
                 <option value="tima">Tímakaups beiðni</option>
                 <option value="koma">Koma með efni</option>
+                <option value="loskomur">Losa og koma með efni</option>
               </select>
             </div>
           </div>
@@ -4412,8 +4413,8 @@ function fbAddToOpenList(data) {
     + '<div class="atask-tags">'
     + (size ? '<span class="atask-tag" data-field="size">' + size + '</span>' : '')
     + (disposal && disposal !== '—' ? '<span class="atask-tag blue" data-field="disposal">→ ' + disposal + '</span>' : '')
-    + (data.type==='koma' && data.komaEfni ? '<span class="atask-tag" style="background:#f0fdf4;color:#15803d;">📦 ' + data.komaEfni + '</span>' : '')
-    + (data.type==='koma' && data.komaUppruni ? '<span class="atask-tag" style="background:#eff6ff;color:#1e40af;">📍 Sótt: ' + data.komaUppruni + '</span>' : '')
+    + ((data.type==='koma'||data.type==='loskomur') && data.komaEfni ? '<span class="atask-tag" style="background:#f0fdf4;color:#15803d;">📦 ' + data.komaEfni + '</span>' : '')
+    + ((data.type==='koma'||data.type==='loskomur') && data.komaUppruni ? '<span class="atask-tag" style="background:#eff6ff;color:#1e40af;">📍 Sótt: ' + data.komaUppruni + '</span>' : '')
     + (data.company && data.company !== '—' ? '<span class="atask-tag">🏢 ' + data.company + '</span>' : '')
     + '</div>'
     + '<div class="atask-foot">'
@@ -4470,8 +4471,8 @@ function fbAddToDoneList(data) {
     + (data.kg ? '<span class="atask-tag">' + data.kg + ' kg</span>' : '')
     + (data.category ? '<span class="atask-tag">' + data.category + '</span>' : '')
     + (data.disposal && data.disposal!=='—' ? '<span class="atask-tag blue">→ ' + data.disposal + '</span>' : '')
-    + (data.type==='koma' && data.komaEfni ? '<span class="atask-tag" style="background:#f0fdf4;color:#15803d;">📦 ' + data.komaEfni + '</span>' : '')
-    + (data.type==='koma' && data.komaUppruni ? '<span class="atask-tag" style="background:#eff6ff;color:#1e40af;">📍 Sótt: ' + data.komaUppruni + '</span>' : '')
+    + ((data.type==='koma'||data.type==='loskomur') && data.komaEfni ? '<span class="atask-tag" style="background:#f0fdf4;color:#15803d;">📦 ' + data.komaEfni + '</span>' : '')
+    + ((data.type==='koma'||data.type==='loskomur') && data.komaUppruni ? '<span class="atask-tag" style="background:#eff6ff;color:#1e40af;">📍 Sótt: ' + data.komaUppruni + '</span>' : '')
     + (data.company && data.company!=='—' ? '<span class="atask-tag">🏢 ' + data.company + '</span>' : '')
     + (data.containerNum && data.containerNum!=='—' ? '<span class="atask-tag">📦 ' + data.containerNum + '</span>' : '')
     + '<span class="photo-tags">' + buildPhotoTagsHtml(data) + '</span>'
@@ -4635,8 +4636,8 @@ function fbAddDriverTask(data) {
     var dg=document.getElementById('d-disposal-group');if(dg)dg.style.display=(_t==='ut'||_t==='tima'||_t==='farslin'||_t==='farsl'||_t==='koma')?'none':'block';
     var kgrf=document.getElementById('d-kg-row');if(kgrf)kgrf.style.display=(_t==='ut'||_t==='koma')?'none':'flex';
     var cgdf=document.getElementById('d-category-group');if(cgdf)cgdf.style.display=(_t==='ut'||_t==='koma')?'none':'block';
-    var komagf=document.getElementById('d-koma-group');if(komagf)komagf.style.display=_t==='koma'?'block':'none';
-    if(_t==='koma'){
+    var komagf=document.getElementById('d-koma-group');if(komagf)komagf.style.display=(_t==='koma'||_t==='loskomur')?'block':'none';
+    if(_t==='koma'||_t==='loskomur'){
       var dke=document.getElementById('d-koma-efni');if(dke)dke.value=curTask.komaEfni||'';
       var dku=document.getElementById('d-koma-uppruni');if(dku)dku.value=curTask.komaUppruni||'';
     }
@@ -4801,7 +4802,8 @@ const typeMap = {
   farsl:  {name:'Færsla á gám',            badgeClass:'b-fa',   numClass:'num-farsl',  adminBadge:'ap-fa'},
   farslin:{name:'Færsla á gám innan svæðis',badgeClass:'b-fai',  numClass:'num-farslin',adminBadge:'ap-fai'},
   tima: {name:'Tímakaups beiðni',  badgeClass:'b-ti',  numClass:'num-tima', adminBadge:'ap-ti'},
-  koma: {name:'Koma með efni',      badgeClass:'b-ko',  numClass:'num-koma', adminBadge:'ap-ko'}
+  koma:    {name:'Koma með efni',         badgeClass:'b-ko',  numClass:'num-koma',    adminBadge:'ap-ko'},
+  loskomur:{name:'Losa og koma með efni', badgeClass:'b-lk',  numClass:'num-loskomur',adminBadge:'ap-lk'}
 };
 
 const driverMap = {
@@ -5025,7 +5027,7 @@ function openTask(taskKey){
   const dg=document.getElementById('d-disposal-group');if(dg)dg.style.display=(_type==='ut'||_type==='tima'||_type==='farslin'||_type==='farsl'||_type==='koma')?'none':'block';
   var kgr=document.getElementById('d-kg-row');if(kgr)kgr.style.display=(_type==='ut'||_type==='koma')?'none':'flex';
   var cgd=document.getElementById('d-category-group');if(cgd)cgd.style.display=(_type==='ut'||_type==='koma')?'none':'block';
-  var komagr=document.getElementById('d-koma-group');if(komagr)komagr.style.display=_type==='koma'?'block':'none';
+  var komagr=document.getElementById('d-koma-group');if(komagr)komagr.style.display=(_type==='koma'||_type==='loskomur')?'block':'none';
   var dcg=document.getElementById('d-company-group');if(dcg)dcg.style.display=_type==='ut'?'none':'block';
   var dng=document.getElementById('d-note-group');if(dng)dng.style.display='block';
   var afg=document.getElementById('d-afhending-group');if(afg)afg.style.display=_type==='ut'?'block':'none';
@@ -5055,6 +5057,7 @@ function openAdminTask(title,sub,type,mapsAddr,km){
   const dc3=document.getElementById('d-container');if(dc3)dc3.value='';
   var _type2 = curTask?curTask.type:'';
   const dg2=document.getElementById('d-disposal-group');if(dg2)dg2.style.display=(_type2==='ut'||_type2==='tima'||_type2==='farslin'||_type2==='farsl'||_type2==='koma')?'none':'block';
+  var komagr2=document.getElementById('d-koma-group');if(komagr2)komagr2.style.display=(_type2==='koma'||_type2==='loskomur')?'block':'none';
   var kgr=document.getElementById('d-kg-row');if(kgr)kgr.style.display=_type2==='ut'?'none':'flex';
   var cgd=document.getElementById('d-category-group');if(cgd)cgd.style.display=_type2==='ut'?'none':'block';
   var dcg=document.getElementById('d-company-group');if(dcg)dcg.style.display=_type2==='ut'?'none':'block';
@@ -5085,6 +5088,7 @@ function completeTask(){
   const isTima=curTask&&curTask.type==='tima';
   const isUtkeysla=curTask&&curTask.type==='ut';
   const isKoma=curTask&&curTask.type==='koma';
+  const isLoskomur=curTask&&curTask.type==='loskomur';
   const kg=isKoma?'—':document.getElementById('d-kg').value||'—';
   const disposal=(isUtkeysla||isTima||isKoma)?'—':document.getElementById('d-disposal').value;
   const dKomaEfni    = (document.getElementById('d-koma-efni')    ||{value:''}).value.trim() || (curTask&&curTask.komaEfni   ||'');
@@ -5477,8 +5481,8 @@ function createTask(){
     companyPhone: (document.getElementById('a-contact-phone')?document.getElementById('a-contact-phone').value.trim():'')||window._selectedCompanyPhone||'',
     containerNum: adminContainerNum, note: note,
     skiptTekinn: aSkiptTekinn, skiptAfhentur: aSkiptAfhentur,
-    komaEfni: type==='koma' ? (aKomaEfni||'') : '',
-    komaUppruni: type==='koma' ? (aKomaUppruni||'') : '',
+    komaEfni: (type==='koma'||type==='loskomur') ? (aKomaEfni||'') : '',
+    komaUppruni: (type==='koma'||type==='loskomur') ? (aKomaUppruni||'') : '',
     disposal: (type==='ut'||type==='tima'||type==='farslin'||type==='farsl'||type==='koma') ? '—' : document.getElementById('a-disposal').value,
     category: document.getElementById('a-category')?document.getElementById('a-category').value:''
   });
@@ -5977,8 +5981,8 @@ function buildDoneCard(data) {
     + (data.kg && data.kg!=='—' ? '<span class="atask-tag">' + data.kg + ' kg</span>' : '')
     + (data.category ? '<span class="atask-tag">' + data.category + '</span>' : '')
     + (data.disposal && data.disposal!=='—' ? '<span class="atask-tag blue">→ ' + data.disposal + '</span>' : '')
-    + (data.type==='koma' && data.komaEfni ? '<span class="atask-tag" style="background:#f0fdf4;color:#15803d;">📦 ' + data.komaEfni + '</span>' : '')
-    + (data.type==='koma' && data.komaUppruni ? '<span class="atask-tag" style="background:#eff6ff;color:#1e40af;">📍 Sótt: ' + data.komaUppruni + '</span>' : '')
+    + ((data.type==='koma'||data.type==='loskomur') && data.komaEfni ? '<span class="atask-tag" style="background:#f0fdf4;color:#15803d;">📦 ' + data.komaEfni + '</span>' : '')
+    + ((data.type==='koma'||data.type==='loskomur') && data.komaUppruni ? '<span class="atask-tag" style="background:#eff6ff;color:#1e40af;">📍 Sótt: ' + data.komaUppruni + '</span>' : '')
     + (data.company && data.company!=='—' ? '<span class="atask-tag">🏢 ' + data.company + '</span>' : '')
     + (data.containerNum && data.containerNum!=='—' ? '<span class="atask-tag">📦 ' + data.containerNum + '</span>' : '')
     + '<span class="photo-tags">' + buildPhotoTagsHtml(data) + '</span>'
@@ -7822,6 +7826,7 @@ document.addEventListener('click', function(e) {
 
 function toggleAdminByType(type) {
   var isKoma    = type === 'koma';
+  var isLoskomur = type === 'loskomur';
   var noDisposal = type === 'ut' || type === 'tima' || type === 'farslin' || type === 'farsl' || isKoma;
   var isTima     = type === 'tima';
   var isSkapt    = type === 'skipt';
@@ -7834,7 +7839,7 @@ function toggleAdminByType(type) {
   var contRow   = document.getElementById('a-container-row');
   if (row)      row.style.display      = noDisposal ? 'none' : '';
   if (sizeWrap) sizeWrap.style.display = (isTima || isKoma) ? 'none' : '';
-  if (komaWrap) komaWrap.style.display = isKoma ? '' : 'none';
+  if (komaWrap) komaWrap.style.display = (isKoma || isLoskomur) ? '' : 'none';
   if (catWrap)  catWrap.style.display  = (isTima || isUt || isKoma) ? 'none' : '';
   if (skiptRow) skiptRow.style.display = isSkapt ? '' : 'none';
   if (contRow)  contRow.style.display  = (isSkapt || isKoma) ? 'none' : '';
@@ -7981,6 +7986,7 @@ function showToast(msg){
           <option value="tima">Tímaverkefni</option>
           <option value="farslin">Farsíl</option>
           <option value="koma">Koma með efni</option>
+          <option value="loskomur">Losa og koma með efni</option>
         </select>
       </div>
       <div>

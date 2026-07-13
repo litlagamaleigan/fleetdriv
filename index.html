@@ -4641,7 +4641,7 @@ function fbAddDriverTask(data) {
       var dku=document.getElementById('d-koma-uppruni');if(dku)dku.value=curTask.komaUppruni||'';
     }
     var dcgf=document.getElementById('d-company-group');if(dcgf)dcgf.style.display=_t==='ut'?'none':'block';
-    var dngf=document.getElementById('d-note-group');if(dngf)dngf.style.display=_t==='ut'?'none':'block';
+    var dngf=document.getElementById('d-note-group');if(dngf)dngf.style.display='block';
     var afgf=document.getElementById('d-afhending-group');if(afgf)afgf.style.display=_t==='ut'?'block':'none';
     var phf=document.getElementById('d-contact-phone-display');if(phf)phf.textContent=data.companyPhone||data.phone||'—';
     if(_t==='ut'){var adf=document.getElementById('d-afhending-addr-display');if(adf)adf.textContent=data.address||curTask.sub||'—';}
@@ -5027,7 +5027,7 @@ function openTask(taskKey){
   var cgd=document.getElementById('d-category-group');if(cgd)cgd.style.display=(_type==='ut'||_type==='koma')?'none':'block';
   var komagr=document.getElementById('d-koma-group');if(komagr)komagr.style.display=_type==='koma'?'block':'none';
   var dcg=document.getElementById('d-company-group');if(dcg)dcg.style.display=_type==='ut'?'none':'block';
-  var dng=document.getElementById('d-note-group');if(dng)dng.style.display=_type==='ut'?'none':'block';
+  var dng=document.getElementById('d-note-group');if(dng)dng.style.display='block';
   var afg=document.getElementById('d-afhending-group');if(afg)afg.style.display=_type==='ut'?'block':'none';
   var ph=document.getElementById('d-contact-phone-display');if(ph)ph.textContent=(curTask&&(curTask.companyPhone||curTask.phone))||'—';
   if(_type==='ut'){var ad=document.getElementById('d-afhending-addr-display');if(ad)ad.textContent=curTask&&curTask.sub?curTask.sub:'—';}
@@ -5058,7 +5058,7 @@ function openAdminTask(title,sub,type,mapsAddr,km){
   var kgr=document.getElementById('d-kg-row');if(kgr)kgr.style.display=_type2==='ut'?'none':'flex';
   var cgd=document.getElementById('d-category-group');if(cgd)cgd.style.display=_type2==='ut'?'none':'block';
   var dcg=document.getElementById('d-company-group');if(dcg)dcg.style.display=_type2==='ut'?'none':'block';
-  var dng=document.getElementById('d-note-group');if(dng)dng.style.display=_type2==='ut'?'none':'block';
+  var dng=document.getElementById('d-note-group');if(dng)dng.style.display='block';
   var afg=document.getElementById('d-afhending-group');if(afg)afg.style.display=_type2==='ut'?'block':'none';
   var ph=document.getElementById('d-contact-phone-display');if(ph)ph.textContent=(curTask&&(curTask.companyPhone||curTask.phone))||'—';
   if(_type2==='ut'){var ad=document.getElementById('d-afhending-addr-display');if(ad)ad.textContent=curTask&&curTask.sub?curTask.sub:'—';}

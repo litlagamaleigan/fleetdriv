@@ -5300,13 +5300,12 @@ function completeTask(){
     var _dateStr = _now.getDate() + '.' + (_now.getMonth()+1) + '.' + _now.getFullYear();
   sendToSheets({
     dagsetning: _dateStr,
-    timi: "'" + timeStr,
+    tegund:curTask?(typeMap[curTask.type]||{name:'—'}).name:'—',
+    efnisflokkur:category,
     tilvísun:ref,
     okumadur:(window._currentUser||{name:'Jón Sigurðsson'}).name,
     okutaeki:(window._currentUser&&window._currentUser.vehicle)||'—',
-    tegund:curTask?(typeMap[curTask.type]||{name:'—'}).name:'—',
     heimilisfang:curTask?curTask.sub:'—',
-    efnisflokkur:category,
     losunarstaður:disposal,
     þyngd_kg:kg,
     myndir:photoTaken?'Já':'Nei',
@@ -5320,11 +5319,11 @@ function completeTask(){
     skipt_tekinn:skiptTekinn,
     skipt_afhentur:skiptAfhentur,
     tima_byrjun:timaStart,
-    tima_endi:timaEnd,
     tima_klst:timaHours,
     tima_km_byrj:timaKmStart,
     tima_km_endi:timaKmEnd,
-    tima_km_total:timaKmTotal
+    tima_km_total:timaKmTotal,
+    timi:"'" + timeStr
   });
 
   const adminDone=document.getElementById('admin-js-done');
@@ -5845,42 +5844,51 @@ const SHEETS_URL=SHEETDB_URL;
 function sendToSheets(data){
   const payload={data:[{
     Dagsetning:data.dagsetning||'',
-    Timi:data.timi||'',
+    Tegund:data.tegund||'',
+    Efnisflokkur:data.efnisflokkur||'',
     Tilvísun:data.tilvísun||'',
     Okumadur:data.okumadur||'',
     Okutaeki:data.okutaeki||'',
-    Tegund:data.tegund||'',
     Heimilisfang:data.heimilisfang||'',
-    Efnisflokkur:data.efnisflokkur||'',
     Losunarstaður:data.losunarstaður||'',
     Þyngd_kg:String(data.þyngd_kg||''),
+    Myndir:data.myndir||'',
     Gamanumer:data.gamanumer||'',
-    Skipt_tekinn:data.skipt_tekinn||'',
-    Skipt_afhentur:data.skipt_afhentur||'',
-    Tima_byrjun:data.tima_byrjun||'',
-    Tima_endi:data.tima_endi||'',
-    Tima_klst:data.tima_klst||'',
-    Tima_km_byrj:data.tima_km_byrj||'',
-    Tima_km_endi:data.tima_km_endi||'',
-    Tima_km_total:data.tima_km_total||'',
     Fyrirtaeki:data.fyrirtaeki||'',
     kennitala:data.kennitala||'',
     Email:data.email||'',
     Koma_efni:data.koma_efni||'',
     Koma_uppruni:data.koma_uppruni||'',
     Tæki:data.taeki||'',
-    Myndir:data.myndir||''
+    Skipt_tekinn:data.skipt_tekinn||'',
+    Skipt_afhentur:data.skipt_afhentur||'',
+    Tima_byrjun:data.tima_byrjun||'',
+    Tima_klst:data.tima_klst||'',
+    Tima_km_byrj:data.tima_km_byrj||'',
+    Tima_km_endi:data.tima_km_endi||'',
+    Tima_km_total:data.tima_km_total||'',
+    Timi:data.timi||''
   }]};
   fetch(SHEETDB_URL,{
     method:'POST',
     headers:{'Content-Type':'application/json','Accept':'application/json'},
     body:JSON.stringify(payload)
   }).then(r=>{
-    if(!r.ok) throw new Error('HTTP '+r.status);
+    if(!r.ok){
+      return r.text().then(function(t){ throw new Error('HTTP '+r.status+': '+t.substring(0,100)); });
+    }
     return r.json();
   }).then(res=>{
-    if(res.created&&res.created>0) showToast('✓ Skráð í Google Sheets!');
-  }).catch(err=>console.error('SheetDB villa:',err));
+    if(res.created&&res.created>0){
+      showToast('✓ Skráð í Google Sheets!');
+    } else {
+      console.warn('SheetDB svar:', JSON.stringify(res));
+      showToast('⚠ Sheets: '+(res.error||JSON.stringify(res)).substring(0,60));
+    }
+  }).catch(err=>{
+    console.error('SheetDB villa:',err);
+    showToast('⚠ Sheets villa: '+err.message.substring(0,80));
+  });
 }
 
 function testSheetUrl(){

@@ -15,12 +15,28 @@ body.admin-active #dsk-body{display:none !important;}
 body.admin-active #dsk-mobile{display:block !important;}
 body.admin-active #admin-sections .admin-section{display:none;}
 body.admin-active #admin-sections .admin-section.active{display:block !important;}
+@media(min-width:600px){
+  .hdr-left .name{font-size:20px;}
+  .hdr-left .sub{font-size:14px;}
+  .duty-pill span{font-size:15px;}
+  .duty-pill{padding:9px 18px;}
+  .f-label{font-size:14px;}
+  .f-input,.f-select,.f-textarea{font-size:18px;padding:16px 18px;}
+  .form-title{font-size:14px;}
+  .task-card{margin:8px 16px;padding:20px;}
+  .tc-num{width:48px;height:48px;font-size:18px;margin-right:14px;}
+  .nav-item svg{width:32px;height:32px;}
+  .nav-item span{font-size:14px;}
+  .bottom-nav{padding:16px 0 22px;}
+  .driver-body{padding-bottom:20px;}
+  .driver-av-lg{width:56px;height:56px;font-size:20px;}
+}
 
 /* ── PHONE FRAME ── */
-.phone{width:390px;background:#0a0f1a;border-radius:48px;overflow:hidden;border:10px solid #141b28;position:relative;flex-shrink:0;box-shadow:0 24px 64px rgba(0,0,0,0.35);}
+.phone{width:100%;max-width:600px;margin:0 auto;background:#0a0f1a;position:relative;flex-shrink:0;}
 .status-bar{background:#0a0f1a;padding:14px 28px 6px;display:flex;justify-content:space-between;align-items:center;}
 .status-bar span{color:#fff;font-size:11px;font-weight:600;letter-spacing:0.3px;}
-.screen{display:none;flex-direction:column;min-height:700px;}
+.screen{display:none;flex-direction:column;min-height:100dvh;}
 .screen.active{display:flex;}
 
 /* ── LOGIN ── */
@@ -44,32 +60,32 @@ body.admin-active #admin-sections .admin-section.active{display:block !important
 .btn-forgot{background:none;border:none;color:#3d5068;font-size:12px;cursor:pointer;text-align:center;}
 
 /* ── DRIVER APP HEADER ── */
-.app-hdr{background:#0f172a;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #e2e8f0;flex-shrink:0;}
+.app-hdr{background:#0f172a;padding:16px 18px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
 .hdr-left{display:flex;align-items:center;gap:10px;}
-.avatar{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:13px;}
-.hdr-left .name{color:#f8fafc;font-size:14px;font-weight:700;}
-.hdr-left .sub{color:#94a3b8;font-size:11px;}
-.duty-pill{display:flex;align-items:center;gap:6px;background:#dcfce7;border:1.5px solid #16a34a;border-radius:20px;padding:5px 13px;}
+.avatar{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:15px;}
+.hdr-left .name{color:#f8fafc;font-size:17px;font-weight:700;}
+.hdr-left .sub{color:#94a3b8;font-size:13px;}
+.duty-pill{display:flex;align-items:center;gap:6px;background:#dcfce7;border:1.5px solid #16a34a;border-radius:20px;padding:7px 16px;}
 .duty-dot{width:7px;height:7px;background:#16a34a;border-radius:50%;animation:pulse 2s infinite;}
 @keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.4;}}
-.duty-pill span{color:#16a34a;font-size:11px;font-weight:700;}
+.duty-pill span{color:#16a34a;font-size:13px;font-weight:700;}
 
 /* ── DRIVER BODY ── */
-.driver-body{background:#f8fafc;flex:1;overflow-y:auto;padding-bottom:76px;}
+.driver-body{background:#f8fafc;flex:1;overflow-y:auto;padding-bottom:16px;}
 
 /* Stats */
-.stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:12px;}
-.stat-box{background:#fff;border-radius:14px;padding:14px 10px;text-align:center;border:1px solid #e2e8f0;}
-.stat-num{color:#e8620a;font-size:26px;font-weight:800;line-height:1;}
-.stat-lbl{color:#94a3b8;font-size:10px;font-weight:700;margin-top:5px;text-transform:uppercase;letter-spacing:0.4px;}
+.stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding:14px;}
+.stat-box{background:#fff;border-radius:14px;padding:18px 10px;text-align:center;border:1px solid #e2e8f0;}
+.stat-num{color:#e8620a;font-size:30px;font-weight:800;line-height:1;}
+.stat-lbl{color:#94a3b8;font-size:12px;font-weight:700;margin-top:6px;text-transform:uppercase;letter-spacing:0.4px;}
 
 /* Route progress bar */
 .route-banner{margin:0 12px 10px;background:#fff;border-radius:14px;padding:13px 14px;border:1px solid #e2e8f0;display:flex;align-items:center;gap:12px;}
 .route-icon-wrap{width:36px;height:36px;background:#dcfce7;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
 .route-icon-wrap svg{width:18px;height:18px;fill:#16a34a;}
 .route-text{flex:1;}
-.route-text .rt{color:#0f172a;font-size:13px;font-weight:700;}
-.route-text .rs{color:#64748b;font-size:11px;margin-top:2px;}
+.route-text .rt{color:#0f172a;font-size:15px;font-weight:700;}
+.route-text .rs{color:#64748b;font-size:13px;margin-top:2px;}
 .route-pct-wrap{display:flex;flex-direction:column;align-items:flex-end;gap:5px;}
 .route-pct-num{color:#16a34a;font-size:13px;font-weight:800;}
 .prog-track{width:64px;height:5px;background:#e2e8f0;border-radius:3px;}
@@ -77,21 +93,21 @@ body.admin-active #admin-sections .admin-section.active{display:block !important
 
 /* Section header */
 .sec-hdr{display:flex;align-items:center;justify-content:space-between;padding:10px 14px 6px;}
-.sec-hdr .sl{color:#94a3b8;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.7px;}
+.sec-hdr .sl{color:#94a3b8;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.7px;}
 .sec-hdr .sr{color:#94a3b8;font-size:11px;}
 
 /* Task cards */
-.task-card{margin:4px 12px;background:#fff;border-radius:16px;padding:13px;border:1px solid #e2e8f0;cursor:pointer;transition:box-shadow 0.15s;}
+.task-card{margin:6px 14px;background:#fff;border-radius:16px;padding:16px;border:1px solid #e2e8f0;cursor:pointer;transition:box-shadow 0.15s;}
 .task-card:hover{box-shadow:0 2px 8px rgba(0,0,0,0.07);}
 .task-card:active{background:#fff7ed;}
 .tc-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:9px;}
-.tc-num{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;flex-shrink:0;margin-right:8px;}
+.tc-num{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800;flex-shrink:0;margin-right:12px;}
 .num-ut{background:#dcfce7;color:#16a34a;}
 .num-lostu{background:#ede9fe;color:#7c3aed;}
 .num-losa{background:#dbeafe;color:#1d4ed8;}
 .num-toma{background:#ffedd5;color:#c2410c;}
-.tc-info .tc-name{color:#0f172a;font-size:13px;font-weight:700;}
-.tc-info .tc-addr{color:#64748b;font-size:11px;margin-top:2px;}
+.tc-info .tc-name{color:#0f172a;font-size:16px;font-weight:700;}
+.tc-info .tc-addr{color:#64748b;font-size:13px;margin-top:4px;}
 .badge{font-size:10px;font-weight:700;padding:3px 9px;border-radius:20px;white-space:nowrap;}
 .b-ut{background:#dcfce7;color:#16a34a;}
 .b-lo{background:#dbeafe;color:#1d4ed8;}
@@ -109,23 +125,23 @@ body.admin-active #admin-sections .admin-section.active{display:block !important
 .ap-fai{background:#f0fdf4;color:#15803d;}
 .num-tima{background:#e0f2fe;color:#0369a1;}
 .ap-ti{background:#e0f2fe;color:#0369a1;}
-.tc-foot{display:flex;gap:10px;align-items:center;padding-top:9px;border-top:1px solid #f1f5f9;}
-.tc-meta{color:#64748b;font-size:11px;}
+.tc-foot{display:flex;gap:10px;align-items:center;padding-top:12px;border-top:1px solid #f1f5f9;}
+.tc-meta{color:#64748b;font-size:13px;}
 .tc-meta b{color:#475569;font-weight:700;}
-.eta-pill{margin-left:auto;background:#f1f5f9;border-radius:8px;padding:3px 9px;color:#475569;font-size:11px;font-weight:600;}
+.eta-pill{margin-left:auto;background:#f1f5f9;border-radius:10px;padding:6px 13px;color:#475569;font-size:13px;font-weight:600;}
 .onway-pill{background:#dcfce7;border:1px solid #16a34a;border-radius:8px;padding:2px 8px;color:#16a34a;font-size:10px;font-weight:700;}
 
 /* Done cards */
-.done-card{margin:4px 12px;background:#fff;border-radius:14px;padding:11px 13px;border:1px solid #e2e8f0;opacity:0.6;}
-.done-card .done-title{color:#64748b;font-size:13px;font-weight:600;}
-.done-card .done-meta{color:#94a3b8;font-size:11px;margin-top:3px;}
+.done-card{margin:6px 14px;background:#fff;border-radius:14px;padding:14px 16px;border:1px solid #e2e8f0;opacity:0.7;}
+.done-card .done-title{color:#0f172a;font-size:15px;font-weight:600;}
+.done-card .done-meta{color:#94a3b8;font-size:13px;margin-top:4px;}
 .done-tick{background:#dcfce7;border-radius:7px;padding:2px 8px;color:#16a34a;font-size:10px;font-weight:700;}
 
 /* ── TASK DETAIL ── */
-.det-hdr{background:#0f172a;padding:13px 14px;display:flex;align-items:center;gap:10px;border-bottom:1px solid #e2e8f0;flex-shrink:0;}
-.back-btn{width:34px;height:34px;background:#1e293b;border-radius:50%;display:flex;align-items:center;justify-content:center;border:none;color:#f1f5f9;font-size:18px;cursor:pointer;flex-shrink:0;}
-.det-title{color:#f8fafc;font-size:14px;font-weight:700;}
-.det-sub{color:#94a3b8;font-size:11px;}
+.det-hdr{background:#0f172a;padding:16px 18px;display:flex;align-items:center;gap:12px;flex-shrink:0;}
+.back-btn{width:44px;height:44px;background:#ffffff1a;border-radius:12px;display:flex;align-items:center;justify-content:center;border:none;color:#f1f5f9;font-size:22px;cursor:pointer;flex-shrink:0;}
+.det-title{color:#f8fafc;font-size:17px;font-weight:700;}
+.det-sub{color:#94a3b8;font-size:13px;margin-top:3px;}
 .det-body{background:#f8fafc;flex:1;overflow-y:auto;padding-bottom:84px;}
 
 /* Map block */
@@ -139,14 +155,14 @@ body.admin-active #admin-sections .admin-section.active{display:block !important
 .map-dist span{color:#1d4ed8;font-size:11px;font-weight:700;}
 
 /* Form fields */
-.form-section{padding:0 12px;}
-.form-title{color:#94a3b8;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.6px;padding:12px 0 8px;}
+.form-section{padding:0 14px 14px;}
+.form-title{color:#94a3b8;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.6px;padding:14px 0 10px;}
 .form-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;}
-.form-group{margin-bottom:10px;}
-.f-label{color:#64748b;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.4px;display:block;margin-bottom:5px;}
-.f-input{width:100%;background:#f8fafc;border:1px solid #e2e8f0;border-radius:11px;padding:10px 12px;color:#0f172a;font-size:13px;outline:none;transition:border-color 0.2s;}
+.form-group{margin-bottom:13px;}
+.f-label{color:#64748b;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.4px;display:block;margin-bottom:6px;}
+.f-input{width:100%;background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:14px 15px;color:#0f172a;font-size:16px;outline:none;transition:border-color 0.2s;}
 .f-input:focus{border-color:#e8620a;background:#fff;}
-.f-select{width:100%;background:#f8fafc;border:1px solid #e2e8f0;border-radius:11px;padding:10px 12px;color:#0f172a;font-size:13px;outline:none;appearance:none;}
+.f-select{width:100%;background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:14px 15px;color:#0f172a;font-size:16px;outline:none;appearance:none;}
 .f-select:focus{border-color:#e8620a;background:#fff;}
 .f-select option,.f-select optgroup{background:#fff;}
 .select-wrap{position:relative;}
@@ -157,10 +173,10 @@ body.admin-active #admin-sections .admin-section.active{display:block !important
 .photo-zone.done{border-color:#16a34a;background:#f0fdf4;}
 .photo-zone.done svg{fill:#16a34a;}
 .photo-zone.done span{color:#16a34a;}
-.f-textarea{width:100%;background:#f8fafc;border:1px solid #e2e8f0;border-radius:11px;padding:10px 12px;color:#0f172a;font-size:13px;outline:none;resize:none;}
+.f-textarea{width:100%;background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:14px 15px;color:#0f172a;font-size:16px;outline:none;resize:none;}
 .f-textarea:focus{border-color:#e8620a;background:#fff;}
 .action-wrap{padding:10px 12px 0;}
-.btn-complete{width:100%;padding:16px;background:#e8620a;border:none;border-radius:15px;color:#fff;font-size:15px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;letter-spacing:-0.2px;}
+.btn-complete{width:100%;padding:18px;background:#e8620a;border:none;border-radius:15px;color:#fff;font-size:17px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;letter-spacing:-0.2px;}
 .btn-complete svg{width:18px;height:18px;fill:white;}
 
 /* ── OTHER DRIVER SCREENS ── */
@@ -230,10 +246,10 @@ body.admin-active #admin-sections .admin-section.active{display:block !important
 .note-confirm{background:#dcfce7;border:1px solid #16a34a;border-radius:10px;padding:9px 14px;color:#16a34a;font-size:12px;font-weight:600;display:none;text-align:center;}
 
 /* ── BOTTOM NAV ── */
-.bottom-nav{position:absolute;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #e2e8f0;display:flex;padding:10px 0 20px;z-index:50;}
+.bottom-nav{background:#fff;border-top:1px solid #e2e8f0;display:flex;padding:12px 0 18px;flex-shrink:0;}
 .nav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;background:none;border:none;cursor:pointer;padding:0;}
-.nav-item svg{width:22px;height:22px;}
-.nav-item span{font-size:10px;font-weight:600;}
+.nav-item svg{width:28px;height:28px;}
+.nav-item span{font-size:12px;font-weight:600;}
 .nav-item.on svg{fill:#e8620a;}
 .nav-item.on span{color:#e8620a;}
 .nav-item:not(.on) svg{fill:#cbd5e1;}
@@ -311,7 +327,7 @@ body.admin-active #admin-sections .admin-section.active{display:block !important
 
 /* Driver cards in admin */
 .driver-card{background:#fff;border-radius:14px;padding:14px 16px;border:1px solid #e2e8f0;display:flex;align-items:center;gap:12px;margin-bottom:8px;}
-.driver-av-lg{width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:15px;flex-shrink:0;}
+.driver-av-lg{width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:17px;flex-shrink:0;}
 .driver-info{flex:1;}
 .driver-info p:first-child{color:#0f172a;font-size:14px;font-weight:700;}
 .driver-info p:last-child{color:#64748b;font-size:11px;margin-top:2px;}
@@ -510,6 +526,15 @@ body.admin-active #admin-sections .admin-section.active{display:block !important
 
 /* Empty state */
 .empty-state{text-align:center;padding:32px 20px;color:#3d5068;font-size:13px;}
+
+/* ── Info box in task screen ── */
+.info-box{margin:14px;background:#fff;border-radius:14px;border:1px solid #e2e8f0;overflow:hidden;}
+.info-row{display:flex;align-items:center;gap:14px;padding:14px 16px;border-bottom:1px solid #f1f5f9;}
+.info-row:last-child{border-bottom:none;}
+.info-ico{font-size:22px;flex-shrink:0;}
+.info-val{font-size:15px;color:#0f172a;font-weight:600;line-height:1.3;}
+.info-lbl-sm{font-size:11px;color:#94a3b8;margin-top:2px;}
+.maps-link-btn{background:#f1f5f9;border:none;border-radius:8px;color:#e8620a;font-size:12px;font-weight:700;padding:6px 12px;cursor:pointer;flex-shrink:0;margin-left:auto;}
 </style>
 
   <script type="module">
@@ -594,7 +619,7 @@ body.admin-active #admin-sections .admin-section.active{display:block !important
     <div class="app-hdr">
       <div class="hdr-left">
         <div class="avatar" style="background:#e8620a">JS</div>
-        <div><div class="name">Jón Sigurðsson</div><div class="sub">Bifreið #14 · GPS virkt</div></div>
+        <div><div class="name">Jón Sigurðsson</div><div class="sub">Bifreið #14</div></div>
       </div>
       <div class="duty-pill"><div class="duty-dot"></div><span>Á vakt</span></div>
     </div>
@@ -654,25 +679,32 @@ body.admin-active #admin-sections .admin-section.active{display:block !important
       <span class="badge b-ut" id="t-pill">Afhending</span>
     </div>
     <div class="det-body">
-      <div class="map-block">
-        <svg class="map-svg-bg" viewBox="0 0 360 148" xmlns="http://www.w3.org/2000/svg">
-          <rect width="360" height="148" fill="#e8edf5"/>
-          <line x1="0" y1="74" x2="360" y2="74" stroke="#cbd5e1" stroke-width="16"/>
-          <line x1="180" y1="0" x2="180" y2="148" stroke="#cbd5e1" stroke-width="10"/>
-          <line x1="40" y1="0" x2="40" y2="148" stroke="#dde3ec" stroke-width="6"/>
-          <line x1="320" y1="0" x2="320" y2="148" stroke="#dde3ec" stroke-width="6"/>
-          <line x1="0" y1="30" x2="360" y2="30" stroke="#dde3ec" stroke-width="5"/>
-          <line x1="0" y1="118" x2="360" y2="118" stroke="#dde3ec" stroke-width="5"/>
-          <circle cx="180" cy="74" r="28" fill="none" stroke="#cbd5e1" stroke-width="2"/>
-          <polyline points="60,74 110,40 180,74 250,40 300,74" stroke="#94a3b8" stroke-width="2" fill="none"/>
-        </svg>
-        <div class="map-overlay">
-          <div class="map-pin"></div>
-          <div class="map-label" id="map-lbl">Skúlagata 32</div>
+      <!-- Info box with address, time, phone -->
+      <div class="info-box">
+        <div class="info-row">
+          <span class="info-ico">📍</span>
+          <div style="flex:1;min-width:0;">
+            <div class="info-val" id="map-lbl">—</div>
+            <div class="info-lbl-sm">Staðsetning</div>
+          </div>
+          <button class="maps-link-btn" onclick="openMaps()">→ Kort</button>
         </div>
-        <button class="map-nav-btn" onclick="openMaps()">Opna kort →</button>
-        <div class="map-dist"><span id="map-km">3.2 km · 8 mín</span></div>
+        <div class="info-row">
+          <span class="info-ico">🕙</span>
+          <div>
+            <div class="info-val" id="d-task-time">—</div>
+            <div class="info-lbl-sm">Tímasetning</div>
+          </div>
+        </div>
+        <div class="info-row" id="d-contact-phone-row">
+          <span class="info-ico">📞</span>
+          <div>
+            <div class="info-val" id="d-contact-phone-display">—</div>
+            <div class="info-lbl-sm">Sími tengiliðs</div>
+          </div>
+        </div>
       </div>
+      <div style="display:none;" id="map-km"></div>
       <div class="form-section">
         <div class="form-title">Upplýsingar um verkefni</div>
         <div class="form-group">
@@ -776,6 +808,21 @@ body.admin-active #admin-sections .admin-section.active{display:block !important
             <div>
               <label class="f-label">Hvar var efnið sótt</label>
               <input class="f-input" type="text" id="d-koma-uppruni" placeholder="t.d. Sorpstöð Álfsnes..."/>
+            </div>
+          </div>
+        </div>
+        <!-- Tæki group -->
+        <div class="form-group" id="d-taki-group" style="display:none;">
+          <div style="background:#eff6ff;border-radius:12px;padding:13px 14px;border:1px solid #bfdbfe;">
+            <div style="font-size:11px;font-weight:700;color:#1d4ed8;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:10px;">🏗 Tæki</div>
+            <div>
+              <label class="f-label">Tegund tækis</label>
+              <select class="f-select" id="d-taki" translate="no">
+                <option value="Belta grafa 3,3T">Belta grafa 3,3T</option>
+                <option value="Vélbörur 1T">Vélbörur 1T</option>
+                <option value="Hjólavél 16T">Hjólavél 16T</option>
+                <option value="Annað (sjá athugasemd)">Annað (sjá athugasemd)</option>
+              </select>
             </div>
           </div>
         </div>
@@ -940,7 +987,7 @@ body.admin-active #admin-sections .admin-section.active{display:block !important
       <div class="profile-card">
         <div class="profile-av" style="background:#e8620a">JS</div>
         <div class="profile-name">Jón Sigurðsson</div>
-        <div class="profile-sub">Ökumaður · Bifreið #14 · GPS virkt</div>
+        <div class="profile-sub">Ökumaður · Bifreið #14</div>
         <div class="profile-stats">
           <div class="pstat"><p id="prof-done">1</p><p class='loki-dag'>Lokið í dag</p></div>
           <div class="pstat"><p>847</p><p>Samtals</p></div>
@@ -952,7 +999,6 @@ body.admin-active #admin-sections .admin-section.active{display:block !important
         <div class="info-row"><span>Símanúmer</span><span>+354 555 1234</span></div>
         <div class="info-row"><span>Ökuréttindi</span><span>Flokkur C+E</span></div>
         <div class="info-row"><span>Vakt í dag</span><span>07:30 – 16:00</span></div>
-        <div class="info-row"><span>GPS staða</span><span style="color:#34d399;">Virkt</span></div>
       </div>
       <button class="logout-btn" onclick="doLogout()">Skrá út</button>
     </div>
@@ -1086,6 +1132,8 @@ body.admin-active #admin-sections .admin-section.active{display:block !important
                 <option value="tima">Tímakaups beiðni</option>
                 <option value="koma">Koma með efni</option>
                 <option value="loskomur">Losa og koma með efni</option>
+                <option value="takikoma">Koma með tæki</option>
+                <option value="takisott">Tæki sótt</option>
               </select>
             </div>
           </div>
@@ -1109,8 +1157,18 @@ body.admin-active #admin-sections .admin-section.active{display:block !important
             </div>
           </div>
         </div>
-        <div class="af-full">
-          <label class="af-label">📍 Heimilisfang (Maps tengt)</label>
+          <!-- Tæki sérreitir -->
+          <div id="a-taki-wrap" style="display:none;" class="af-full">
+            <div style="margin-bottom:10px;">
+              <label class="af-label">Tæki</label>
+              <select class="af-select" id="a-taki" translate="no">
+                <option value="Belta grafa 3,3T">Belta grafa 3,3T</option>
+                <option value="Vélbörur 1T">Vélbörur 1T</option>
+                <option value="Hjólavél 16T">Hjólavél 16T</option>
+                <option value="Annað (sjá athugasemd)">Annað (sjá athugasemd)</option>
+              </select>
+            </div>
+          </div>
           <div class="addr-wrap">
             <input class="af-input" id="a-addr" type="text" placeholder="Skúlagata 32, 101 Reykjavík" autocomplete="off" onfocus="document.getElementById('phone').style.overflow='visible'" onblur="setTimeout(function(){document.getElementById('phone').style.overflow='hidden'},300)"/>
             <div class="ac-dropdown" id="ac-dropdown"></div>
@@ -1965,10 +2023,10 @@ function resumeDriverShift(user) {
   var vehicleLabel = user.vehicle || '';
   var av = document.querySelector('.avatar'); if(av){ av.textContent = user.initials; av.style.background = user.color; }
   var nm = document.querySelector('.hdr-left .name'); if(nm) nm.textContent = user.name;
-  var sb = document.querySelector('.hdr-left .sub'); if(sb) sb.textContent = (vehicleLabel ? 'Bifreið ' + vehicleLabel + ' · ' : '') + 'GPS virkt';
+  var sb = document.querySelector('.hdr-left .sub'); if(sb) sb.textContent = vehicleLabel ? 'Bifreið ' + vehicleLabel : '';
   var pa = document.querySelector('.profile-av'); if(pa){ pa.textContent = user.initials; pa.style.background = user.color; }
   var pn = document.querySelector('.profile-name'); if(pn) pn.textContent = user.name;
-  var ps = document.querySelector('.profile-sub'); if(ps) ps.textContent = 'Ökumaður' + (vehicleLabel ? ' · Bifreið ' + vehicleLabel : '') + ' · GPS virkt';
+  var ps = document.querySelector('.profile-sub'); if(ps) ps.textContent = 'Ökumaður' + (vehicleLabel ? ' · Bifreið ' + vehicleLabel : '');
   var phSub = document.getElementById('profile-hdr-sub'); if(phSub) phSub.textContent = vehicleLabel ? 'Bifreið ' + vehicleLabel : '';
 
   document.getElementById('admin-panel').style.display = 'none';
@@ -2289,8 +2347,8 @@ function translatePage(lang) {
   var profSub = document.querySelector('.profile-sub');
   if (profSub) {
     var ps = profSub.textContent;
-    if (isEN) profSub.textContent = ps.replace('Ökumaður','Driver').replace('Bifreið','Vehicle').replace('GPS virkt','GPS active');
-    else profSub.textContent = ps.replace('Driver','Ökumaður').replace('Vehicle','Bifreið').replace('GPS active','GPS virkt');
+    if (isEN) profSub.textContent = ps.replace('Ökumaður','Driver').replace('Bifreið','Vehicle');
+    else profSub.textContent = ps.replace('Driver','Ökumaður').replace('Vehicle','Bifreið');
   }
 
   // GPS Virkt in profile info rows
@@ -2359,9 +2417,9 @@ function translatePage(lang) {
   if (driverSub) {
     var st = driverSub.textContent;
     if (isEN) {
-      driverSub.textContent = st.replace('GPS virkt','GPS active').replace('Ekki á vakt','Off duty');
+      driverSub.textContent = st;
     } else {
-      driverSub.textContent = st.replace('GPS active','GPS virkt').replace('Off duty','Ekki á vakt');
+      driverSub.textContent = st;
     }
   }
 
@@ -4414,6 +4472,7 @@ function fbAddToOpenList(data) {
     + (size ? '<span class="atask-tag" data-field="size">' + size + '</span>' : '')
     + (disposal && disposal !== '—' ? '<span class="atask-tag blue" data-field="disposal">→ ' + disposal + '</span>' : '')
     + ((data.type==='koma'||data.type==='loskomur') && data.komaEfni ? '<span class="atask-tag" style="background:#f0fdf4;color:#15803d;">📦 ' + data.komaEfni + '</span>' : '')
+    + ((data.type==='takikoma'||data.type==='takisott') && data.taki ? '<span class="atask-tag" style="background:#eff6ff;color:#1e40af;">🏗 ' + data.taki + '</span>' : '')
     + ((data.type==='koma'||data.type==='loskomur') && data.komaUppruni ? '<span class="atask-tag" style="background:#eff6ff;color:#1e40af;">📍 Sótt: ' + data.komaUppruni + '</span>' : '')
     + (data.company && data.company !== '—' ? '<span class="atask-tag">🏢 ' + data.company + '</span>' : '')
     + '</div>'
@@ -4472,6 +4531,7 @@ function fbAddToDoneList(data) {
     + (data.category ? '<span class="atask-tag">' + data.category + '</span>' : '')
     + (data.disposal && data.disposal!=='—' ? '<span class="atask-tag blue">→ ' + data.disposal + '</span>' : '')
     + ((data.type==='koma'||data.type==='loskomur') && data.komaEfni ? '<span class="atask-tag" style="background:#f0fdf4;color:#15803d;">📦 ' + data.komaEfni + '</span>' : '')
+    + ((data.type==='takikoma'||data.type==='takisott') && data.taki ? '<span class="atask-tag" style="background:#eff6ff;color:#1e40af;">🏗 ' + data.taki + '</span>' : '')
     + ((data.type==='koma'||data.type==='loskomur') && data.komaUppruni ? '<span class="atask-tag" style="background:#eff6ff;color:#1e40af;">📍 Sótt: ' + data.komaUppruni + '</span>' : '')
     + (data.company && data.company!=='—' ? '<span class="atask-tag">🏢 ' + data.company + '</span>' : '')
     + (data.containerNum && data.containerNum!=='—' ? '<span class="atask-tag">📦 ' + data.containerNum + '</span>' : '')
@@ -4614,12 +4674,13 @@ function fbAddDriverTask(data) {
       companyEmail: data.companyEmail || '',
       companyPhone: data.companyPhone || '',
       skiptTekinn: data.skiptTekinn || '', skiptAfhentur: data.skiptAfhentur || '',
-      komaEfni: data.komaEfni || '', komaUppruni: data.komaUppruni || ''
+      komaEfni: data.komaEfni || '', komaUppruni: data.komaUppruni || '',
+      taki: data.taki || ''
     };
     document.getElementById('t-title').textContent = curTask.title;
     document.getElementById('t-sub').textContent = curTask.sub;
-    document.getElementById('map-lbl').textContent = curTask.sub;
-    document.getElementById('map-km').textContent = '—';
+    var mapLblEl = document.getElementById('map-lbl'); if(mapLblEl) mapLblEl.textContent = curTask.sub;
+    var taskTimeEl = document.getElementById('d-task-time'); if(taskTimeEl) taskTimeEl.textContent = data.time || '—';
     var pill = document.getElementById('t-pill');
     pill.textContent = tm.name;
     pill.className = 'badge ' + (badgeColors[type]||'b-ut');
@@ -4637,9 +4698,16 @@ function fbAddDriverTask(data) {
     var kgrf=document.getElementById('d-kg-row');if(kgrf)kgrf.style.display=(_t==='ut'||_t==='koma')?'none':'flex';
     var cgdf=document.getElementById('d-category-group');if(cgdf)cgdf.style.display=(_t==='ut'||_t==='koma')?'none':'block';
     var komagf=document.getElementById('d-koma-group');if(komagf)komagf.style.display=(_t==='koma'||_t==='loskomur')?'block':'none';
+    var takigf=document.getElementById('d-taki-group');if(takigf)takigf.style.display=(_t==='takikoma'||_t==='takisott')?'block':'none';
+    var kgrft=document.getElementById('d-kg-row');if(kgrft&&(_t==='takikoma'||_t==='takisott'))kgrft.style.display='none';
+    var dgft=document.getElementById('d-disposal-group');if(dgft&&(_t==='takikoma'||_t==='takisott'))dgft.style.display='none';
+    var cgdft=document.getElementById('d-category-group');if(cgdft&&(_t==='takikoma'||_t==='takisott'))cgdft.style.display='none';
     if(_t==='koma'||_t==='loskomur'){
       var dke=document.getElementById('d-koma-efni');if(dke)dke.value=curTask.komaEfni||'';
       var dku=document.getElementById('d-koma-uppruni');if(dku)dku.value=curTask.komaUppruni||'';
+    }
+    if(_t==='takikoma'||_t==='takisott'){
+      var dta=document.getElementById('d-taki');if(dta&&curTask.taki)dta.value=curTask.taki;
     }
     var dcgf=document.getElementById('d-company-group');if(dcgf)dcgf.style.display=_t==='ut'?'none':'block';
     var dngf=document.getElementById('d-note-group');if(dngf)dngf.style.display='block';
@@ -4803,7 +4871,9 @@ const typeMap = {
   farslin:{name:'Færsla á gám innan svæðis',badgeClass:'b-fai',  numClass:'num-farslin',adminBadge:'ap-fai'},
   tima: {name:'Tímakaups beiðni',  badgeClass:'b-ti',  numClass:'num-tima', adminBadge:'ap-ti'},
   koma:    {name:'Koma með efni',         badgeClass:'b-ko',  numClass:'num-koma',    adminBadge:'ap-ko'},
-  loskomur:{name:'Losa og koma með efni', badgeClass:'b-lk',  numClass:'num-loskomur',adminBadge:'ap-lk'}
+  loskomur:{name:'Losa og koma með efni', badgeClass:'b-lk',  numClass:'num-loskomur',adminBadge:'ap-lk'},
+  takikoma:{name:'Koma með tæki',         badgeClass:'b-tk',  numClass:'num-takikoma',adminBadge:'ap-tk'},
+  takisott:{name:'Tæki sótt',             badgeClass:'b-ts',  numClass:'num-takisott',adminBadge:'ap-ts'}
 };
 
 const driverMap = {
@@ -5028,6 +5098,8 @@ function openTask(taskKey){
   var kgr=document.getElementById('d-kg-row');if(kgr)kgr.style.display=(_type==='ut'||_type==='koma')?'none':'flex';
   var cgd=document.getElementById('d-category-group');if(cgd)cgd.style.display=(_type==='ut'||_type==='koma')?'none':'block';
   var komagr=document.getElementById('d-koma-group');if(komagr)komagr.style.display=(_type==='koma'||_type==='loskomur')?'block':'none';
+  var takigr=document.getElementById('d-taki-group');if(takigr)takigr.style.display=(_type==='takikoma'||_type==='takisott')?'block':'none';
+  if(_type==='takikoma'||_type==='takisott'){var kgrt=document.getElementById('d-kg-row');if(kgrt)kgrt.style.display='none';var dgt=document.getElementById('d-disposal-group');if(dgt)dgt.style.display='none';var cgdt=document.getElementById('d-category-group');if(cgdt)cgdt.style.display='none';}
   var dcg=document.getElementById('d-company-group');if(dcg)dcg.style.display=_type==='ut'?'none':'block';
   var dng=document.getElementById('d-note-group');if(dng)dng.style.display='block';
   var afg=document.getElementById('d-afhending-group');if(afg)afg.style.display=_type==='ut'?'block':'none';
@@ -5058,6 +5130,7 @@ function openAdminTask(title,sub,type,mapsAddr,km){
   var _type2 = curTask?curTask.type:'';
   const dg2=document.getElementById('d-disposal-group');if(dg2)dg2.style.display=(_type2==='ut'||_type2==='tima'||_type2==='farslin'||_type2==='farsl'||_type2==='koma')?'none':'block';
   var komagr2=document.getElementById('d-koma-group');if(komagr2)komagr2.style.display=(_type2==='koma'||_type2==='loskomur')?'block':'none';
+  var takigr2=document.getElementById('d-taki-group');if(takigr2)takigr2.style.display=(_type2==='takikoma'||_type2==='takisott')?'block':'none';
   var kgr=document.getElementById('d-kg-row');if(kgr)kgr.style.display=_type2==='ut'?'none':'flex';
   var cgd=document.getElementById('d-category-group');if(cgd)cgd.style.display=_type2==='ut'?'none':'block';
   var dcg=document.getElementById('d-company-group');if(dcg)dcg.style.display=_type2==='ut'?'none':'block';
@@ -5093,6 +5166,7 @@ function completeTask(){
   const disposal=(isUtkeysla||isTima||isKoma)?'—':document.getElementById('d-disposal').value;
   const dKomaEfni    = (document.getElementById('d-koma-efni')    ||{value:''}).value.trim() || (curTask&&curTask.komaEfni   ||'');
   const dKomaUppruni = (document.getElementById('d-koma-uppruni') ||{value:''}).value.trim() || (curTask&&curTask.komaUppruni||'');
+  const dTaki        = (document.getElementById('d-taki')          ||{value:''}).value        || (curTask&&curTask.taki       ||'');
   const isSkapt=curTask&&curTask.type==='skipt';
   const skiptTekinn=isSkapt?(document.getElementById('d-skipt-tekinn').value.trim()||'—'):'—';
   const skiptAfhentur=isSkapt?(document.getElementById('d-skipt-afhentur').value.trim()||'—'):'—';
@@ -5218,6 +5292,7 @@ function completeTask(){
       timaStart:timaStart, timaEnd:timaEnd, timaHours:timaHours, timaKmStart:timaKmStart, timaKmEnd:timaKmEnd,
       skiptTekinn:skiptTekinn, skiptAfhentur:skiptAfhentur,
       komaEfni:dKomaEfni||curTask.komaEfni||'', komaUppruni:dKomaUppruni||curTask.komaUppruni||'',
+      taki:dTaki||'',
       title:curTask?curTask.title:'—', address:curTask?curTask.sub:'—', type:curTask?curTask.type:'ut'
     }, photoDataList);
   }
@@ -5227,11 +5302,21 @@ function completeTask(){
     dagsetning: _dateStr,
     timi: "'" + timeStr,
     tilvísun:ref,
+    okumadur:(window._currentUser||{name:'Jón Sigurðsson'}).name,
+    okutaeki:(window._currentUser&&window._currentUser.vehicle)||'—',
+    tegund:curTask?(typeMap[curTask.type]||{name:'—'}).name:'—',
     heimilisfang:curTask?curTask.sub:'—',
     efnisflokkur:category,
     losunarstaður:disposal,
     þyngd_kg:kg,
+    myndir:photoTaken?'Já':'Nei',
     gamanumer:containerNum,
+    fyrirtaeki:company,
+    kennitala:(curTask&&curTask.companyKt)||window._selectedCompanyKt||'',
+    email:(curTask&&curTask.companyEmail)||window._selectedCompanyEmail||'',
+    koma_efni:dKomaEfni||'',
+    koma_uppruni:dKomaUppruni||'',
+    taeki:dTaki||'',
     skipt_tekinn:skiptTekinn,
     skipt_afhentur:skiptAfhentur,
     tima_byrjun:timaStart,
@@ -5239,17 +5324,7 @@ function completeTask(){
     tima_klst:timaHours,
     tima_km_byrj:timaKmStart,
     tima_km_endi:timaKmEnd,
-    tima_km_total:timaKmTotal,
-    okumadur:(window._currentUser||{name:'Jón Sigurðsson'}).name,
-    okutaeki:(window._currentUser&&window._currentUser.vehicle)||'—',
-    tegund:curTask?(typeMap[curTask.type]||{name:'—'}).name:'—',
-    fyrirtaeki:company,
-    kennitala:(curTask&&curTask.companyKt)||window._selectedCompanyKt||'',
-    email:(curTask&&curTask.companyEmail)||window._selectedCompanyEmail||'',
-    gamanumer:containerNum,
-    koma_efni:dKomaEfni||'',
-    koma_uppruni:dKomaUppruni||'',
-    myndir:photoTaken?'Já':'Nei'
+    tima_km_total:timaKmTotal
   });
 
   const adminDone=document.getElementById('admin-js-done');
@@ -5300,11 +5375,28 @@ function sendDriverNote(){
   const noteEl=document.getElementById('driver-admin-note');
   const note=noteEl?noteEl.value.trim():'';
   if(!note){showToast('Skrifaðu athugasemd fyrst');return;}
-  document.getElementById('note-sent-confirm').style.display='block';
-  document.getElementById('suc-back-btn').style.display='block';
-  document.getElementById('suc-send-note-btn').style.display='none';
-  noteEl.disabled=true;
-  showToast('✓ Athugasemd send til admin!');
+
+  // Save note to Firebase on the completed task
+  if(curTask && curTask.fbId){
+    onFirebaseReady(function(){
+      var fb=window._fb;
+      fb.updateDoc(fb.doc(fb.db,'tasks',curTask.fbId),{note:note})
+        .then(function(){
+          document.getElementById('note-sent-confirm').style.display='block';
+          document.getElementById('suc-back-btn').style.display='block';
+          document.getElementById('suc-send-note-btn').style.display='none';
+          if(noteEl)noteEl.disabled=true;
+          showToast('✓ Athugasemd send til admin!');
+        })
+        .catch(function(e){ showToast('⚠ Villa: '+(e.code||e.message)); });
+    });
+  } else {
+    document.getElementById('note-sent-confirm').style.display='block';
+    document.getElementById('suc-back-btn').style.display='block';
+    document.getElementById('suc-send-note-btn').style.display='none';
+    if(noteEl)noteEl.disabled=true;
+    showToast('✓ Athugasemd send!');
+  }
 }
 
 function sucDone(){
@@ -5429,6 +5521,7 @@ function createTask(){
   var komaUpprEl=document.getElementById('a-koma-uppruni');if(komaUpprEl)komaUpprEl.value='';
   var ktEl=document.getElementById('a-company-kt');if(ktEl)ktEl.value='';
   var emailEl=document.getElementById('a-company-email');if(emailEl)emailEl.value='';
+  var takiWrapEl=document.getElementById('a-taki-wrap');if(takiWrapEl)takiWrapEl.style.display='none';
   window._selectedCompanyId='';
   var adate=document.getElementById('a-date');if(adate)adate.value=new Date().toISOString().split('T')[0];
   placesAutocomplete=null; initAddressAutocomplete();
@@ -5476,13 +5569,14 @@ function createTask(){
     driverUsername: driverUname,
     driverName: driver.name, driverInitials: driver.initials,
     company: aCompany,
-    companyKt: window._selectedCompanyKt||'',
-    companyEmail: window._selectedCompanyEmail||'',
-    companyPhone: (document.getElementById('a-contact-phone')?document.getElementById('a-contact-phone').value.trim():'')||window._selectedCompanyPhone||'',
+    companyKt: _ktToSave||'',
+    companyEmail: _emailToSave||'',
+    companyPhone: _phoneToSave||'',
     containerNum: adminContainerNum, note: note,
     skiptTekinn: aSkiptTekinn, skiptAfhentur: aSkiptAfhentur,
     komaEfni: (type==='koma'||type==='loskomur') ? (aKomaEfni||'') : '',
     komaUppruni: (type==='koma'||type==='loskomur') ? (aKomaUppruni||'') : '',
+    taki: (type==='takikoma'||type==='takisott') ? ((document.getElementById('a-taki')||{value:''}).value||'') : '',
     disposal: (type==='ut'||type==='tima'||type==='farslin'||type==='farsl'||type==='koma') ? '—' : document.getElementById('a-disposal').value,
     category: document.getElementById('a-category')?document.getElementById('a-category').value:''
   });
@@ -5774,6 +5868,7 @@ function sendToSheets(data){
     Email:data.email||'',
     Koma_efni:data.koma_efni||'',
     Koma_uppruni:data.koma_uppruni||'',
+    Tæki:data.taeki||'',
     Myndir:data.myndir||''
   }]};
   fetch(SHEETDB_URL,{
@@ -5982,6 +6077,7 @@ function buildDoneCard(data) {
     + (data.category ? '<span class="atask-tag">' + data.category + '</span>' : '')
     + (data.disposal && data.disposal!=='—' ? '<span class="atask-tag blue">→ ' + data.disposal + '</span>' : '')
     + ((data.type==='koma'||data.type==='loskomur') && data.komaEfni ? '<span class="atask-tag" style="background:#f0fdf4;color:#15803d;">📦 ' + data.komaEfni + '</span>' : '')
+    + ((data.type==='takikoma'||data.type==='takisott') && data.taki ? '<span class="atask-tag" style="background:#eff6ff;color:#1e40af;">🏗 ' + data.taki + '</span>' : '')
     + ((data.type==='koma'||data.type==='loskomur') && data.komaUppruni ? '<span class="atask-tag" style="background:#eff6ff;color:#1e40af;">📍 Sótt: ' + data.komaUppruni + '</span>' : '')
     + (data.company && data.company!=='—' ? '<span class="atask-tag">🏢 ' + data.company + '</span>' : '')
     + (data.containerNum && data.containerNum!=='—' ? '<span class="atask-tag">📦 ' + data.containerNum + '</span>' : '')
@@ -7825,24 +7921,27 @@ document.addEventListener('click', function(e) {
 
 
 function toggleAdminByType(type) {
-  var isKoma    = type === 'koma';
+  var isKoma     = type === 'koma';
   var isLoskomur = type === 'loskomur';
-  var noDisposal = type === 'ut' || type === 'tima' || type === 'farslin' || type === 'farsl' || isKoma;
+  var isTaki     = type === 'takikoma' || type === 'takisott';
+  var noDisposal = type === 'ut' || type === 'tima' || type === 'farslin' || type === 'farsl' || isKoma || isTaki;
   var isTima     = type === 'tima';
   var isSkapt    = type === 'skipt';
   var isUt       = type === 'ut';
   var row       = document.getElementById('a-disposal-row');
   var sizeWrap  = document.getElementById('a-size-wrap');
   var komaWrap  = document.getElementById('a-koma-wrap');
+  var takiWrap  = document.getElementById('a-taki-wrap');
   var catWrap   = document.getElementById('a-category-wrap');
   var skiptRow  = document.getElementById('a-skipt-row');
   var contRow   = document.getElementById('a-container-row');
   if (row)      row.style.display      = noDisposal ? 'none' : '';
-  if (sizeWrap) sizeWrap.style.display = (isTima || isKoma) ? 'none' : '';
+  if (sizeWrap) sizeWrap.style.display = (isTima || isKoma || isTaki) ? 'none' : '';
   if (komaWrap) komaWrap.style.display = (isKoma || isLoskomur) ? '' : 'none';
-  if (catWrap)  catWrap.style.display  = (isTima || isUt || isKoma) ? 'none' : '';
+  if (takiWrap) takiWrap.style.display = isTaki ? '' : 'none';
+  if (catWrap)  catWrap.style.display  = (isTima || isUt || isKoma || isTaki) ? 'none' : '';
   if (skiptRow) skiptRow.style.display = isSkapt ? '' : 'none';
-  if (contRow)  contRow.style.display  = (isSkapt || isKoma) ? 'none' : '';
+  if (contRow)  contRow.style.display  = (isSkapt || isKoma || isTaki) ? 'none' : '';
 }
 // keep old name as alias for any remaining calls
 function toggleAdminDisposal(type) { toggleAdminByType(type); }
@@ -7987,6 +8086,8 @@ function showToast(msg){
           <option value="farslin">Farsíl</option>
           <option value="koma">Koma með efni</option>
           <option value="loskomur">Losa og koma með efni</option>
+          <option value="takikoma">Koma með tæki</option>
+          <option value="takisott">Tæki sótt</option>
         </select>
       </div>
       <div>

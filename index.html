@@ -5166,7 +5166,8 @@ function completeTask(){
   const disposal=(isUtkeysla||isTima||isKoma)?'—':document.getElementById('d-disposal').value;
   const dKomaEfni    = (document.getElementById('d-koma-efni')    ||{value:''}).value.trim() || (curTask&&curTask.komaEfni   ||'');
   const dKomaUppruni = (document.getElementById('d-koma-uppruni') ||{value:''}).value.trim() || (curTask&&curTask.komaUppruni||'');
-  const dTaki        = (document.getElementById('d-taki')          ||{value:''}).value        || (curTask&&curTask.taki       ||'');
+  const isTakiType   = curTask&&(curTask.type==='takikoma'||curTask.type==='takisott');
+  const dTaki        = isTakiType ? ((document.getElementById('d-taki')||{value:''}).value||(curTask&&curTask.taki||'')) : '';
   const isSkapt=curTask&&curTask.type==='skipt';
   const skiptTekinn=isSkapt?(document.getElementById('d-skipt-tekinn').value.trim()||'—'):'—';
   const skiptAfhentur=isSkapt?(document.getElementById('d-skipt-afhentur').value.trim()||'—'):'—';

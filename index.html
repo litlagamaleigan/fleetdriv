@@ -219,6 +219,8 @@ body.admin-active #admin-sections .admin-section.active{display:block !important
 .profile-av{width:74px;height:74px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:27px;font-weight:800;margin:0 auto 12px;}
 .profile-name{color:#0f172a;font-size:18px;font-weight:700;}
 .profile-sub{color:#64748b;font-size:12px;margin-top:4px;}
+.prof-edit{border:none;background:transparent;text-align:right;color:#0f172a;font-size:12px;font-weight:600;font-family:inherit;outline:none;flex:1;min-width:0;margin-left:12px;padding:2px 0;border-bottom:1px dashed #cbd5e1;}
+.prof-edit:focus{border-bottom-color:#e8620a;}
 .profile-stats{display:flex;justify-content:space-around;margin-top:16px;padding-top:16px;border-top:1px solid #f1f5f9;}
 .pstat p:first-child{color:#e8620a;font-size:22px;font-weight:800;text-align:center;}
 .pstat p:last-child{color:#94a3b8;font-size:10px;text-align:center;font-weight:700;text-transform:uppercase;}
@@ -632,7 +634,7 @@ body.admin-active #admin-sections .admin-section.active{display:block !important
       <div class="route-banner">
         <div class="route-icon-wrap"><svg viewBox="0 0 24 24"><path d="M21 3L3 10.53v.98l6.84 2.65L12.48 21h.98z"/></svg></div>
         <div class="route-text">
-          <div class="rt">Leið dagsins · 4 stopp</div>
+          <div class="rt">Leið dagsins</div>
           <div class="rs" id="route-sub">Engar beiðnir í dag</div>
         </div>
         <div class="route-pct-wrap">
@@ -707,7 +709,7 @@ body.admin-active #admin-sections .admin-section.active{display:block !important
       <div style="display:none;" id="map-km"></div>
       <div class="form-section">
         <div class="form-title">Upplýsingar um verkefni</div>
-        <div class="form-group">
+        <div class="form-group" id="d-container-group">
           <label class="f-label">Gámanúmer <span style="color:#e8620a;">*</span></label>
           <input class="f-input" type="text" id="d-container" placeholder="t.d. G-204"/>
         </div>
@@ -776,6 +778,16 @@ body.admin-active #admin-sections .admin-section.active{display:block !important
               <label class="f-label">Hvar var efnið sótt</label>
               <input class="f-input" type="text" id="d-koma-uppruni" placeholder="t.d. Sorpstöð Álfsnes..."/>
             </div>
+          </div>
+        </div>
+        <!-- Færsla á gám: ný staðsetning -->
+        <div class="form-group" id="d-ny-group" style="display:none;">
+          <div style="background:#eff6ff;border-radius:12px;padding:13px 14px;border:1px solid #bfdbfe;display:flex;align-items:center;gap:10px;">
+            <div style="flex:1;min-width:0;">
+              <div style="font-size:11px;font-weight:700;color:#1e40af;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">📍 Ný staðsetning</div>
+              <div style="font-size:14px;font-weight:700;color:#0f172a;" id="d-ny-display">—</div>
+            </div>
+            <button class="maps-link-btn" type="button" onclick="openNyMaps()">→ Kort</button>
           </div>
         </div>
         <!-- Tæki group -->
@@ -908,7 +920,7 @@ body.admin-active #admin-sections .admin-section.active{display:block !important
   <div class="screen" id="sc-leid">
     <div class="simple-hdr">
       <h2>Leið dagsins</h2>
-      <p>34.6 km · 4 stopp</p>
+      <p id="route-hdr-sub">Engar beiðnir í dag</p>
     </div>
     <div class="simple-body">
       <div style="text-align:center;padding:32px;color:#64748b;font-size:13px;">Engar beiðnir í dag</div></div>
@@ -956,16 +968,15 @@ body.admin-active #admin-sections .admin-section.active{display:block !important
         <div class="profile-name">Jón Sigurðsson</div>
         <div class="profile-sub">Ökumaður · Bifreið #14</div>
         <div class="profile-stats">
-          <div class="pstat"><p id="prof-done">1</p><p class='loki-dag'>Lokið í dag</p></div>
-          <div class="pstat"><p>847</p><p>Samtals</p></div>
-          <div class="pstat"><p>98%</p><p>Nákvæmni</p></div>
+          <div class="pstat"><p id="prof-done">0</p><p class='loki-dag'>Lokið í dag</p></div>
+          <div class="pstat"><p id="prof-total">—</p><p>Samtals</p></div>
         </div>
       </div>
       <div class="info-section">
         <div class="info-row"><span>Notandanafn</span><span id='prof-username'>—</span></div>
-        <div class="info-row"><span>Símanúmer</span><span>+354 555 1234</span></div>
-        <div class="info-row"><span>Ökuréttindi</span><span>Flokkur C+E</span></div>
-        <div class="info-row"><span>Vakt í dag</span><span>07:30 – 16:00</span></div>
+        <div class="info-row"><span>Símanúmer</span><input type="tel" id="prof-phone" class="prof-edit" placeholder="Bæta við" autocomplete="off" onchange="saveDriverProfile()"/></div>
+        <div class="info-row"><span>Ökuréttindi</span><input type="text" id="prof-license" class="prof-edit" placeholder="Bæta við" autocomplete="off" onchange="saveDriverProfile()"/></div>
+        <div class="info-row"><span>Vakt í dag</span><span id="prof-shift">—</span></div>
       </div>
       <button class="logout-btn" onclick="doLogout()">Skrá út</button>
     </div>
@@ -1110,7 +1121,7 @@ body.admin-active #admin-sections .admin-section.active{display:block !important
             <label class="af-label">Stærð gáms</label>
             <div class="af-wr">
               <select class="af-select" id="a-size">
-                <option value="8 m³">8 m³</option><option value="10 m³">10 m³</option><option value="12 m³">12 m³</option><option value="14 m³">14 m³</option><option value="16 m³">16 m³</option><option value="18 m³">18 m³</option><option selected>20 m³</option><option value="22 m³">22 m³</option><option value="24 m³">24 m³</option><option value="26 m³">26 m³</option><option value="28 m³">28 m³</option><option value="30 m³">30 m³</option><option value="32 m³">32 m³</option><option value="34 m³">34 m³</option><option value="36 m³">36 m³</option><option value="38 m³">38 m³</option>
+                <option value="8 m³">8 m³</option><option value="9 m³">9 m³</option><option value="10 m³">10 m³</option><option value="11 m³">11 m³</option><option value="12 m³">12 m³</option><option value="13 m³">13 m³</option><option value="14 m³">14 m³</option><option value="15 m³">15 m³</option><option value="16 m³">16 m³</option><option value="17 m³">17 m³</option><option value="18 m³">18 m³</option><option value="19 m³">19 m³</option><option value="20 m³" selected>20 m³</option><option value="21 m³">21 m³</option><option value="22 m³">22 m³</option><option value="23 m³">23 m³</option><option value="24 m³">24 m³</option><option value="25 m³">25 m³</option><option value="26 m³">26 m³</option><option value="27 m³">27 m³</option><option value="28 m³">28 m³</option><option value="29 m³">29 m³</option><option value="30 m³">30 m³</option><option value="31 m³">31 m³</option><option value="32 m³">32 m³</option><option value="33 m³">33 m³</option><option value="34 m³">34 m³</option><option value="35 m³">35 m³</option><option value="36 m³">36 m³</option><option value="37 m³">37 m³</option><option value="38 m³">38 m³</option><option value="39 m³">39 m³</option><option value="40 m³">40 m³</option>
               </select>
             </div>
           </div>
@@ -1126,6 +1137,14 @@ body.admin-active #admin-sections .admin-section.active{display:block !important
             </div>
           </div>
         </div>
+          <!-- Færsla á gám: ný staðsetning -->
+          <div id="a-farsl-wrap" style="display:none;" class="af-full">
+            <label class="af-label">Ný staðsetning (hvert er gámurinn fluttur)</label>
+            <div class="addr-wrap">
+              <input class="af-input" id="a-ny-stadsetning" type="text" placeholder="t.d. Skúlagata 32, 101 Reykjavík" autocomplete="off"/>
+              <div class="ac-dropdown" id="ny-dropdown"></div>
+            </div>
+          </div>
           <!-- Tæki sérreitir -->
           <div id="a-taki-wrap" style="display:none;" class="af-full">
             <div style="margin-bottom:10px;">
@@ -1841,8 +1860,9 @@ function openCustomerPanel(custId) {
         +   (t.containerNum&&t.containerNum!=='—' ? '📦 ' + t.containerNum + '<br>' : '')
         +   (t.skiptTekinn&&t.skiptTekinn!=='—' ? '🔄 Tekinn: <b>' + t.skiptTekinn + '</b> &nbsp;·&nbsp; Afhentur: <b>' + (t.skiptAfhentur||'—') + '</b><br>' : '')
         +   (t.timaHours&&t.timaHours!=='—' ? '⏱ Byrjun: ' + (t.timaStart!=='—'?t.timaStart:'—') + ' &nbsp;·&nbsp; ' + t.timaHours + ' klst<br>🚗 ' + (t.timaKmStart||'—') + ' → ' + (t.timaKmEnd||'—') + ' km<br>' : '')
-        +   '⚖ ' + (t.kg||'—') + ' kg &nbsp;·&nbsp; ♻ ' + (t.category||'—') + '<br>'
-        +   '🏭 ' + (t.disposal||'—')
+        +   ((t.kg&&t.kg!=='—'&&(!typeMap[t.type]||typeHasCat(t.type))) ? '⚖ ' + t.kg + ' kg' : '')
+        +   ((t.category&&(!typeMap[t.type]||typeHasCat(t.type))) ? ((t.kg&&t.kg!=='—') ? ' &nbsp;·&nbsp; ' : '') + '♻ ' + t.category + '<br>' : ((t.kg&&t.kg!=='—'&&(!typeMap[t.type]||typeHasCat(t.type))) ? '<br>' : ''))
+        +   ((t.disposal&&t.disposal!=='—'&&(!typeMap[t.type]||typeHasDisposal(t.type))) ? '🏭 ' + t.disposal : '')
         + '</div>'
         + '<div class="cpanel-task-chips">'
         +   '<span class="cpanel-chip green">✓ Lokið</span>'
@@ -1875,6 +1895,12 @@ function tryAutoLogin() {
     var driverSess = localStorage.getItem('fd_driver_session');
     if (driverSess) {
       var ds = JSON.parse(driverSess);
+      // Vakt eldri en 16 klst. telst gleymd – biðja um nýja innskráningu í stað þess að halda gamalli vakt áfram
+      if (ds.shiftStart && (Date.now() - ds.shiftStart) > 16*60*60*1000) {
+        localStorage.removeItem('fd_driver_session');
+        sessionStorage.removeItem('fd_session');
+        ds = {};
+      }
       if (ds.username && ds.name) {
         // Restore user from stored session data — no getUsers() needed
         // This prevents new punchIn when driver returns to page
@@ -1939,7 +1965,10 @@ function tryAutoLogin() {
       populateDriverDropdown();
       refreshAdminTasks();
     } else {
-      resumeDriverShift(user);
+      // Ökumaður án virkrar vaktar (valdi ekki bíl/skráði sig ekki inn á vakt) – fer aftur í innskráningu
+      // svo vakt sé alltaf skráð með innskráningartíma (punchIn)
+      sessionStorage.removeItem('fd_session');
+      window._currentUser = null;
     }
   } catch(e) {
     sessionStorage.removeItem('fd_session');
@@ -1975,6 +2004,7 @@ function resumeDriverShift(user) {
   startDriverGPS();
   fbListenDriverTasks(user.username);
   initDriverChat(user.username);
+  refreshDriverProfile();
 }
 
 
@@ -2347,6 +2377,7 @@ function translatePage(lang) {
     'Sérstæðar upplýsingar...': 'Special information...',
     'T.d. gámur var þéttur, bíðtími á losunarstað...': 'e.g. container was full, waiting at disposal site...',
     'Velja lykilorð': 'Choose password',
+    'Bæta við': 'Add',
     '🔍 Leita að viðskiptavin...': '🔍 Search customers...',
   };
   document.querySelectorAll('input[placeholder], textarea[placeholder]').forEach(function(el) {
@@ -2432,6 +2463,7 @@ function translatePage(lang) {
     if (isEN && el.textContent==='Engar beiðnir í dag') el.textContent='No tasks today';
     else if (!isEN && el.textContent==='No tasks today') el.textContent='Engar beiðnir í dag';
   });
+  if (typeof updateDriverStats === 'function') updateDriverStats(); // endurreikna "X stopp eftir" á réttu tungumáli
 
   // Task name badges and titles
   var typeIS = {'Afhending gáms':'Container delivery','Skipta út gám':'Container swap','Losun gáms':'Container emptying','Losun':'Emptying','Losa + taka':'Empty + collect','Fjarlægja gám':'Remove container','Færsla á gám':'Container transfer','Færsla á gám innan svæðis':'Transfer within zone','Tímakaups beiðni':'Hourly request','Afhending':'Delivery'};
@@ -4364,6 +4396,31 @@ function onFirebaseReady(cb) {
   document.addEventListener('firebase-ready', cb, {once: true});
 }
 
+// Hvaða reitir eiga við hverja tegund (verða að stemma við toggleAdminByType og ökumannsskjáinn)
+var _NO_CAT  = ['ut','tima','farsl','toma','koma','komagamur','komugjald','takikoma','takisott']; // enginn Efnisflokkur / Þyngd
+var _NO_DISP = ['ut','tima','farslin','farsl','toma','koma','komagamur','komugjald','takikoma','takisott']; // enginn Losunarstaður
+var _NO_SIZE = ['tima','koma','takikoma','takisott']; // engin stærð gáms
+function typeHasCat(t){ return _NO_CAT.indexOf(t) < 0; }
+function typeHasDisposal(t){ return _NO_DISP.indexOf(t) < 0; }
+function typeHasSize(t){ return _NO_SIZE.indexOf(t) < 0; }
+// Merki á kláraðri beiðni hjá admin (sama í öllum þremur spjöldunum)
+function doneValueTags(d) {
+  var t = d.type, h = '';
+  var kg = (d.kg && d.kg !== '—') ? d.kg : '';
+  if (kg && typeHasCat(t)) h += '<span class="atask-tag">' + escHtml(String(kg)) + ' kg</span>';
+  if (d.category && typeHasCat(t)) h += '<span class="atask-tag">' + escHtml(String(d.category)) + '</span>';
+  if (d.disposal && d.disposal !== '—' && typeHasDisposal(t)) h += '<span class="atask-tag blue">→ ' + escHtml(String(d.disposal)) + '</span>';
+  if (t === 'tima') {
+    var ok = function(v){ return v && v !== '—'; };
+    if (ok(d.timaStart) || ok(d.timaEnd)) h += '<span class="atask-tag">⏱ ' + escHtml(String(ok(d.timaStart)?d.timaStart:'?')) + '–' + escHtml(String(ok(d.timaEnd)?d.timaEnd:'?')) + (ok(d.timaHours) ? ' (' + escHtml(String(d.timaHours)) + ')' : '') + '</span>';
+    if (ok(d.timaKmStart) || ok(d.timaKmEnd)) h += '<span class="atask-tag">🛣 ' + escHtml(String(ok(d.timaKmStart)?d.timaKmStart:'?')) + ' → ' + escHtml(String(ok(d.timaKmEnd)?d.timaKmEnd:'?')) + ' km</span>';
+  }
+  if (t === 'skipt' && ((d.skiptTekinn && d.skiptTekinn !== '—') || (d.skiptAfhentur && d.skiptAfhentur !== '—'))) {
+    h += '<span class="atask-tag">🔄 Tekinn: ' + escHtml(String(d.skiptTekinn||'—')) + ' · Afhentur: ' + escHtml(String(d.skiptAfhentur||'—')) + '</span>';
+  }
+  return h;
+}
+
 function fbSaveTask(task) {
   onFirebaseReady(function() {
     var fb = window._fb;
@@ -4432,8 +4489,8 @@ function fbAddToOpenList(data) {
   var driverName = data.driverName || '—';
   var addr = data.address || '—';
   var time = data.time || '';
-  var size = data.size || '';
-  var disposal = data.disposal || '';
+  var size = typeHasSize(type) ? (data.size || '') : '';
+  var disposal = typeHasDisposal(type) ? (data.disposal || '') : '';
   var note = data.note || '';
 
   var div = document.createElement('div');
@@ -4450,6 +4507,7 @@ function fbAddToOpenList(data) {
     + (disposal && disposal !== '—' ? '<span class="atask-tag blue" data-field="disposal">→ ' + disposal + '</span>' : '')
     + ((data.type==='koma'||data.type==='loskomur'||data.type==='komagamur') && data.komaEfni ? '<span class="atask-tag" style="background:#f0fdf4;color:#15803d;">📦 ' + data.komaEfni + '</span>' : '')
     + ((data.type==='takikoma'||data.type==='takisott') && data.taki ? '<span class="atask-tag" style="background:#eff6ff;color:#1e40af;">🏗 ' + data.taki + '</span>' : '')
+    + (data.type==='farsl' && data.nyStadsetning ? '<span class="atask-tag" style="background:#eff6ff;color:#1e40af;">📍 Ný staðsetning: ' + escHtml(data.nyStadsetning) + '</span>' : '')
     + ((data.type==='koma'||data.type==='loskomur'||data.type==='komagamur') && data.komaUppruni ? '<span class="atask-tag" style="background:#eff6ff;color:#1e40af;">📍 Sótt: ' + data.komaUppruni + '</span>' : '')
     + (data.company && data.company !== '—' ? '<span class="atask-tag">🏢 ' + data.company + '</span>' : '')
     + '</div>'
@@ -4504,11 +4562,10 @@ function fbAddToDoneList(data) {
     + '</div>'
     + '<div class="atask-tags">'
     + '<span class="atask-tag green">✓ ' + (dateLabel ? dateLabel + ' · ' : '') + (timeLabel||'Lokið') + '</span>'
-    + (data.kg ? '<span class="atask-tag">' + data.kg + ' kg</span>' : '')
-    + (data.category ? '<span class="atask-tag">' + data.category + '</span>' : '')
-    + (data.disposal && data.disposal!=='—' ? '<span class="atask-tag blue">→ ' + data.disposal + '</span>' : '')
+    + doneValueTags(data)
     + ((data.type==='koma'||data.type==='loskomur'||data.type==='komagamur') && data.komaEfni ? '<span class="atask-tag" style="background:#f0fdf4;color:#15803d;">📦 ' + data.komaEfni + '</span>' : '')
     + ((data.type==='takikoma'||data.type==='takisott') && data.taki ? '<span class="atask-tag" style="background:#eff6ff;color:#1e40af;">🏗 ' + data.taki + '</span>' : '')
+    + (data.type==='farsl' && data.nyStadsetning ? '<span class="atask-tag" style="background:#eff6ff;color:#1e40af;">📍 Ný staðsetning: ' + escHtml(data.nyStadsetning) + '</span>' : '')
     + ((data.type==='koma'||data.type==='loskomur'||data.type==='komagamur') && data.komaUppruni ? '<span class="atask-tag" style="background:#eff6ff;color:#1e40af;">📍 Sótt: ' + data.komaUppruni + '</span>' : '')
     + (data.company && data.company!=='—' ? '<span class="atask-tag">🏢 ' + data.company + '</span>' : '')
     + (data.containerNum && data.containerNum!=='—' ? '<span class="atask-tag">📦 ' + data.containerNum + '</span>' : '')
@@ -4544,6 +4601,7 @@ function fbListenDriverTasks(username) {
         } else if (change.type === 'removed') {
           var card = document.querySelector('[data-fbid="' + data.fbId + '"]');
           if (card) card.remove();
+          updateDriverStats();
         }
       });
     });
@@ -4561,6 +4619,7 @@ function fbLoadDriverDoneTasks(username) {
       fb.where('status', '==', 'completed')
     );
     fb.onSnapshot(q, function(snapshot) {
+      var totEl = document.getElementById('prof-total'); if (totEl) totEl.textContent = snapshot.size;
       var todayStr = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
       var todayIS = new Date().toLocaleDateString('is-IS');
       snapshot.docChanges().forEach(function(change) {
@@ -4599,22 +4658,15 @@ function fbAddDriverDoneCard(data) {
     + '<span class="done-tick">✓ ' + (data.timeStr || '') + '</span>'
     + '</div>'
     + '<div class="done-meta">'
-    + (data.containerNum && data.containerNum !== '—' ? '📦 ' + data.containerNum + ' · ' : '')
-    + (data.kg || '—') + ' kg · ' + (data.category || '—')
-    + (data.disposal && data.disposal !== '—' ? ' · → ' + data.disposal : '')
+    + [
+        (data.containerNum && data.containerNum !== '—') ? '📦 ' + data.containerNum : '',
+        (data.kg && data.kg !== '—' && typeHasCat(data.type)) ? data.kg + ' kg' : '',
+        (data.category && typeHasCat(data.type)) ? data.category : '',
+        (data.disposal && data.disposal !== '—' && typeHasDisposal(data.type)) ? '→ ' + data.disposal : ''
+      ].filter(Boolean).join(' · ')
     + '</div>';
   doneList.insertBefore(dc, doneList.firstChild);
-  // Update done count
-  var doneCount = doneList.querySelectorAll('.done-card').length;
-  var doneEl = document.getElementById('done-count');
-  if (doneEl) doneEl.textContent = doneCount;
-  var openEl = document.getElementById('open-count');
-  var openCount = parseInt(openEl ? openEl.textContent : 0) || 0;
-  var total = openCount + doneCount;
-  var pct = total ? Math.round((doneCount / total) * 100) + '%' : '0%';
-  var pctEl = document.getElementById('pct-count'); if (pctEl) pctEl.textContent = pct;
-  var progEl = document.getElementById('prog-pct'); if (progEl) progEl.textContent = pct;
-  var fillEl = document.getElementById('prog-fill'); if (fillEl) fillEl.style.width = pct;
+  updateDriverStats();
 }
 
 function fbAddDriverTask(data) {
@@ -4636,7 +4688,7 @@ function fbAddDriverTask(data) {
     + '<span class="badge ' + (badgeColors[type]||'b-ut') + '">' + tm.name + '</span>'
     + '</div>'
     + '<div class="tc-foot">'
-    + (data.size ? '<span class="tc-meta"><b>' + data.size + '</b></span>' : '')
+    + (data.size && typeHasSize(type) ? '<span class="tc-meta"><b>' + data.size + '</b></span>' : '')
     + (data.date && data.date!==new Date().toISOString().split('T')[0] ? '<span class="eta-pill" style="background:#e0f2fe;color:#0369a1;">📅 '+data.date+'</span>' : '')
     + (data.time ? '<span class="eta-pill">' + data.time + '</span>' : '')
     + '</div>';
@@ -4652,6 +4704,7 @@ function fbAddDriverTask(data) {
       companyPhone: data.companyPhone || '',
       skiptTekinn: data.skiptTekinn || '', skiptAfhentur: data.skiptAfhentur || '',
       komaEfni: data.komaEfni || '', komaUppruni: data.komaUppruni || '',
+      nyStadsetning: data.nyStadsetning || '',
       taki: data.taki || ''
     };
     document.getElementById('t-title').textContent = curTask.title;
@@ -4666,6 +4719,8 @@ function fbAddDriverTask(data) {
     updatePhotoZone();
     document.getElementById('d-kg').value = '';
     document.getElementById('d-note').value = '';
+    var _dcat0=document.getElementById('d-cat');if(_dcat0)_dcat0.selectedIndex=0;
+    var _ddis0=document.getElementById('d-disposal');if(_ddis0)_ddis0.selectedIndex=0;
     var _dke=document.getElementById('d-koma-efni');if(_dke)_dke.value='';
     var _dku=document.getElementById('d-koma-uppruni');if(_dku)_dku.value='';
     var _dta=document.getElementById('d-taki');if(_dta)_dta.selectedIndex=0;
@@ -4674,9 +4729,9 @@ function fbAddDriverTask(data) {
     var dc=document.getElementById('d-company');if(dc)dc.value=curTask.company||'';
     var dcd=document.getElementById('d-company-display');if(dcd)dcd.textContent=curTask.company||'—';
     var _t=type;
-    var dg=document.getElementById('d-disposal-group');if(dg)dg.style.display=(_t==='ut'||_t==='tima'||_t==='farslin'||_t==='farsl'||_t==='koma'||_t==='komagamur'||_t==='komugjald')?'none':'block';
-    var kgrf=document.getElementById('d-kg-row');if(kgrf)kgrf.style.display=(_t==='ut'||_t==='koma'||_t==='komagamur'||_t==='komugjald')?'none':'flex';
-    var cgdf=document.getElementById('d-category-group');if(cgdf)cgdf.style.display=(_t==='ut'||_t==='koma'||_t==='komagamur'||_t==='komugjald')?'none':'block';
+    var dg=document.getElementById('d-disposal-group');if(dg)dg.style.display=(_t==='ut'||_t==='tima'||_t==='farslin'||_t==='farsl'||_t==='toma'||_t==='koma'||_t==='komagamur'||_t==='komugjald')?'none':'block';
+    var kgrf=document.getElementById('d-kg-row');if(kgrf)kgrf.style.display=(_t==='ut'||_t==='tima'||_t==='farsl'||_t==='toma'||_t==='koma'||_t==='komagamur'||_t==='komugjald')?'none':'flex';
+    var cgdf=document.getElementById('d-category-group');if(cgdf)cgdf.style.display=(_t==='ut'||_t==='tima'||_t==='farsl'||_t==='toma'||_t==='koma'||_t==='komagamur'||_t==='komugjald')?'none':'block';
     var komagf=document.getElementById('d-koma-group');if(komagf)komagf.style.display=(_t==='koma'||_t==='loskomur'||_t==='komagamur')?'block':'none';
     var takigf=document.getElementById('d-taki-group');if(takigf)takigf.style.display=(_t==='takikoma'||_t==='takisott')?'block':'none';
     var kgrft=document.getElementById('d-kg-row');if(kgrft&&(_t==='takikoma'||_t==='takisott'))kgrft.style.display='none';
@@ -4690,6 +4745,7 @@ function fbAddDriverTask(data) {
       var dta=document.getElementById('d-taki');if(dta&&curTask.taki)dta.value=curTask.taki;
     }
     var dcgf=document.getElementById('d-company-group');if(dcgf)dcgf.style.display=_t==='ut'?'none':'block';
+    var dctf=document.getElementById('d-container-group');if(dctf)dctf.style.display=_t==='tima'?'none':'block';
     var dngf=document.getElementById('d-note-group');if(dngf)dngf.style.display='block';
     var afgf=document.getElementById('d-afhending-group');if(afgf)afgf.style.display=_t==='ut'?'block':'none';
     var phf=document.getElementById('d-contact-phone-display');if(phf)phf.textContent=data.companyPhone||data.phone||'—';
@@ -4698,12 +4754,10 @@ function fbAddDriverTask(data) {
     var sg=document.getElementById('d-skipt-group');if(sg)sg.style.display=_t==='skipt'?'block':'none';
     if(_t==='skipt'){var dtk=document.getElementById('d-skipt-tekinn');if(dtk)dtk.value=curTask.skiptTekinn||'';var daf=document.getElementById('d-skipt-afhentur');if(daf)daf.value=curTask.skiptAfhentur||'';}
     if(data.note){var noteEl=document.getElementById('d-note');if(noteEl)noteEl.placeholder='💬 '+data.note;}
-    show('sc-task');
+    updateNyGroup(); show('sc-task');
   });
   taskList.appendChild(card);
-  // Update open count
-  var openEl=document.getElementById('open-count');
-  if(openEl) openEl.textContent=taskList.querySelectorAll('.task-card').length;
+  updateDriverStats();
   showToast('📦 Ný beiðni komin inn!');
 }
 
@@ -4835,8 +4889,21 @@ function fakePhoto(){ takePhotoCamera(); }
 let role = 'admin';
 let taskCounter = 4;
 let curTask = null;
-let openTasks = 3;
-let doneTasks = 1;
+// Teljarar á ökumannsforsíðu eru alltaf taldir út frá raunverulegum spjöldum (ekki föstum gildum)
+function updateDriverStats() {
+  var open = document.querySelectorAll('#driver-tasks .task-card').length;
+  var done = document.querySelectorAll('#done-tasks .done-card').length;
+  var total = open + done;
+  var pct = total ? Math.round((done / total) * 100) + '%' : '0%';
+  function set(id, v) { var e = document.getElementById(id); if (e) e.textContent = v; }
+  set('open-count', open); set('done-count', done);
+  set('pct-count', pct); set('prog-pct', pct); set('prof-done', done); set('admin-js-done', done);
+  var fill = document.getElementById('prog-fill'); if (fill) fill.style.width = pct;
+  var rs = document.getElementById('route-sub');
+  var routeTxt = open ? (open + (currentLang==='en' ? ' stops left' : ' stopp eftir')) : (currentLang==='en' ? 'No tasks today' : 'Engar beiðnir í dag');
+  if (rs) rs.textContent = routeTxt;
+  var rh = document.getElementById('route-hdr-sub'); if (rh) rh.textContent = routeTxt;
+}
 
 const SHEETDB_URL = 'https://sheetdb.io/api/v1/fmrvnup3g6rop';
 const SHEETDB_CUSTOMERS_URL = 'https://sheetdb.io/api/v1/z6dug37tqd1f9';
@@ -4962,11 +5029,11 @@ function proceedLogin(user) {
     document.querySelector('.avatar').textContent = user.initials;
     document.querySelector('.avatar').style.background = user.color;
     document.querySelector('.hdr-left .name').textContent = user.name;
-    document.querySelector('.hdr-left .sub').textContent = (currentLang==='en'?'Vehicle':'Bifreið') + ' ' + user.vehicle + ' · ' + (currentLang==='en'?'GPS active':'GPS virkt');
+    document.querySelector('.hdr-left .sub').textContent = (currentLang==='en'?'Vehicle':'Bifreið') + ' ' + user.vehicle;
     // Update profile screen
     const pa=document.querySelector('.profile-av');if(pa){pa.textContent=user.initials;pa.style.background=user.color;}
     const pn=document.querySelector('.profile-name');if(pn)pn.textContent=user.name;
-    const ps=document.querySelector('.profile-sub');if(ps)ps.textContent=(currentLang==='en'?'Driver':'Ökumaður')+' · '+(currentLang==='en'?'Vehicle':'Bifreið')+' '+user.vehicle+' · '+(currentLang==='en'?'GPS active':'GPS virkt');
+    const ps=document.querySelector('.profile-sub');if(ps)ps.textContent=(currentLang==='en'?'Driver':'Ökumaður')+' · '+(currentLang==='en'?'Vehicle':'Bifreið')+' '+user.vehicle;
     var phSub=document.getElementById('profile-hdr-sub'); if(phSub) phSub.textContent=(currentLang==='en'?'Vehicle':'Bifreið')+' '+user.vehicle;
     var phTitle=document.getElementById('profile-hdr-title'); if(phTitle) phTitle.textContent=(currentLang==='en'?'Profile':'Prófíll');
     document.getElementById('admin-panel').style.display='none';
@@ -4978,11 +5045,11 @@ function proceedLogin(user) {
         var ve = '#' + vehicle.num;
         window._currentUser.vehicle = ve;
         var ps = document.querySelector('.profile-sub');
-        if(ps) ps.textContent=(currentLang==='en'?'Driver':'Ökumaður')+' · '+(currentLang==='en'?'Vehicle':'Bifreið')+' '+ve+' · '+(currentLang==='en'?'GPS active':'GPS virkt');
+        if(ps) ps.textContent=(currentLang==='en'?'Driver':'Ökumaður')+' · '+(currentLang==='en'?'Vehicle':'Bifreið')+' '+ve;
         var phSub=document.getElementById('profile-hdr-sub');
         if(phSub) phSub.textContent=(currentLang==='en'?'Vehicle':'Bifreið')+' '+ve;
         var sub=document.querySelector('.hdr-left .sub');
-        if(sub) sub.textContent=(currentLang==='en'?'Vehicle':'Bifreið')+' '+ve+' · '+(currentLang==='en'?'GPS active':'GPS virkt');
+        if(sub) sub.textContent=(currentLang==='en'?'Vehicle':'Bifreið')+' '+ve;
       }
       // Save FULL user object to localStorage — so session can be restored even if getUsers() changes
       try {
@@ -5003,6 +5070,7 @@ function proceedLogin(user) {
       startDriverGPS();
       fbListenDriverTasks(user.username);
       initDriverChat(user.username);
+      refreshDriverProfile();
       setTimeout(function(){ if(currentLang==='en') translatePage('en'); }, 300);
     };
     showVehicleSelect(user, _pendingVehicleCallback);
@@ -5053,6 +5121,80 @@ function navTo(key){
   show(map[key]);
   setActiveNav(key);
   if (key === 'skil') onDriverChatOpen();
+  if (key === 'prof') refreshDriverProfile();
+}
+
+// ── Prófíll ökumanns: notandanafn, sími/ökuréttindi (ökumaður stillir sjálfur), vakt í dag ──
+function _profCacheKey() { var u = window._currentUser; return u ? 'fd_prof_' + u.username : null; }
+
+function _setProfInputs(d) {
+  var ph = document.getElementById('prof-phone'), li = document.getElementById('prof-license');
+  if (ph && document.activeElement !== ph) ph.value = (d && d.phone) || '';
+  if (li && document.activeElement !== li) li.value = (d && d.license) || '';
+}
+
+function refreshDriverProfile() {
+  var u = window._currentUser;
+  if (!u || u.role === 'admin') return;
+  var un = document.getElementById('prof-username'); if (un) un.textContent = u.username || '—';
+  try { _setProfInputs(JSON.parse(localStorage.getItem(_profCacheKey()) || '{}')); } catch(e) { _setProfInputs({}); }
+  onFirebaseReady(function() {
+    var fb = window._fb;
+    fb.getDoc(fb.doc(fb.db, 'driverProfiles', u.username)).then(function(snap) {
+      if (!snap.exists()) return;
+      var d = snap.data();
+      _setProfInputs(d);
+      try { localStorage.setItem(_profCacheKey(), JSON.stringify({phone: d.phone || '', license: d.license || ''})); } catch(e) {}
+    }).catch(function(){});
+  });
+  loadDriverShiftToday();
+}
+
+function saveDriverProfile() {
+  var u = window._currentUser;
+  if (!u || u.role === 'admin') return;
+  var phone = (document.getElementById('prof-phone') || {value: ''}).value.trim();
+  var license = (document.getElementById('prof-license') || {value: ''}).value.trim();
+  try { localStorage.setItem(_profCacheKey(), JSON.stringify({phone: phone, license: license})); } catch(e) {}
+  onFirebaseReady(function() {
+    var fb = window._fb;
+    fb.setDoc(fb.doc(fb.db, 'driverProfiles', u.username), {username: u.username, phone: phone, license: license}, {merge: true})
+      .then(function() { showToast(currentLang === 'en' ? '✓ Saved' : '✓ Vistað'); })
+      .catch(function(e) { showToast('⚠ Gat ekki vistað: ' + e.message); });
+  });
+}
+
+// Vakt í dag = fyrsta innskráning – síðasta útskráning (eða "á vakt") úr tímaskráningu dagsins
+function loadDriverShiftToday() {
+  var u = window._currentUser;
+  var el = document.getElementById('prof-shift');
+  if (!u || !el) return;
+  var onDuty = currentLang === 'en' ? 'on duty' : 'á vakt';
+  function pad(n) { return String(n).padStart(2, '0'); }
+  var sess = null;
+  try { sess = JSON.parse(localStorage.getItem('fd_driver_session') || 'null'); } catch(e) {}
+  if (sess && sess.shiftStart) {
+    var d0 = new Date(sess.shiftStart);
+    el.textContent = pad(d0.getHours()) + ':' + pad(d0.getMinutes()) + ' – ' + onDuty;
+  } else { el.textContent = '—'; }
+  onFirebaseReady(function() {
+    var fb = window._fb, n = new Date();
+    var dateStr = n.getDate() + '.' + (n.getMonth() + 1) + '.' + n.getFullYear();
+    fb.getDocs(fb.query(fb.collection(fb.db, 'timelog'), fb.where('username', '==', u.username), fb.where('dateStr', '==', dateStr)))
+      .then(function(snap) {
+        var evs = [];
+        snap.forEach(function(doc) {
+          var x = doc.data();
+          if (x.timeStr && (x.action === 'in' || x.action === 'out')) evs.push({a: x.action, t: x.timeStr});
+        });
+        if (!evs.length) return;
+        evs.sort(function(a, b) { return a.t < b.t ? -1 : a.t > b.t ? 1 : 0; });
+        var firstIn = evs.filter(function(e) { return e.a === 'in'; })[0];
+        if (!firstIn) return;
+        var last = evs[evs.length - 1];
+        el.textContent = firstIn.t + ' – ' + (last.a === 'out' ? last.t : onDuty);
+      }).catch(function(){});
+  });
 }
 
 // ── Task detail ──
@@ -5084,20 +5226,21 @@ function openTask(taskKey){
   const dcd=document.getElementById('d-company-display');if(dcd)dcd.textContent='—';
   const dc2=document.getElementById('d-container');if(dc2)dc2.value='';
   var _type = curTask?curTask.type:'';
-  const dg=document.getElementById('d-disposal-group');if(dg)dg.style.display=(_type==='ut'||_type==='tima'||_type==='farslin'||_type==='farsl'||_type==='koma'||_type==='komagamur'||_type==='komugjald')?'none':'block';
-  var kgr=document.getElementById('d-kg-row');if(kgr)kgr.style.display=(_type==='ut'||_type==='koma'||_type==='komagamur'||_type==='komugjald')?'none':'flex';
-  var cgd=document.getElementById('d-category-group');if(cgd)cgd.style.display=(_type==='ut'||_type==='koma'||_type==='komagamur'||_type==='komugjald')?'none':'block';
+  const dg=document.getElementById('d-disposal-group');if(dg)dg.style.display=(_type==='ut'||_type==='tima'||_type==='farslin'||_type==='farsl'||_type==='toma'||_type==='koma'||_type==='komagamur'||_type==='komugjald')?'none':'block';
+  var kgr=document.getElementById('d-kg-row');if(kgr)kgr.style.display=(_type==='ut'||_type==='tima'||_type==='farsl'||_type==='toma'||_type==='koma'||_type==='komagamur'||_type==='komugjald')?'none':'flex';
+  var cgd=document.getElementById('d-category-group');if(cgd)cgd.style.display=(_type==='ut'||_type==='tima'||_type==='farsl'||_type==='toma'||_type==='koma'||_type==='komagamur'||_type==='komugjald')?'none':'block';
   var komagr=document.getElementById('d-koma-group');if(komagr)komagr.style.display=(_type==='koma'||_type==='loskomur'||_type==='komagamur')?'block':'none';
   var takigr=document.getElementById('d-taki-group');if(takigr)takigr.style.display=(_type==='takikoma'||_type==='takisott')?'block':'none';
   if(_type==='takikoma'||_type==='takisott'){var kgrt=document.getElementById('d-kg-row');if(kgrt)kgrt.style.display='none';var dgt=document.getElementById('d-disposal-group');if(dgt)dgt.style.display='none';var cgdt=document.getElementById('d-category-group');if(cgdt)cgdt.style.display='none';}
   var dcg=document.getElementById('d-company-group');if(dcg)dcg.style.display=_type==='ut'?'none':'block';
+  var dctg=document.getElementById('d-container-group');if(dctg)dctg.style.display=_type==='tima'?'none':'block';
   var dng=document.getElementById('d-note-group');if(dng)dng.style.display='block';
   var afg=document.getElementById('d-afhending-group');if(afg)afg.style.display=_type==='ut'?'block':'none';
   var ph=document.getElementById('d-contact-phone-display');if(ph)ph.textContent=(curTask&&(curTask.companyPhone||curTask.phone))||'—';
   if(_type==='ut'){var ad=document.getElementById('d-afhending-addr-display');if(ad)ad.textContent=curTask&&curTask.sub?curTask.sub:'—';}
   const tg=document.getElementById('d-tima-group');if(tg)tg.style.display=_type==='tima'?'block':'none';
   const sg=document.getElementById('d-skipt-group');if(sg)sg.style.display=_type==='skipt'?'block':'none';
-  show('sc-task');
+  updateNyGroup(); show('sc-task');
 }
 
 function openAdminTask(title,sub,type,mapsAddr,km){
@@ -5126,23 +5269,36 @@ function openAdminTask(title,sub,type,mapsAddr,km){
   const dcd=document.getElementById('d-company-display');if(dcd)dcd.textContent='—';
   const dc3=document.getElementById('d-container');if(dc3)dc3.value='';
   var _type2 = curTask?curTask.type:'';
-  const dg2=document.getElementById('d-disposal-group');if(dg2)dg2.style.display=(_type2==='ut'||_type2==='tima'||_type2==='farslin'||_type2==='farsl'||_type2==='koma'||_type2==='komagamur'||_type2==='komugjald')?'none':'block';
+  const dg2=document.getElementById('d-disposal-group');if(dg2)dg2.style.display=(_type2==='ut'||_type2==='tima'||_type2==='farslin'||_type2==='farsl'||_type2==='toma'||_type2==='koma'||_type2==='komagamur'||_type2==='komugjald')?'none':'block';
   var komagr2=document.getElementById('d-koma-group');if(komagr2)komagr2.style.display=(_type2==='koma'||_type2==='loskomur'||_type2==='komagamur')?'block':'none';
   var takigr2=document.getElementById('d-taki-group');if(takigr2)takigr2.style.display=(_type2==='takikoma'||_type2==='takisott')?'block':'none';
-  var kgr=document.getElementById('d-kg-row');if(kgr)kgr.style.display=(_type2==='ut'||_type2==='koma'||_type2==='komagamur'||_type2==='komugjald')?'none':'flex';
-  var cgd=document.getElementById('d-category-group');if(cgd)cgd.style.display=(_type2==='ut'||_type2==='koma'||_type2==='komagamur'||_type2==='komugjald')?'none':'block';
+  var kgr=document.getElementById('d-kg-row');if(kgr)kgr.style.display=(_type2==='ut'||_type2==='tima'||_type2==='farsl'||_type2==='toma'||_type2==='koma'||_type2==='komagamur'||_type2==='komugjald')?'none':'flex';
+  var cgd=document.getElementById('d-category-group');if(cgd)cgd.style.display=(_type2==='ut'||_type2==='tima'||_type2==='farsl'||_type2==='toma'||_type2==='koma'||_type2==='komagamur'||_type2==='komugjald')?'none':'block';
   var dcg=document.getElementById('d-company-group');if(dcg)dcg.style.display=_type2==='ut'?'none':'block';
+  var dctg2=document.getElementById('d-container-group');if(dctg2)dctg2.style.display=_type2==='tima'?'none':'block';
   var dng=document.getElementById('d-note-group');if(dng)dng.style.display='block';
   var afg=document.getElementById('d-afhending-group');if(afg)afg.style.display=_type2==='ut'?'block':'none';
   var ph=document.getElementById('d-contact-phone-display');if(ph)ph.textContent=(curTask&&(curTask.companyPhone||curTask.phone))||'—';
   if(_type2==='ut'){var ad=document.getElementById('d-afhending-addr-display');if(ad)ad.textContent=curTask&&curTask.sub?curTask.sub:'—';}
   const tg2=document.getElementById('d-tima-group');if(tg2)tg2.style.display=_type2==='tima'?'block':'none';
   const sg2=document.getElementById('d-skipt-group');if(sg2)sg2.style.display=_type2==='skipt'?'block':'none';
-  show('sc-task');
+  updateNyGroup(); show('sc-task');
   setActiveNav('dash');
 }
 
 
+
+function updateNyGroup(){
+  var g=document.getElementById('d-ny-group'); if(!g) return;
+  var show = !!(curTask && curTask.type==='farsl' && curTask.nyStadsetning);
+  g.style.display = show ? 'block' : 'none';
+  var d=document.getElementById('d-ny-display'); if(d) d.textContent = show ? curTask.nyStadsetning : '—';
+}
+function openNyMaps(){
+  if(curTask && curTask.nyStadsetning){
+    window.open('https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(curTask.nyStadsetning),'_blank');
+  }
+}
 
 function openMaps(){
   if(curTask && curTask.mapsAddr){
@@ -5153,6 +5309,8 @@ function openMaps(){
 
 // ── Complete task ──
 function completeTask(){
+  // Vörn gegn tvísmellingu: sama beiðni er aðeins kláruð einu sinni
+  if(curTask){ if(curTask._completed) return; curTask._completed=true; }
   const n=new Date();
   const timeStr=n.getHours().toString().padStart(2,'0')+':'+n.getMinutes().toString().padStart(2,'0');
   const containerNum=document.getElementById('d-container').value.trim()||'—';
@@ -5162,8 +5320,8 @@ function completeTask(){
   const isLoskomur=curTask&&curTask.type==='loskomur';
   const isKomaGamur=curTask&&curTask.type==='komagamur';
   const isKomugjald=curTask&&curTask.type==='komugjald';
-  const kg=(isKoma||isKomaGamur||isKomugjald)?'—':document.getElementById('d-kg').value||'—';
-  const disposal=(isUtkeysla||isTima||isKoma||isKomaGamur||isKomugjald)?'—':document.getElementById('d-disposal').value;
+  const kg=!typeHasCat(curTask&&curTask.type)?'—':document.getElementById('d-kg').value||'—';
+  const disposal=!typeHasDisposal(curTask&&curTask.type)?'—':document.getElementById('d-disposal').value;
   const isKomaFields = isKoma||isLoskomur||isKomaGamur;
   const dKomaEfni    = isKomaFields ? ((document.getElementById('d-koma-efni')    ||{value:''}).value.trim() || (curTask&&curTask.komaEfni   ||'')) : '';
   const dKomaUppruni = isKomaFields ? ((document.getElementById('d-koma-uppruni') ||{value:''}).value.trim() || (curTask&&curTask.komaUppruni||'')) : '';
@@ -5193,7 +5351,7 @@ function completeTask(){
     var _kmD=parseInt(timaKmEnd)-parseInt(timaKmStart);
     if(!isNaN(_kmD)&&_kmD>=0)timaKmTotal=_kmD+' km';
   }
-  const category=(isKoma||isKomaGamur||isKomugjald)?'':document.getElementById('d-cat').value;
+  const category=!typeHasCat(curTask&&curTask.type)?'':document.getElementById('d-cat').value;
   const company=(document.getElementById('d-company')||{value:''}).value.trim() || (curTask&&curTask.company) || '—';
   const note=document.getElementById('d-note').value;
   const photoTaken = _photoList.length > 0;
@@ -5228,26 +5386,17 @@ function completeTask(){
   const doneList=document.getElementById('done-tasks');
   const dc=document.createElement('div');
   dc.className='done-card';
+  if(curTask&&curTask.fbId) dc.setAttribute('data-done-fbid', curTask.fbId);
   const skiptInfo=isSkapt&&skiptTekinn!=='—'?' · 🔄 T:'+skiptTekinn+'/A:'+skiptAfhentur:'';
   dc.innerHTML=`<div style="display:flex;align-items:center;justify-content:space-between;">
     <div class="done-title">${curTask?curTask.title:'Verkefni'}</div>
     <span class="done-tick">✓ ${timeStr}</span>
   </div>
-  <div class="done-meta">${containerNum!=='—'?'📦 '+containerNum+' · ':''}${kg} kg · ${category}${disposal!=='—'?' · → '+disposal:''}${skiptInfo}</div>`;
+  <div class="done-meta">${[containerNum!=='—'?'📦 '+containerNum:'',kg!=='—'?kg+' kg':'',category,disposal!=='—'?'→ '+disposal:''].filter(Boolean).join(' · ')}${skiptInfo}</div>`;
   doneList.insertBefore(dc,doneList.firstChild);
 
-  // Update stats
-  openTasks=Math.max(0,openTasks-1);
-  doneTasks+=1;
-  document.getElementById('open-count').textContent=openTasks;
-  document.getElementById('done-count').textContent=doneTasks;
-  const total=openTasks+doneTasks;
-  const pct=Math.round((doneTasks/total)*100)+'%';
-  document.getElementById('pct-count').textContent=pct;
-  document.getElementById('prog-pct').textContent=pct;
-  document.getElementById('prog-fill').style.width=pct;
-  document.getElementById('route-sub').textContent='34.6 km · '+openTasks+(currentLang==='en'?' stops left':' stopp eftir');
-  document.getElementById('prof-done').textContent=doneTasks;
+  // Update stats (talið út frá raunverulegum spjöldum)
+  updateDriverStats();
 
   // Add to admin done
   // Save completed task to localStorage
@@ -5279,7 +5428,7 @@ function completeTask(){
     done: true
   });
   var todayDate = new Date().toLocaleDateString('is-IS');
-  addToAdminDone(curTask,{kg,containerNum,disposal,category,company,note,photoTaken,timeStr,ref,date:todayDate});
+  addToAdminDone(curTask,{kg,containerNum,disposal,category,company,note,photoTaken,timeStr,ref,date:todayDate,timaStart,timaEnd,timaHours,timaKmStart,timaKmEnd,skiptTekinn,skiptAfhentur});
 
   // Firebase complete
   if (curTask && curTask.fbId) {
@@ -5307,7 +5456,7 @@ function completeTask(){
     þyngd_kg:kg,
     losunarstaður:disposal,
     fyrirtaeki:company,
-    heimilisfang:curTask?curTask.sub:'—',
+    heimilisfang:curTask?((curTask.type==='farsl' && curTask.nyStadsetning) ? (curTask.sub+' → '+curTask.nyStadsetning) : curTask.sub):'—',
     tilvísun:ref,
     okumadur:(window._currentUser||{name:'Jón Sigurðsson'}).name,
     okutaeki:(window._currentUser&&window._currentUser.vehicle)||'—',
@@ -5328,8 +5477,6 @@ function completeTask(){
     timi:"'" + timeStr
   });
 
-  const adminDone=document.getElementById('admin-js-done');
-  if(adminDone) adminDone.textContent=doneTasks;
 
   // Add completion message to chat (if msg-list exists for backwards compat)
   const msgList=document.getElementById('msg-list');
@@ -5357,9 +5504,7 @@ function addToAdminDone(task,data){
     <div class="atask-tags">
       <span class="atask-tag green">✓ ${data.date?'📅 '+data.date+' · ':''} Lokið ${data.timeStr}</span>
       ${data.containerNum && data.containerNum!=='—' ? '<span class="atask-tag">📦 '+data.containerNum+'</span>' : ''}
-      ${data.kg ? '<span class="atask-tag">'+data.kg+' kg</span>' : ''}
-      ${data.category ? '<span class="atask-tag">'+data.category+'</span>' : ''}
-      ${data.disposal && data.disposal!=='—' ? '<span class="atask-tag blue">→ '+data.disposal+'</span>' : ''}
+      ${doneValueTags(Object.assign({type:type},data))}
       ${data.company && data.company!=='—' ? '<span class="atask-tag">🏢 '+data.company+'</span>' : ''}
       <span class="photo-tags">${data.photoTaken?'<span class="atask-tag green">📷 Mynd í hleðslu...</span>':''}</span>
     </div>
@@ -5447,6 +5592,7 @@ function createTask(){
   const aSkiptAfhentur=document.getElementById('a-skipt-afhentur').value.trim();
   const aKomaEfni    = (document.getElementById('a-koma-efni')    || {value:''}).value.trim();
   const aKomaUppruni = (document.getElementById('a-koma-uppruni') || {value:''}).value.trim();
+  const aNyStadsetning = (document.getElementById('a-ny-stadsetning') || {value:''}).value.trim();
   const type=document.getElementById('a-type').value;
   if(type==='koma' && !aKomaEfni){ showToast('Sláðu inn hvaða efni er komið með'); return; }
   // Ban check — block task creation for banned customers
@@ -5459,11 +5605,11 @@ function createTask(){
     }
   }
   const aDate=document.getElementById('a-date')?document.getElementById('a-date').value:new Date().toISOString().split('T')[0];
-  const size=document.getElementById('a-size').value;
+  const size=typeHasSize(document.getElementById('a-type').value)?document.getElementById('a-size').value:'';
   const time=document.getElementById('a-time').value;
   const driverKey=document.getElementById('a-driver').value;
-  const category=document.getElementById('a-category').value;
-  const disposal=document.getElementById('a-disposal').value;
+  const category=!typeHasCat(type)?'':document.getElementById('a-category').value;
+  const disposal=!typeHasDisposal(type)?'—':document.getElementById('a-disposal').value;
   const maps=addr;
   const note=document.getElementById('a-note').value.trim();
   const tm=typeMap[type]||typeMap.ut;
@@ -5485,8 +5631,9 @@ function createTask(){
       <span class="admin-badge-pill ${tm.adminBadge}">${tm.name}</span>
     </div>
     <div class="atask-tags">
-      <span class="atask-tag" data-field="size">${size}</span>
-      <span class="atask-tag blue" data-field="disposal">→ ${disposal}</span>
+      ${size ? '<span class="atask-tag" data-field="size">'+size+'</span>' : ''}
+      ${disposal!=='—' ? '<span class="atask-tag blue" data-field="disposal">→ '+disposal+'</span>' : ''}
+      ${type==='farsl' && aNyStadsetning ? '<span class="atask-tag" style="background:#eff6ff;color:#1e40af;">📍 Ný staðsetning: '+escHtml(aNyStadsetning)+'</span>' : ''}
     </div>
     <div class="atask-foot">
       <div class="atask-driver-wrap"><div class="driver-dot" style="background:${driver.color}">${driver.initials}</div><span class="driver-name">${driver.name}</span></div>
@@ -5520,6 +5667,7 @@ function createTask(){
   var phoneSaveBtn=document.getElementById('a-phone-save-btn');if(phoneSaveBtn)phoneSaveBtn.style.display='none';
   var komaEfniEl=document.getElementById('a-koma-efni');if(komaEfniEl)komaEfniEl.value='';
   var komaUpprEl=document.getElementById('a-koma-uppruni');if(komaUpprEl)komaUpprEl.value='';
+  var nyEl=document.getElementById('a-ny-stadsetning');if(nyEl)nyEl.value='';
   var ktEl=document.getElementById('a-company-kt');if(ktEl)ktEl.value='';
   var emailEl=document.getElementById('a-company-email');if(emailEl)emailEl.value='';
   var takiWrapEl=document.getElementById('a-taki-wrap');if(takiWrapEl)takiWrapEl.style.display='none';
@@ -5578,8 +5726,9 @@ function createTask(){
     komaEfni: (type==='koma'||type==='loskomur'||type==='komagamur') ? (aKomaEfni||'') : '',
     komaUppruni: (type==='koma'||type==='loskomur'||type==='komagamur') ? (aKomaUppruni||'') : '',
     taki: (type==='takikoma'||type==='takisott') ? ((document.getElementById('a-taki')||{value:''}).value||'') : '',
-    disposal: (type==='ut'||type==='tima'||type==='farslin'||type==='farsl'||type==='koma'||type==='komugjald') ? '—' : document.getElementById('a-disposal').value,
-    category: document.getElementById('a-category')?document.getElementById('a-category').value:''
+    nyStadsetning: (type==='farsl') ? aNyStadsetning : '',
+    disposal: disposal,
+    category: category
   });
   showToast('✓ Ný beiðni búin til!');
   adminTab('tasks',document.querySelectorAll('.admin-tab')[1]);
@@ -5601,6 +5750,18 @@ function toggleOemEditByType(type) {
   var isTaki = type==='takikoma'||type==='takisott';
   var kw = document.getElementById('oem-koma-wrap'); if (kw) kw.style.display = isKomaFields ? 'block' : 'none';
   var tw = document.getElementById('oem-taki-wrap');  if (tw) tw.style.display = isTaki ? 'block' : 'none';
+  var cw = document.getElementById('oem-category-wrap'); if (cw) cw.style.display = typeHasCat(type) ? '' : 'none';
+  var dw = document.getElementById('oem-disposal-wrap'); if (dw) dw.style.display = typeHasDisposal(type) ? '' : 'none';
+  var sw = document.getElementById('oem-size-wrap'); if (sw) sw.style.display = typeHasSize(type) ? '' : 'none';
+  var fw = document.getElementById('oem-farsl-wrap'); if (fw) fw.style.display = (type==='farsl') ? 'block' : 'none';
+}
+
+function setOemSize(val) {
+  var sel = document.getElementById('oem-size'); if (!sel || !val) return;
+  if (!Array.from(sel.options).some(function(o){ return o.value === val; })) {
+    var o = document.createElement('option'); o.value = val; o.textContent = val; sel.appendChild(o);
+  }
+  sel.value = val;
 }
 
 function openOpenEditModal(fbId, card) {
@@ -5622,6 +5783,10 @@ function openOpenEditModal(fbId, card) {
 
   // Pre-fill from card DOM
   document.getElementById('oem-fbid').value = fbId || '';
+  document.getElementById('oem-category').selectedIndex = 0;
+  document.getElementById('oem-disposal').selectedIndex = 0;
+  document.getElementById('oem-note').value = '';
+  document.getElementById('oem-container').value = '';
   if (card) {
     var addrEl = card.querySelector('[data-field="addr"]');
     if (addrEl) {
@@ -5636,13 +5801,9 @@ function openOpenEditModal(fbId, card) {
       // Extract type from badge
       var badge = card.querySelector('.admin-badge-pill');
     }
-    var companyTag = card.querySelector('.atask-tag:not(.blue)');
-    if (companyTag) {
-      var ct = companyTag.textContent.replace('🏢 ', '');
-      document.getElementById('oem-company').value = ct;
-    }
+    document.getElementById('oem-company').value = card.dataset.company || '';
     var sizeTag = card.querySelector('[data-field="size"]');
-    if (sizeTag) document.getElementById('oem-size').value = sizeTag.textContent;
+    if (sizeTag) setOemSize(sizeTag.textContent.trim());
     var driverNameEl = card.querySelector('.driver-name');
     if (driverNameEl) {
       var dname = driverNameEl.textContent;
@@ -5662,7 +5823,7 @@ function openOpenEditModal(fbId, card) {
         if (d.time) document.getElementById('oem-time').value = d.time;
         if (d.date) document.getElementById('oem-date').value = d.date;
         if (d.type) document.getElementById('oem-type').value = d.type;
-        if (d.size) document.getElementById('oem-size').value = d.size;
+        if (d.size) setOemSize(d.size);
         if (d.company) document.getElementById('oem-company').value = d.company;
         if (d.note) document.getElementById('oem-note').value = d.note;
         if (d.containerNum) document.getElementById('oem-container').value = d.containerNum;
@@ -5670,6 +5831,7 @@ function openOpenEditModal(fbId, card) {
         if (d.disposal && d.disposal !== '—') document.getElementById('oem-disposal').value = d.disposal;
         document.getElementById('oem-koma-efni').value = d.komaEfni || '';
         document.getElementById('oem-koma-uppruni').value = d.komaUppruni || '';
+        document.getElementById('oem-ny').value = d.nyStadsetning || '';
         if (d.taki) document.getElementById('oem-taki').value = d.taki;
         toggleOemEditByType(d.type || 'ut');
         if (d.driverUsername) {
@@ -5694,17 +5856,18 @@ function saveOpenEditModal() {
   var time = document.getElementById('oem-time').value;
   var date = document.getElementById('oem-date').value;
   var type = document.getElementById('oem-type').value;
-  var size = document.getElementById('oem-size').value;
+  var size = typeHasSize(type) ? document.getElementById('oem-size').value : '';
   var company = document.getElementById('oem-company').value.trim();
   var note = document.getElementById('oem-note').value.trim();
   var container = document.getElementById('oem-container').value.trim();
-  var category = document.getElementById('oem-category').value;
-  var disposal = document.getElementById('oem-disposal').value;
+  var category = !typeHasCat(type) ? '' : document.getElementById('oem-category').value;
+  var disposal = !typeHasDisposal(type) ? '—' : document.getElementById('oem-disposal').value;
   var isKomaFieldsType = (type==='koma'||type==='loskomur'||type==='komagamur');
   var isTakiType = (type==='takikoma'||type==='takisott');
   var komaEfni    = isKomaFieldsType ? document.getElementById('oem-koma-efni').value.trim()    : '';
   var komaUppruni = isKomaFieldsType ? document.getElementById('oem-koma-uppruni').value.trim() : '';
   var taki        = isTakiType       ? document.getElementById('oem-taki').value                : '';
+  var nyStadsetning = (type==='farsl') ? document.getElementById('oem-ny').value.trim() : '';
   var driverSel = document.getElementById('oem-driver');
   var driverUsername = driverSel.value;
   var driverOpt = driverSel.options[driverSel.selectedIndex];
@@ -5725,7 +5888,9 @@ function saveOpenEditModal() {
     var badgeEl = card.querySelector('.admin-badge-pill');
     if (badgeEl) { badgeEl.textContent = tm.name; badgeEl.className = 'admin-badge-pill ' + tm.adminBadge; }
     var sizeEl = card.querySelector('[data-field="size"]');
-    if (sizeEl) sizeEl.textContent = size;
+    if (sizeEl) { if (size) sizeEl.textContent = size; else sizeEl.remove(); }
+    var dispEl = card.querySelector('[data-field="disposal"]');
+    if (dispEl) { if (disposal && disposal !== '—') dispEl.textContent = '→ ' + disposal; else dispEl.remove(); }
     var dot = card.querySelector('.driver-dot');
     var driverNameEl = card.querySelector('.driver-name');
     if (dot) { dot.textContent = driverInitials; dot.style.background = driverColor; }
@@ -5741,7 +5906,7 @@ function saveOpenEditModal() {
         address: addr, time: time, date: date, type: type,
         size: size, company: company, note: note, containerNum: container,
         category: category, disposal: disposal || '—',
-        komaEfni: komaEfni, komaUppruni: komaUppruni, taki: taki,
+        komaEfni: komaEfni, komaUppruni: komaUppruni, taki: taki, nyStadsetning: nyStadsetning,
         driverUsername: driverUsername, driverName: driverName,
         driverInitials: driverInitials
       }).then(function() {
@@ -6100,11 +6265,10 @@ function buildDoneCard(data) {
     + '</div>'
     + '<div class="atask-tags">'
     + '<span class="atask-tag green">✓ ' + (dateLabel?dateLabel+' · ':'') + (timeLabel||'Lokið') + '</span>'
-    + (data.kg && data.kg!=='—' ? '<span class="atask-tag">' + data.kg + ' kg</span>' : '')
-    + (data.category ? '<span class="atask-tag">' + data.category + '</span>' : '')
-    + (data.disposal && data.disposal!=='—' ? '<span class="atask-tag blue">→ ' + data.disposal + '</span>' : '')
+    + doneValueTags(data)
     + ((data.type==='koma'||data.type==='loskomur'||data.type==='komagamur') && data.komaEfni ? '<span class="atask-tag" style="background:#f0fdf4;color:#15803d;">📦 ' + data.komaEfni + '</span>' : '')
     + ((data.type==='takikoma'||data.type==='takisott') && data.taki ? '<span class="atask-tag" style="background:#eff6ff;color:#1e40af;">🏗 ' + data.taki + '</span>' : '')
+    + (data.type==='farsl' && data.nyStadsetning ? '<span class="atask-tag" style="background:#eff6ff;color:#1e40af;">📍 Ný staðsetning: ' + escHtml(data.nyStadsetning) + '</span>' : '')
     + ((data.type==='koma'||data.type==='loskomur'||data.type==='komagamur') && data.komaUppruni ? '<span class="atask-tag" style="background:#eff6ff;color:#1e40af;">📍 Sótt: ' + data.komaUppruni + '</span>' : '')
     + (data.company && data.company!=='—' ? '<span class="atask-tag">🏢 ' + data.company + '</span>' : '')
     + (data.containerNum && data.containerNum!=='—' ? '<span class="atask-tag">📦 ' + data.containerNum + '</span>' : '')
@@ -6338,6 +6502,7 @@ function openDoneEditModal(fbId) {
   var modal = document.getElementById('done-edit-modal');
   if (!modal) return;
   document.getElementById('dem-fbid').value = fbId || '';
+  window._demType = null;
   // Clear fields
   ['dem-date','dem-time','dem-addr','dem-kg','dem-container','dem-note','dem-koma-efni','dem-koma-uppruni'].forEach(function(id) {
     var el = document.getElementById(id); if(el) el.value = '';
@@ -6365,6 +6530,10 @@ function openDoneEditModal(fbId) {
         document.getElementById('dem-koma-efni').value = d.komaEfni || '';
         document.getElementById('dem-koma-uppruni').value = d.komaUppruni || '';
         if (d.taki) document.getElementById('dem-taki').value = d.taki;
+        window._demType = d.type || null;
+        var _dcw = document.getElementById('dem-category-wrap'); if (_dcw) _dcw.style.display = typeHasCat(d.type) ? '' : 'none';
+        var _dkw = document.getElementById('dem-kg-wrap'); if (_dkw) _dkw.style.display = typeHasCat(d.type) ? '' : 'none';
+        var _ddw = document.getElementById('dem-disposal-wrap'); if (_ddw) _ddw.style.display = typeHasDisposal(d.type) ? '' : 'none';
       }).catch(function(){});
     });
   }
@@ -6385,10 +6554,10 @@ function saveDoneEditModal() {
     date:         document.getElementById('dem-date').value.trim(),
     timeStr:      document.getElementById('dem-time').value,
     address:      document.getElementById('dem-addr').value.trim(),
-    kg:           document.getElementById('dem-kg').value.trim(),
+    kg:           typeHasCat(window._demType) ? document.getElementById('dem-kg').value.trim() : '—',
     containerNum: document.getElementById('dem-container').value.trim(),
-    category:     document.getElementById('dem-category').value,
-    disposal:     document.getElementById('dem-disposal').value,
+    category:     typeHasCat(window._demType) ? document.getElementById('dem-category').value : '',
+    disposal:     typeHasDisposal(window._demType) ? document.getElementById('dem-disposal').value : '—',
     komaEfni:     document.getElementById('dem-koma-efni').value.trim(),
     komaUppruni:  document.getElementById('dem-koma-uppruni').value.trim(),
     taki:         document.getElementById('dem-taki').value,
@@ -7837,6 +8006,73 @@ function stopDriverGPS() {
 
 window.initGoogleMaps = initGoogleMaps;
 
+// ── Heimilisfangaleit (OpenStreetMap) fyrir "Ný staðsetning" ──
+(function() {
+  var timer = null, results = [], idx = -1;
+  function el(id) { return document.getElementById(id); }
+  function close() { var dd = el('ny-dropdown'); if (dd) { dd.classList.remove('open'); dd.innerHTML = ''; } idx = -1; }
+  function render() {
+    var dd = el('ny-dropdown'); if (!dd) return;
+    if (!results.length) { dd.innerHTML = '<div class="ac-none">Engar niðurstöður</div>'; dd.classList.add('open'); return; }
+    dd.innerHTML = results.map(function(r, i) {
+      return '<div class="ac-item" data-idx="' + i + '"><span class="ac-main">' + escHtml(r.main) + '</span><span class="ac-sub">' + escHtml(r.sub) + '</span></div>';
+    }).join('');
+    dd.classList.add('open');
+    dd.querySelectorAll('.ac-item').forEach(function(it) {
+      it.addEventListener('mousedown', function(e) { e.preventDefault(); pick(parseInt(it.getAttribute('data-idx'), 10)); });
+    });
+  }
+  function pick(i) { var r = results[i]; if (!r) return; el('a-ny-stadsetning').value = r.full; close(); }
+  function search(q) {
+    var dd = el('ny-dropdown'); if (!dd) return;
+    dd.innerHTML = '<div class="ac-loading">Leita...</div>'; dd.classList.add('open');
+    fetch('https://nominatim.openstreetmap.org/search?format=jsonv2&addressdetails=1&countrycodes=is&limit=8&accept-language=is&q=' + encodeURIComponent(q), { headers: { 'Accept': 'application/json' } })
+      .then(function(r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+      .then(function(data) {
+        if (el('a-ny-stadsetning').value.trim() !== q) { close(); return; }
+        var seen = {}; results = [];
+        (data || []).forEach(function(p) {
+          var a = p.address || {};
+          var street = a.road || a.pedestrian || a.footway || a.path || '';
+          var num = a.house_number || '';
+          var place = a.city || a.town || a.village || a.municipality || a.hamlet || a.suburb || '';
+          var post = a.postcode || '';
+          var main = street ? (street + (num ? ' ' + num : '')) : (p.name || (p.display_name || '').split(',')[0] || '');
+          if (!main) return;
+          var sub = [post, place].filter(Boolean).join(' ');
+          var full = main + (sub ? ', ' + sub : '');
+          if (seen[full]) return; seen[full] = 1;
+          results.push({ main: main, sub: sub, full: full });
+        });
+        idx = -1; render();
+      })
+      .catch(function() { var d = el('ny-dropdown'); if (d) d.innerHTML = '<div class="ac-none">Gat ekki sótt heimilisföng. Þú getur slegið heimilisfangið inn handvirkt.</div>'; });
+  }
+  document.addEventListener('DOMContentLoaded', function() {
+    var inp = el('a-ny-stadsetning'); if (!inp) return;
+    inp.addEventListener('input', function() {
+      clearTimeout(timer);
+      var v = inp.value.trim();
+      if (v.length < 3) { close(); return; }
+      timer = setTimeout(function() { search(v); }, 450);
+    });
+    inp.addEventListener('keydown', function(e) {
+      var dd = el('ny-dropdown'); if (!dd || !dd.classList.contains('open')) return;
+      var items = dd.querySelectorAll('.ac-item');
+      if (e.key === 'ArrowDown') { e.preventDefault(); idx = Math.min(idx + 1, items.length - 1); items.forEach(function(x, i) { x.style.background = i === idx ? '#fff7ed' : ''; }); }
+      else if (e.key === 'ArrowUp') { e.preventDefault(); idx = Math.max(idx - 1, -1); items.forEach(function(x, i) { x.style.background = i === idx ? '#fff7ed' : ''; }); }
+      else if (e.key === 'Enter' && idx >= 0) { e.preventDefault(); pick(idx); }
+      else if (e.key === 'Escape') { close(); }
+    });
+    document.addEventListener('click', function(e) { var w = inp.closest('.addr-wrap'); if (w && !w.contains(e.target)) close(); });
+  });
+})();
+
+// Haltu notanda innskráðum eftir endurhleðslu (án nýrrar innskráningar/punchIn)
+document.addEventListener('DOMContentLoaded', function() {
+  try { tryAutoLogin(); } catch(e) { console.error('Auto-login villa:', e); }
+});
+
 document.addEventListener('DOMContentLoaded', function() {
   setTimeout(function() {
     if (window.google && window.google.maps && window.google.maps.places && !placesAutocomplete) initGoogleMaps();
@@ -7875,6 +8111,36 @@ function onAddrInput(val) {
   acTimer = setTimeout(() => fetchAc(val.trim()), 450);
 }
 
+// Fela villuglugga Google ("Þessi síða getur ekki hlaðið Google-kort rétt") – varaleitin sér um heimilisföngin
+(function() {
+  function isGoogleErrDialog(el) {
+    if (!el || el.nodeType !== 1) return null;
+    var hit = (el.classList && el.classList.contains('dismissButton')) ? el : (el.querySelector ? el.querySelector('.dismissButton') : null);
+    if (!hit) {
+      // varaleið: þekkja gluggann á textanum ef flokkanafnið breytist hjá Google
+      var tx = el.textContent || '';
+      if (el.parentNode === document.body && /Google-kort rétt|load Google Maps correctly/i.test(tx) && !(el.querySelector && el.querySelector('#admin-panel, #phone, #sc-login'))) return el;
+      return null;
+    }
+    // finna ysta glugga-element (beint barn <body>) – aldrei fela appið sjálft eða kortið inni í því
+    var top = hit;
+    while (top.parentNode && top.parentNode !== document.body) top = top.parentNode;
+    if (!top || top.parentNode !== document.body) return null;
+    if (top.id === 'admin-panel' || top.id === 'phone' || (top.querySelector && top.querySelector('#admin-panel, #phone, #sc-login'))) return null;
+    return top;
+  }
+  try {
+    new MutationObserver(function(muts) {
+      muts.forEach(function(m) {
+        m.addedNodes.forEach(function(n) {
+          var d = isGoogleErrDialog(n);
+          if (d) d.style.display = 'none';
+        });
+      });
+    }).observe(document.documentElement, { childList: true, subtree: true });
+  } catch(e) {}
+})();
+
 // Kallað af Google ef lykill/billing er í ólagi (t.d. BillingNotEnabledMapError)
 window.gm_authFailure = function() {
   window._googleMapsFailed = true;
@@ -7887,12 +8153,16 @@ window.gm_authFailure = function() {
 // ── Varaleit: OpenStreetMap Nominatim (án lykils, engin billing) ──
 function fetchAc(q) {
   const dd = document.getElementById('ac-dropdown');
+  const _inp = document.getElementById('a-addr');
+  if (!_inp || _inp.value.trim() !== q) return; // reiturinn hefur breyst/hreinsast – sleppa
+  if (document.activeElement !== _inp) { closeAc(); return; } // notandinn farinn í annan reit – ekki opna listann
   dd.innerHTML = '<div class="ac-loading">Leita...</div>';
   dd.classList.add('open');
   const url = 'https://nominatim.openstreetmap.org/search?format=jsonv2&addressdetails=1&countrycodes=is&limit=8&accept-language=is&q=' + encodeURIComponent(q);
   fetch(url, { headers: { 'Accept': 'application/json' } })
     .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
     .then(data => {
+      if (!_inp || _inp.value.trim() !== q || document.activeElement !== _inp) { closeAc(); return; } // gamalt svar / notandinn farinn úr reitnum – hunsa
       var seen = {};
       acResults = [];
       (data || []).forEach(function(p) {
@@ -7991,7 +8261,9 @@ function toggleAdminByType(type) {
   var isTaki      = type === 'takikoma' || type === 'takisott';
   var isKomaGamur = type === 'komagamur';
   var isKomugjald = type === 'komugjald';
-  var noDisposal  = type === 'ut' || type === 'tima' || type === 'farslin' || type === 'farsl' || isKoma || isTaki || isKomaGamur || isKomugjald;
+  var isFarsl     = type === 'farsl';
+  var isToma      = type === 'toma';
+  var noDisposal  = type === 'ut' || type === 'tima' || type === 'farslin' || type === 'farsl' || isToma || isKoma || isTaki || isKomaGamur || isKomugjald;
   var isTima     = type === 'tima';
   var isSkapt    = type === 'skipt';
   var isUt       = type === 'ut';
@@ -7999,6 +8271,7 @@ function toggleAdminByType(type) {
   var sizeWrap  = document.getElementById('a-size-wrap');
   var komaWrap  = document.getElementById('a-koma-wrap');
   var takiWrap  = document.getElementById('a-taki-wrap');
+  var farslWrap = document.getElementById('a-farsl-wrap');
   var catWrap   = document.getElementById('a-category-wrap');
   var skiptRow  = document.getElementById('a-skipt-row');
   var contRow   = document.getElementById('a-container-row');
@@ -8006,7 +8279,8 @@ function toggleAdminByType(type) {
   if (sizeWrap) sizeWrap.style.display = (isTima || isKoma || isTaki) ? 'none' : '';
   if (komaWrap) komaWrap.style.display = (isKoma || isLoskomur || isKomaGamur) ? '' : 'none';
   if (takiWrap) takiWrap.style.display = isTaki ? '' : 'none';
-  if (catWrap)  catWrap.style.display  = (isTima || isUt || isKoma || isTaki || isKomaGamur || isKomugjald) ? 'none' : '';
+  if (farslWrap) farslWrap.style.display = isFarsl ? '' : 'none';
+  if (catWrap)  catWrap.style.display  = (isTima || isUt || isKoma || isTaki || isKomaGamur || isKomugjald || isFarsl || isToma) ? 'none' : '';
   if (skiptRow) skiptRow.style.display = isSkapt ? '' : 'none';
   if (contRow)  contRow.style.display  = (isSkapt || isKoma || isTaki) ? 'none' : '';
 }
@@ -8175,17 +8449,10 @@ function showToast(msg){
         </div>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-        <div>
+        <div id="oem-size-wrap">
           <label style="font-size:11px;font-weight:700;color:#64748b;display:block;margin-bottom:4px;">STÆRÐ GÁMS</label>
           <select id="oem-size" style="width:100%;padding:9px 12px;border:1px solid #e2e8f0;border-radius:10px;font-size:13px;">
-            <option value="8 m³">8 m³</option><option value="10 m³">10 m³</option>
-            <option value="12 m³">12 m³</option><option value="14 m³">14 m³</option>
-            <option value="16 m³">16 m³</option><option value="18 m³">18 m³</option>
-            <option value="20 m³" selected>20 m³</option><option value="22 m³">22 m³</option>
-            <option value="24 m³">24 m³</option><option value="26 m³">26 m³</option>
-            <option value="28 m³">28 m³</option><option value="30 m³">30 m³</option>
-            <option value="32 m³">32 m³</option><option value="34 m³">34 m³</option>
-            <option value="36 m³">36 m³</option><option value="38 m³">38 m³</option>
+            <option value="8 m³">8 m³</option><option value="9 m³">9 m³</option><option value="10 m³">10 m³</option><option value="11 m³">11 m³</option><option value="12 m³">12 m³</option><option value="13 m³">13 m³</option><option value="14 m³">14 m³</option><option value="15 m³">15 m³</option><option value="16 m³">16 m³</option><option value="17 m³">17 m³</option><option value="18 m³">18 m³</option><option value="19 m³">19 m³</option><option value="20 m³" selected>20 m³</option><option value="21 m³">21 m³</option><option value="22 m³">22 m³</option><option value="23 m³">23 m³</option><option value="24 m³">24 m³</option><option value="25 m³">25 m³</option><option value="26 m³">26 m³</option><option value="27 m³">27 m³</option><option value="28 m³">28 m³</option><option value="29 m³">29 m³</option><option value="30 m³">30 m³</option><option value="31 m³">31 m³</option><option value="32 m³">32 m³</option><option value="33 m³">33 m³</option><option value="34 m³">34 m³</option><option value="35 m³">35 m³</option><option value="36 m³">36 m³</option><option value="37 m³">37 m³</option><option value="38 m³">38 m³</option><option value="39 m³">39 m³</option><option value="40 m³">40 m³</option>
           </select>
         </div>
         <div>
@@ -8201,7 +8468,7 @@ function showToast(msg){
         <label style="font-size:11px;font-weight:700;color:#64748b;display:block;margin-bottom:4px;">ÖKUMAÐUR</label>
         <select id="oem-driver" style="width:100%;padding:9px 12px;border:1px solid #e2e8f0;border-radius:10px;font-size:13px;"></select>
       </div>
-      <div>
+      <div id="oem-category-wrap">
         <label style="font-size:11px;font-weight:700;color:#64748b;display:block;margin-bottom:4px;">EFNISFLOKKUR</label>
         <select id="oem-category" translate="no" style="width:100%;padding:9px 12px;border:1px solid #e2e8f0;border-radius:10px;font-size:13px;">
   <optgroup label="— Garðaúrgangur —">
@@ -8239,7 +8506,7 @@ function showToast(msg){
   </optgroup>
 </select>
       </div>
-      <div>
+      <div id="oem-disposal-wrap">
         <label style="font-size:11px;font-weight:700;color:#64748b;display:block;margin-bottom:4px;">LOSUNARSTAÐUR</label>
         <select id="oem-disposal" translate="no" style="width:100%;padding:9px 12px;border:1px solid #e2e8f0;border-radius:10px;font-size:13px;">
           <option value="Sorpstöð Álfsnes">Sorpstöð Álfsnes</option><option value="Sorpustöð Gufunes">Sorpustöð Gufunes</option><option value="GAJA gas- og jarðg.stöð">GAJA gas- og jarðg.stöð</option><option value="Terra umhverfisþjónusta">Terra umhverfisþjónusta</option><option value="Íslenska Gámafélagið">Íslenska Gámafélagið</option><option value="Bolalda">Bolalda</option><option value="Vatnsskarð">Vatnsskarð</option><option value="HP Gámar">HP Gámar</option><option value="Málma">Málma</option><option value="Fura">Fura</option><option value="Höfuðstöð fyrirtækis">Höfuðstöð fyrirtækis</option><option value="Annað (sjá athugasemd)">Annað (sjá athugasemd)</option></select>
@@ -8255,6 +8522,10 @@ function showToast(msg){
             <input type="text" id="oem-koma-uppruni" style="width:100%;padding:9px 12px;border:1px solid #e2e8f0;border-radius:10px;font-size:13px;box-sizing:border-box;" placeholder="t.d. Steypustöðin..."/>
           </div>
         </div>
+      </div>
+      <div id="oem-farsl-wrap" style="display:none;">
+        <label style="font-size:11px;font-weight:700;color:#64748b;display:block;margin-bottom:4px;">NÝ STAÐSETNING</label>
+        <input type="text" id="oem-ny" style="width:100%;padding:9px 12px;border:1px solid #e2e8f0;border-radius:10px;font-size:13px;box-sizing:border-box;" placeholder="Hvert er gámurinn fluttur"/>
       </div>
       <div id="oem-taki-wrap" style="display:none;">
         <label style="font-size:11px;font-weight:700;color:#64748b;display:block;margin-bottom:4px;">TÆKI</label>
@@ -8345,7 +8616,7 @@ function showToast(msg){
         <input type="text" id="dem-addr" style="width:100%;padding:9px 12px;border:1px solid #e2e8f0;border-radius:10px;font-size:13px;box-sizing:border-box;"/>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-        <div>
+        <div id="dem-kg-wrap">
           <label style="font-size:11px;font-weight:700;color:#64748b;display:block;margin-bottom:4px;">ÞYNGD (kg)</label>
           <input type="text" id="dem-kg" style="width:100%;padding:9px 12px;border:1px solid #e2e8f0;border-radius:10px;font-size:13px;box-sizing:border-box;" placeholder="0"/>
         </div>
@@ -8354,7 +8625,7 @@ function showToast(msg){
           <input type="text" id="dem-container" style="width:100%;padding:9px 12px;border:1px solid #e2e8f0;border-radius:10px;font-size:13px;box-sizing:border-box;" placeholder="G-000"/>
         </div>
       </div>
-      <div>
+      <div id="dem-category-wrap">
         <label style="font-size:11px;font-weight:700;color:#64748b;display:block;margin-bottom:4px;">EFNISFLOKKUR</label>
         <select id="dem-category" translate="no" style="width:100%;padding:9px 12px;border:1px solid #e2e8f0;border-radius:10px;font-size:13px;">
   <optgroup label="— Garðaúrgangur —">
@@ -8392,7 +8663,7 @@ function showToast(msg){
   </optgroup>
 </select>
       </div>
-      <div>
+      <div id="dem-disposal-wrap">
         <label style="font-size:11px;font-weight:700;color:#64748b;display:block;margin-bottom:4px;">LOSUNARSTAÐUR</label>
         <select id="dem-disposal" translate="no" style="width:100%;padding:9px 12px;border:1px solid #e2e8f0;border-radius:10px;font-size:13px;">
           <option value="Sorpstöð Álfsnes">Sorpstöð Álfsnes</option><option value="Sorpustöð Gufunes">Sorpustöð Gufunes</option><option value="GAJA gas- og jarðg.stöð">GAJA gas- og jarðg.stöð</option><option value="Terra umhverfisþjónusta">Terra umhverfisþjónusta</option><option value="Íslenska Gámafélagið">Íslenska Gámafélagið</option><option value="Bolalda">Bolalda</option><option value="Vatnsskarð">Vatnsskarð</option><option value="HP Gámar">HP Gámar</option><option value="Málma">Málma</option><option value="Fura">Fura</option><option value="Höfuðstöð fyrirtækis">Höfuðstöð fyrirtækis</option><option value="Annað (sjá athugasemd)">Annað (sjá athugasemd)</option></select>
